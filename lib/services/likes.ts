@@ -16,41 +16,41 @@ export async function toggleLike(input: {
   userId: string;
   presetId: string;
 }): Promise<{ liked: boolean; likesCount: number }> {
-  return await db.transaction(async (tx) => {
-    const existing = await tx
-      .select()
-      .from(like)
-      .where(
-        and(eq(like.userId, input.userId), eq(like.presetId, input.presetId)),
-      )
-      .limit(1);
+  const existing = await db
+    .select()
+    .from(like)
+    .where(
+      and(eq(like.userId, input.userId), eq(like.presetId, input.presetId)),
+    )
+    .limit(1);
 
-    if (existing.length > 0) {
-      await tx
+  if (existing.length > 0) {
+    const [, updated] = await db.batch([
+      db
         .delete(like)
         .where(
           and(eq(like.userId, input.userId), eq(like.presetId, input.presetId)),
-        );
-      const updated = await tx
+        ),
+      db
         .update(preset)
         .set({ likesCount: sql`GREATEST(${preset.likesCount} - 1, 0)` })
         .where(eq(preset.id, input.presetId))
-        .returning({ count: preset.likesCount });
-      const count = updated[0]?.count ?? 0;
-      return { liked: false, likesCount: count };
-    }
+        .returning({ count: preset.likesCount }),
+    ]);
+    return { liked: false, likesCount: updated[0]?.count ?? 0 };
+  }
 
-    await tx
+  const [, updated] = await db.batch([
+    db
       .insert(like)
-      .values({ userId: input.userId, presetId: input.presetId });
-    const updated = await tx
+      .values({ userId: input.userId, presetId: input.presetId }),
+    db
       .update(preset)
       .set({ likesCount: sql`${preset.likesCount} + 1` })
       .where(eq(preset.id, input.presetId))
-      .returning({ count: preset.likesCount });
-    const count = updated[0]?.count ?? 0;
-    return { liked: true, likesCount: count };
-  });
+      .returning({ count: preset.likesCount }),
+  ]);
+  return { liked: true, likesCount: updated[0]?.count ?? 0 };
 }
 
 export async function listLikedByUser(

@@ -1,10 +1,14 @@
 "use client";
 
-import { Cancel01Icon } from "@hugeicons/core-free-icons";
+import {
+  Cancel01Icon,
+  InformationCircleIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useAtom } from "jotai";
 import { useEffect } from "react";
 import { SubmitForm } from "@/components/submit-form";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { submitModalOpenAtom } from "@/lib/atoms/submit-modal";
 
@@ -49,7 +53,7 @@ export function SubmitModal() {
             <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
           </Button>
         </div>
-        <div className="mb-6 flex flex-col gap-1.5">
+        <div className="mb-5 flex flex-col gap-1">
           <h2
             id="submit-modal-title"
             className="font-heading text-lg font-medium tracking-tight"
@@ -57,18 +61,28 @@ export function SubmitModal() {
             Submit a preset
           </h2>
           <p className="text-sm text-muted-foreground">
-            Paste a preset code from{" "}
+            Share a curated shadcn preset with the community.
+          </p>
+        </div>
+        <Alert className="mb-5">
+          <HugeiconsIcon icon={InformationCircleIcon} />
+          <AlertTitle>Need a preset code?</AlertTitle>
+          <AlertDescription>
+            Generate one at{" "}
             <a
               href="https://ui.shadcn.com/create"
               target="_blank"
               rel="noreferrer"
-              className="underline underline-offset-2 hover:text-foreground"
             >
               ui.shadcn.com/create
-            </a>
-            .
-          </p>
-        </div>
+            </a>{" "}
+            or run <br />
+            <code className="rounded-md bg-code px-1.5 py-0.5 font-mono text-xs text-foreground">
+              npx shadcn@latest info
+            </code>{" "}
+            in your project
+          </AlertDescription>
+        </Alert>
         <SubmitForm onClose={close} />
       </div>
     </div>
