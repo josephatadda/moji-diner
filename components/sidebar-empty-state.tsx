@@ -3,10 +3,10 @@
 import { useSetAtom } from "jotai";
 import { Button } from "@/components/ui/button";
 import { submitModalOpenAtom } from "@/lib/atoms/submit-modal";
-import type { PresetSource } from "@/lib/domain/source-labels";
+import type { PresetView } from "@/lib/domain/source-labels";
 
 type Props = {
-  source: "all" | PresetSource;
+  source: "all" | PresetView;
   onShowAll: () => void;
 };
 
@@ -17,7 +17,7 @@ type Copy = {
   kind: "submit" | "show-all" | "external";
 };
 
-const COPY: Record<"all" | PresetSource, Copy> = {
+const COPY: Record<"all" | PresetView, Copy> = {
   community: {
     heading: "No community presets yet.",
     description: "Be the first — submit yours for everyone to remix.",
@@ -35,6 +35,12 @@ const COPY: Record<"all" | PresetSource, Copy> = {
     description: "Roll a fresh theme on shadcn/create and submit it back.",
     primaryLabel: "Open shadcn/create",
     kind: "external",
+  },
+  likes: {
+    heading: "No likes yet.",
+    description: "Hit the heart on anything to collect it here.",
+    primaryLabel: "Show all presets",
+    kind: "show-all",
   },
   all: {
     heading: "No presets found.",

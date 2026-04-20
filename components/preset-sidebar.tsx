@@ -20,8 +20,9 @@ import {
   PRESET_SORTS,
   PRESET_SOURCES,
   type PresetSort,
-  type PresetSource,
+  type PresetView,
 } from "@/lib/domain/source-labels";
+import { authClient } from "@/lib/auth-client";
 import { feedFilterParsers, serializeFeedFilters } from "@/lib/feed-filters";
 import type { PresetWithColors } from "@/lib/services/presets";
 
@@ -30,11 +31,12 @@ type Props = {
   initialCursor: string | null;
 };
 
-const SOURCE_LABELS: Record<"all" | PresetSource, string> = {
+const SOURCE_LABELS: Record<"all" | PresetView, string> = {
   all: "All",
   brand: "Brand",
   community: "Community",
   random: "Random",
+  likes: "Liked",
 };
 
 const SORT_LABELS: Record<PresetSort, string> = {
@@ -45,15 +47,17 @@ const SORT_LABELS: Record<PresetSort, string> = {
 
 export function PresetSidebar({ initialItems, initialCursor }: Props) {
   const activeCode = useSelectedLayoutSegment();
+  const { data: session } = authClient.useSession();
+  const isAuthed = Boolean(session?.user);
   const [filters, setFilters] = useQueryStates(feedFilterParsers, {
     clearOnDefault: true,
   });
 
   const queryString = serializeFeedFilters(filters);
-  const activeSource: "all" | PresetSource = filters.source ?? "all";
+  const activeSource: "all" | PresetView = filters.source ?? "all";
   const activeSort = filters.sort;
 
-  const setSource = (value: "all" | PresetSource) =>
+  const setSource = (value: "all" | PresetView) =>
     setFilters({ source: value === "all" ? null : value });
   const setSort = (value: PresetSort) => setFilters({ sort: value });
 
@@ -84,7 +88,7 @@ export function PresetSidebar({ initialItems, initialCursor }: Props) {
             <DropdownMenuContent align="start">
               <DropdownMenuRadioGroup
                 value={activeSource}
-                onValueChange={(v) => setSource(v as "all" | PresetSource)}
+                onValueChange={(v) => setSource(v as "all" | PresetView)}
               >
                 <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
                 {PRESET_SOURCES.map((s) => (
@@ -92,42 +96,49 @@ export function PresetSidebar({ initialItems, initialCursor }: Props) {
                     {SOURCE_LABELS[s]}
                   </DropdownMenuRadioItem>
                 ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div className="shrink-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 px-2 text-muted-foreground hover:text-foreground"
-                />
-              }
-            >
-              {SORT_LABELS[activeSort]}
-              <HugeiconsIcon
-                icon={ArrowDown01Icon}
-                size={12}
-                strokeWidth={1.5}
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuRadioGroup
-                value={activeSort}
-                onValueChange={(v) => setSort(v as PresetSort)}
-              >
-                {PRESET_SORTS.map((s) => (
-                  <DropdownMenuRadioItem key={s} value={s}>
-                    {SORT_LABELS[s]}
+                {isAuthed ? (
+                  <DropdownMenuRadioItem value="likes">
+                    {SOURCE_LABELS.likes}
                   </DropdownMenuRadioItem>
-                ))}
+                ) : null}
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        {activeSource === "likes" ? null : (
+          <div className="shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 px-2 text-muted-foreground hover:text-foreground"
+                  />
+                }
+              >
+                {SORT_LABELS[activeSort]}
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  size={12}
+                  strokeWidth={1.5}
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuRadioGroup
+                  value={activeSort}
+                  onValueChange={(v) => setSort(v as PresetSort)}
+                >
+                  {PRESET_SORTS.map((s) => (
+                    <DropdownMenuRadioItem key={s} value={s}>
+                      {SORT_LABELS[s]}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
 
       <ListWithPagination<PresetWithColors>

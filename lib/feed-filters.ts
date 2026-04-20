@@ -1,8 +1,8 @@
 import { createSerializer, parseAsStringLiteral } from "nuqs";
-import { PRESET_SORTS, PRESET_SOURCES } from "@/lib/domain/source-labels";
+import { PRESET_SORTS, PRESET_VIEWS } from "@/lib/domain/source-labels";
 
 export const feedFilterParsers = {
-  source: parseAsStringLiteral(PRESET_SOURCES),
+  source: parseAsStringLiteral(PRESET_VIEWS),
   sort: parseAsStringLiteral(PRESET_SORTS).withDefault("popular"),
 };
 

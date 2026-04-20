@@ -15,6 +15,5 @@ export async function toggleLikeAction(
   if (!user) return { status: "unauthorized" };
   const result = await toggleLike({ userId: user.id, presetId });
   revalidatePath("/feed");
-  revalidatePath("/liked");
   return { status: "ok", ...result };
 }

@@ -4,6 +4,8 @@ import { Header } from "@/components/header";
 import { PresetSidebar } from "@/components/preset-sidebar";
 import { listPresetsWithColors } from "@/lib/services/presets";
 
+import { Analytics } from "@vercel/analytics/next";
+
 export default async function FeedLayout({
   children,
 }: {
@@ -14,18 +16,21 @@ export default async function FeedLayout({
   });
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <Header />
-      <div className="flex min-h-0 flex-1">
-        <FeedAside>
-          <Suspense fallback={null}>
-            <PresetSidebar initialItems={items} initialCursor={nextCursor} />
-          </Suspense>
-        </FeedAside>
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          {children}
+    <>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <Header />
+        <div className="flex min-h-0 flex-1">
+          <FeedAside>
+            <Suspense fallback={null}>
+              <PresetSidebar initialItems={items} initialCursor={nextCursor} />
+            </Suspense>
+          </FeedAside>
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+            {children}
+          </div>
         </div>
       </div>
-    </div>
+      <Analytics />
+    </>
   );
 }

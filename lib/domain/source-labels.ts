@@ -1,6 +1,9 @@
 export const PRESET_SOURCES = ["brand", "community", "random"] as const;
 export type PresetSource = (typeof PRESET_SOURCES)[number];
 
+export const PRESET_VIEWS = [...PRESET_SOURCES, "likes"] as const;
+export type PresetView = (typeof PRESET_VIEWS)[number];
+
 const LABELS: Record<PresetSource, string> = {
   brand: "Brand",
   community: "Community",

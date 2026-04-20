@@ -21,10 +21,7 @@ import { submitModalOpenAtom } from "@/lib/atoms/submit-modal";
 import { SOCIAL_LINKS } from "@/lib/config/socials";
 import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-  { href: "/feed", label: "Feed" },
-  { href: "/liked", label: "Liked" },
-];
+const NAV_LINKS = [{ href: "/feed", label: "Feed" }];
 
 export function Header() {
   const pathname = usePathname();

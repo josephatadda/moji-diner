@@ -65,7 +65,7 @@ export function HeaderUser() {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/liked" />}>
+        <DropdownMenuItem render={<Link href="/feed?source=likes" />}>
           Your likes
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => openSubmit(true)}>

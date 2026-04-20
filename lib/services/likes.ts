@@ -53,9 +53,16 @@ export async function toggleLike(input: {
   return { liked: true, likesCount: updated[0]?.count ?? 0 };
 }
 
-export async function listLikedByUser(
-  userId: string,
-): Promise<PresetSummary[]> {
+const LIKES_PAGE_SIZE = 24;
+
+export async function listLikedByUser(input: {
+  userId: string;
+  cursor?: string;
+  limit?: number;
+}): Promise<{ items: PresetSummary[]; nextCursor: string | null }> {
+  const limit = input.limit ?? LIKES_PAGE_SIZE;
+  const cursorDate = input.cursor ? new Date(input.cursor) : null;
+
   const rows = await db
     .select({
       id: preset.id,
@@ -66,12 +73,25 @@ export async function listLikedByUser(
       brandSlug: preset.brandSlug,
       likesCount: preset.likesCount,
       createdAt: preset.createdAt,
+      likedAt: like.createdAt,
     })
     .from(like)
     .innerJoin(preset, eq(like.presetId, preset.id))
-    .where(eq(like.userId, userId))
-    .orderBy(desc(like.createdAt));
-  return rows;
+    .where(
+      cursorDate
+        ? and(eq(like.userId, input.userId), sql`${like.createdAt} < ${cursorDate}`)
+        : eq(like.userId, input.userId),
+    )
+    .orderBy(desc(like.createdAt))
+    .limit(limit + 1);
+
+  const hasMore = rows.length > limit;
+  const page = hasMore ? rows.slice(0, limit) : rows;
+  const last = page[page.length - 1];
+  const nextCursor = hasMore && last ? last.likedAt.toISOString() : null;
+
+  const items: PresetSummary[] = page.map(({ likedAt: _likedAt, ...rest }) => rest);
+  return { items, nextCursor };
 }
 
 export async function likedPresetIdsByUser(

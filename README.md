@@ -1,3 +1,5 @@
+![dialectcn](public/hero.png)
+
 # dialectcn
 
 A living catalog of [shadcn](https://ui.shadcn.com) presets — brand-inspired, community-submitted, and occasionally random. Pick one, copy the code, paste it into your project.
