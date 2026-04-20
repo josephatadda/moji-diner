@@ -28,7 +28,10 @@ export function PresetNav({ currentCode, prev, next }: Props) {
   const goRandom = () => {
     startTransition(async () => {
       const code = await pickRandomPresetCodeAction(currentCode);
-      if (code) router.push(hrefFor(code));
+      if (!code) return;
+      const href = hrefFor(code);
+      router.prefetch(href);
+      router.push(href);
     });
   };
 

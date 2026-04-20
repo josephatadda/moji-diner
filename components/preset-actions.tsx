@@ -4,29 +4,24 @@ import {
   ArrowUpRight01Icon,
   Copy01Icon,
   Download01Icon,
-  NewTwitterIcon,
+  Share01Icon,
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useAtomValue } from "jotai";
-import { useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { CopyStateIcon } from "@/components/copy-button/copy-button";
 import { InstallDialog } from "@/components/install-dialog";
-import { LikeButton } from "@/components/like-button";
 import { Button } from "@/components/ui/button";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { copyTriggerAtom } from "@/lib/atoms/preset-ui";
 
 export function PresetActions({
   code,
-  presetId,
-  initialLiked,
-  initialLikes,
+  likeSlot,
 }: {
   code: string;
-  presetId: string;
-  initialLiked: boolean;
-  initialLikes: number;
+  likeSlot: ReactNode;
 }) {
   const { state, copy } = useCopyToClipboard({});
 
@@ -91,7 +86,7 @@ export function PresetActions({
         aria-label="Share on X"
         title="Share on X"
       >
-        <HugeiconsIcon icon={NewTwitterIcon} size={16} />
+        <HugeiconsIcon icon={Share01Icon} size={16} />
       </Button>
 
       <Button
@@ -105,11 +100,7 @@ export function PresetActions({
         <HugeiconsIcon icon={ArrowUpRight01Icon} size={16} />
       </Button>
 
-      <LikeButton
-        presetId={presetId}
-        initialLiked={initialLiked}
-        initialCount={initialLikes}
-      />
+      {likeSlot}
     </div>
   );
 }

@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { decodePreset } from "shadcn/preset";
 import { isShadcnPreviewSupported } from "@/lib/domain/preset-compat";
+import { cn } from "@/lib/utils";
 
 const SHADCN_PREVIEW_BASE = "https://ui.shadcn.com/preview/radix/preview-02";
 
@@ -12,14 +14,24 @@ const FIELD_LABEL = {
 } as const;
 
 export function Preview02Frame({ code }: { code: string }) {
-  const config = decodePreset(code);
+  const config = useMemo(() => decodePreset(code), [code]);
+  const compat = useMemo(
+    () => (config ? isShadcnPreviewSupported(config) : null),
+    [config],
+  );
+  const src = useMemo(
+    () => `${SHADCN_PREVIEW_BASE}?preset=${encodeURIComponent(code)}`,
+    [code],
+  );
+
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const isLoaded = loadedSrc === src;
 
   if (!config) {
     return <FrameFallback title="Invalid preset code" />;
   }
 
-  const compat = isShadcnPreviewSupported(config);
-  if (!compat.ok) {
+  if (compat && !compat.ok) {
     return (
       <FrameFallback
         title="Preview unavailable"
@@ -28,15 +40,16 @@ export function Preview02Frame({ code }: { code: string }) {
     );
   }
 
-  const src = `${SHADCN_PREVIEW_BASE}?preset=${encodeURIComponent(code)}`;
-
   return (
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <iframe
-        key={src}
         src={src}
         title="Preset preview"
-        className="z-10 size-full flex-1 border-0"
+        onLoad={() => setLoadedSrc(src)}
+        className={cn(
+          "z-10 size-full flex-1 border-0 transition-opacity duration-150",
+          isLoaded ? "opacity-100" : "opacity-70",
+        )}
       />
     </div>
   );

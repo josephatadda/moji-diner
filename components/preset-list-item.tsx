@@ -2,7 +2,8 @@
 
 import { FavouriteIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
+import { useState } from "react";
 
 import type { PresetWithColors } from "@/lib/services/presets";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,17 @@ function formatFontLabel(slug: string): string {
     .join(" ");
 }
 
+function ItemPendingOverlay() {
+  const { pending } = useLinkStatus();
+  return (
+    <span
+      aria-hidden
+      data-pending={pending || undefined}
+      className="pointer-events-none absolute inset-0 rounded-lg bg-accent/0 transition-colors duration-150 data-[pending]:bg-accent/50"
+    />
+  );
+}
+
 export function PresetListItem({ preset, isActive, queryString }: Props) {
   const href = `/feed/${preset.code}${queryString}`;
   const displayName = preset.name ?? preset.code.slice(0, 10);
@@ -27,6 +39,8 @@ export function PresetListItem({ preset, isActive, queryString }: Props) {
   const fonts = preset.fonts;
   const dots = colors ? [colors.primary, colors.chart1, colors.card] : [];
   const likes = preset.likesCount;
+
+  const [intent, setIntent] = useState(false);
 
   const fontCaption = fonts
     ? fonts.heading === fonts.sans
@@ -37,13 +51,17 @@ export function PresetListItem({ preset, isActive, queryString }: Props) {
   return (
     <Link
       href={href}
-      prefetch={false}
+      prefetch={intent ? null : false}
+      onMouseEnter={() => setIntent(true)}
+      onFocus={() => setIntent(true)}
+      onTouchStart={() => setIntent(true)}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "flex items-start gap-3 rounded-lg border px-2.5 py-2 transition-colors hover:bg-accent/40",
+        "relative flex items-start gap-3 rounded-lg border px-2.5 py-2 transition-colors hover:bg-accent/40",
         isActive ? "border-border bg-card" : "border-border/40 bg-card/30",
       )}
     >
+      <ItemPendingOverlay />
       <div className="flex shrink-0 -space-x-1">
         {dots.length === 0 ? (
           <div className="size-4 rounded-full border border-border/60 bg-muted" />

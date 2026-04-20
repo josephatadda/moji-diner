@@ -50,6 +50,10 @@ export default function RootLayout({
         spaceGroteskHeading.variable,
       )}
     >
+      <head>
+        <link rel="preconnect" href="https://ui.shadcn.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://ui.shadcn.com" />
+      </head>
       <body className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
         <NuqsAdapter>
           <ThemeProvider

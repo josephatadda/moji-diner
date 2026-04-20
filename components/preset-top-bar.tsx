@@ -3,6 +3,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { PresetActions } from "@/components/preset-actions";
 import { PresetContextSync } from "@/components/preset-context-sync";
+import { PresetLikeSlot } from "@/components/preset-like-slot";
 import { PresetNav } from "@/components/preset-nav";
 import { PresetSidebarToggle } from "@/components/preset-sidebar-toggle";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +13,11 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   preset: PresetSummary;
-  isLiked: boolean;
   prev: string | null;
   next: string | null;
 };
 
-export function PresetTopBar({ preset, isLiked, prev, next }: Props) {
+export function PresetTopBar({ preset, prev, next }: Props) {
   const displayName = preset.name ?? preset.code.slice(0, 12);
   const shortCode = preset.code.slice(0, 8);
 
@@ -58,9 +58,12 @@ export function PresetTopBar({ preset, isLiked, prev, next }: Props) {
         <PresetNav currentCode={preset.code} prev={prev} next={next} />
         <PresetActions
           code={preset.code}
-          presetId={preset.id}
-          initialLiked={isLiked}
-          initialLikes={preset.likesCount}
+          likeSlot={
+            <PresetLikeSlot
+              presetId={preset.id}
+              initialLikes={preset.likesCount}
+            />
+          }
         />
       </div>
     </header>

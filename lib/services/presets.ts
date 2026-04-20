@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, lt, sql } from "drizzle-orm";
+import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { cache } from "react";
 import { decodePreset, encodePreset, type PresetConfig } from "shadcn/preset";
 import { db } from "@/lib/db/client";
@@ -231,43 +231,37 @@ export async function listPresets(
   return { items: page.map(rowToSummary), nextCursor };
 }
 
-export async function getPresetByCode(
-  code: string,
-): Promise<PresetSummary | null> {
-  const rows = await db
-    .select()
-    .from(preset)
-    .where(eq(preset.code, code))
-    .limit(1);
-  const row = rows[0];
-  return row ? rowToSummary(row) : null;
-}
+export const getPresetByCode = cache(
+  async (code: string): Promise<PresetSummary | null> => {
+    const rows = await db
+      .select()
+      .from(preset)
+      .where(eq(preset.code, code))
+      .limit(1);
+    const row = rows[0];
+    return row ? rowToSummary(row) : null;
+  },
+);
 
-export async function getAdjacentCodes(
-  currentCode: string,
-): Promise<{ prev: string | null; next: string | null }> {
-  const [current] = await db
-    .select({ id: preset.id })
-    .from(preset)
-    .where(eq(preset.code, currentCode))
-    .limit(1);
-  if (!current) return { prev: null, next: null };
-  const [prevRow, nextRow] = await Promise.all([
-    db
-      .select({ code: preset.code })
-      .from(preset)
-      .where(gt(preset.id, current.id))
-      .orderBy(asc(preset.id))
-      .limit(1),
-    db
-      .select({ code: preset.code })
-      .from(preset)
-      .where(lt(preset.id, current.id))
-      .orderBy(desc(preset.id))
-      .limit(1),
-  ]);
-  return { prev: prevRow[0]?.code ?? null, next: nextRow[0]?.code ?? null };
-}
+export const getAdjacentCodes = cache(
+  async (
+    currentCode: string,
+  ): Promise<{ prev: string | null; next: string | null }> => {
+    const result = await db.execute<{
+      prev: string | null;
+      next: string | null;
+    }>(sql`
+      SELECT
+        (SELECT code FROM ${preset} WHERE id > p.id ORDER BY id ASC LIMIT 1) AS prev,
+        (SELECT code FROM ${preset} WHERE id < p.id ORDER BY id DESC LIMIT 1) AS next
+      FROM ${preset} AS p
+      WHERE p.code = ${currentCode}
+      LIMIT 1
+    `);
+    const row = result.rows[0];
+    return { prev: row?.prev ?? null, next: row?.next ?? null };
+  },
+);
 
 export async function getRandomCode(exclude?: string): Promise<string | null> {
   const rows = await db

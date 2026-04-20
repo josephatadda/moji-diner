@@ -16,7 +16,6 @@ export function PresetContextSync({ code, presetId, prev, next }: Props) {
 
   useEffect(() => {
     setCurrent({ code, presetId, prev, next });
-    return () => setCurrent(null);
   }, [code, presetId, prev, next, setCurrent]);
 
   return null;
