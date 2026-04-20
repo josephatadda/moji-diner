@@ -4,6 +4,7 @@ import {
   ArrowUpRight01Icon,
   Copy01Icon,
   Download01Icon,
+  NewTwitterIcon,
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -41,6 +42,16 @@ export function PresetActions({
     code,
   )}`;
 
+  const shareOnX = () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const shareUrl = `${origin}/feed/${encodeURIComponent(code)}`;
+    const text = `--preset=${code}`;
+    const intent = `https://x.com/intent/post?text=${encodeURIComponent(
+      text,
+    )}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(intent, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="flex items-center gap-0.5">
       <Button
@@ -72,6 +83,16 @@ export function PresetActions({
           </Button>
         }
       />
+
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={shareOnX}
+        aria-label="Share on X"
+        title="Share on X"
+      >
+        <HugeiconsIcon icon={NewTwitterIcon} size={16} />
+      </Button>
 
       <Button
         variant="ghost"

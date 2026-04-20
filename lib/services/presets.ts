@@ -113,6 +113,40 @@ export async function extractColors(
   };
 }
 
+export type PresetDarkColors = {
+  primary: string;
+  primaryForeground: string;
+  card: string;
+  background: string;
+  foreground: string;
+  muted: string;
+  mutedForeground: string;
+  border: string;
+  chart1: string;
+  destructive: string;
+};
+
+export async function extractDarkColors(
+  code: string,
+): Promise<PresetDarkColors | null> {
+  const config = decodePreset(code);
+  if (!config) return null;
+  const cssVars = await resolvePresetVars(config);
+  const merged = { ...(cssVars.theme ?? {}), ...(cssVars.dark ?? {}) };
+  return {
+    primary: merged.primary ?? "oklch(0.9 0 0)",
+    primaryForeground: merged["primary-foreground"] ?? "oklch(0.2 0 0)",
+    card: merged.card ?? "oklch(0.16 0 0)",
+    background: merged.background ?? "oklch(0.08 0 0)",
+    foreground: merged.foreground ?? "oklch(0.96 0 0)",
+    muted: merged.muted ?? "oklch(0.2 0 0)",
+    mutedForeground: merged["muted-foreground"] ?? "oklch(0.65 0 0)",
+    border: merged.border ?? "oklch(0.25 0 0)",
+    chart1: merged["chart-1"] ?? "oklch(0.7 0 0)",
+    destructive: merged.destructive ?? "oklch(0.6 0.2 25)",
+  };
+}
+
 export function extractFonts(code: string): PresetFonts | null {
   const config = decodePreset(code);
   if (!config) return null;
