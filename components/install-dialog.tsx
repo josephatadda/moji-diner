@@ -1,7 +1,6 @@
 "use client";
 
 import { useAtom } from "jotai";
-import { toast } from "sonner";
 import {
   CodeBlockCommand,
   convertNpmCommand,
@@ -31,18 +30,36 @@ export function InstallDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Apply this preset</DialogTitle>
           <DialogDescription>
-            Run the command below in your shadcn project to apply these tokens.
+            Start a new project with this preset, or apply it to an existing
+            shadcn project.
           </DialogDescription>
         </DialogHeader>
-        <div className="contents [--code:var(--popover)]">
-          <CodeBlockCommand
-            {...convertNpmCommand(`npx shadcn apply ${code}`)}
-            prompt={`Apply the preset ${code} to this shadcn project`}
-          />
+        <div className="[--code:var(--popover)] flex min-w-0 flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-2">
+            <span className="text-xs font-medium text-foreground">
+              Start a new project
+            </span>
+            <CodeBlockCommand
+              {...convertNpmCommand(
+                `npx shadcn@latest init --preset ${code} --template next`,
+              )}
+              prompt={`Scaffold a new Next.js shadcn project with preset ${code}`}
+            />
+          </div>
+          {/* <span className="self-center text-xs text-muted-foreground">or</span> */}
+          <div className="flex min-w-0 flex-col gap-2">
+            <span className="text-xs font-medium text-foreground">
+              Apply to an existing project
+            </span>
+            <CodeBlockCommand
+              {...convertNpmCommand(`npx shadcn apply --preset ${code}`)}
+              prompt={`Apply the preset ${code} to this shadcn project`}
+            />
+          </div>
         </div>
         <DialogFooter className="sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground sm:flex-1">
