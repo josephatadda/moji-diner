@@ -3,6 +3,7 @@
 import type { PresetSort, PresetSource } from "@/lib/domain/source-labels";
 import {
   extractColors,
+  extractFonts,
   getRandomCode,
   listPresets,
   type PresetWithColors,
@@ -31,6 +32,7 @@ export async function fetchPresetsAction(
     items.map(async (preset) => ({
       ...preset,
       colors: await extractColors(preset.code),
+      fonts: extractFonts(preset.code),
     })),
   );
   return { items: enriched, nextCursor };

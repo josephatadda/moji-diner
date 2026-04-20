@@ -4,7 +4,6 @@ import { FavouriteIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import type { PresetWithColors } from "@/lib/services/presets";
 import { cn } from "@/lib/utils";
 
@@ -14,12 +13,26 @@ type Props = {
   queryString: string;
 };
 
+function formatFontLabel(slug: string): string {
+  return slug
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export function PresetListItem({ preset, isActive, queryString }: Props) {
   const href = `/feed/${preset.code}${queryString}`;
   const displayName = preset.name ?? preset.code.slice(0, 10);
   const colors = preset.colors;
+  const fonts = preset.fonts;
   const dots = colors ? [colors.primary, colors.chart1, colors.card] : [];
   const likes = preset.likesCount;
+
+  const fontCaption = fonts
+    ? fonts.heading === fonts.sans
+      ? formatFontLabel(fonts.heading)
+      : `${formatFontLabel(fonts.heading)} · ${formatFontLabel(fonts.sans)}`
+    : null;
 
   return (
     <Link
@@ -27,39 +40,43 @@ export function PresetListItem({ preset, isActive, queryString }: Props) {
       prefetch={false}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "block rounded-lg border bg-card/30 p-2 transition-colors",
-        "hover:bg-accent/40",
-        isActive ? "border-border bg-card" : "border-border/40",
+        "flex items-start gap-3 rounded-lg border px-2.5 py-2 transition-colors hover:bg-accent/40",
+        isActive ? "border-border bg-card" : "border-border/40 bg-card/30",
       )}
     >
-      <div className="flex h-6 w-full overflow-hidden rounded-md border border-border/60">
+      <div className="flex shrink-0 -space-x-1">
         {dots.length === 0 ? (
-          <div className="flex-1 bg-muted" />
+          <div className="size-4 rounded-full border border-border/60 bg-muted" />
         ) : (
           dots.map((color, i) => (
             <div
               // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length swatch list
               key={i}
-              className="flex-1"
+              className="size-4 rounded-full border border-border/60 ring-1 ring-background"
               style={{ backgroundColor: color }}
             />
           ))
         )}
       </div>
-      <div className="mt-2 flex items-end justify-between gap-2">
-        <div className="min-w-0 truncate text-sm font-medium">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="truncate text-sm font-medium leading-5">
           {displayName}
         </div>
-        <Button size="xs" variant="outline">
-          <HugeiconsIcon
-            icon={FavouriteIcon}
-            size={12}
-            color="currentColor"
-            strokeWidth={1.5}
-          />
-          {likes}
-        </Button>
+        {fontCaption ? (
+          <div className="truncate text-[11px] text-muted-foreground leading-4">
+            {fontCaption}
+          </div>
+        ) : null}
       </div>
+      <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground tabular-nums">
+        <HugeiconsIcon
+          icon={FavouriteIcon}
+          size={12}
+          color="currentColor"
+          strokeWidth={1.5}
+        />
+        {likes}
+      </span>
     </Link>
   );
 }

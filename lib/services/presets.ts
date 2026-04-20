@@ -88,8 +88,14 @@ export type PresetColors = {
   destructive: string;
 };
 
+export type PresetFonts = {
+  sans: string;
+  heading: string;
+};
+
 export type PresetWithColors = PresetSummary & {
   colors: PresetColors | null;
+  fonts: PresetFonts | null;
 };
 
 export async function extractColors(
@@ -107,13 +113,27 @@ export async function extractColors(
   };
 }
 
+export function extractFonts(code: string): PresetFonts | null {
+  const config = decodePreset(code);
+  if (!config) return null;
+  return {
+    sans: config.font,
+    heading:
+      config.fontHeading === "inherit" ? config.font : config.fontHeading,
+  };
+}
+
 export const listPresetsWithColors = cache(
   async (
     filters: ListFilters = {},
   ): Promise<{ items: PresetWithColors[]; nextCursor: string | null }> => {
     const { items, nextCursor } = await listPresets(filters);
     const enriched = await Promise.all(
-      items.map(async (p) => ({ ...p, colors: await extractColors(p.code) })),
+      items.map(async (p) => ({
+        ...p,
+        colors: await extractColors(p.code),
+        fonts: extractFonts(p.code),
+      })),
     );
     return { items: enriched, nextCursor };
   },
