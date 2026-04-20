@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import {
-  extractDarkColors,
+  extractDarkVars,
   getPresetByCode,
   resolvePresetConfig,
 } from "@/lib/services/presets";
@@ -18,9 +18,19 @@ const RADIUS_PX: Record<string, number> = {
   large: 12,
 };
 
-const FALLBACK_COLORS = {
+const RADIUS_LABEL: Record<string, string> = {
+  none: "0rem",
+  small: "0.25rem",
+  default: "0.5rem",
+  medium: "0.625rem",
+  large: "0.75rem",
+};
+
+const FALLBACK = {
   primary: "#ededed",
-  primaryForeground: "#1a1a1a",
+  secondary: "#2a2a2a",
+  accent: "#2a2a2a",
+  destructive: "#ef4444",
   card: "#141414",
   background: "#0a0a0a",
   foreground: "#f5f5f5",
@@ -28,15 +38,21 @@ const FALLBACK_COLORS = {
   mutedForeground: "#a1a1a1",
   border: "#262626",
   chart1: "#9ca36b",
-  destructive: "#ef4444",
+  chart2: "#7a7f5a",
+  chart3: "#5f6346",
+  chart4: "#a8b082",
+  chart5: "#c5cc99",
 };
 
 // Satori's CSS parser in this Next.js build doesn't accept oklch(); convert to hex.
-function oklchToHex(input: string, fallback: string): string {
-  const m = input.match(
+function oklchToHex(input: string | undefined, fallback: string): string {
+  if (!input) return fallback;
+  const trimmed = input.trim();
+  if (trimmed.startsWith("#")) return trimmed;
+  const m = trimmed.match(
     /^oklch\(\s*([\d.]+%?)\s+([\d.]+%?)\s+([\d.]+)(?:deg)?\s*(?:\/\s*[\d.]+%?)?\s*\)$/i,
   );
-  if (!m) return input.startsWith("#") ? input : fallback;
+  if (!m) return fallback;
   const L = m[1].endsWith("%")
     ? Number.parseFloat(m[1]) / 100
     : Number.parseFloat(m[1]);
@@ -75,21 +91,12 @@ function oklchToHex(input: string, fallback: string): string {
   return `#${toHex(r)}${toHex(g)}${toHex(bl)}`;
 }
 
-function normalizeColors(raw: Record<string, string>): typeof FALLBACK_COLORS {
-  const pick = (key: keyof typeof FALLBACK_COLORS) =>
-    oklchToHex(raw[key] ?? FALLBACK_COLORS[key], FALLBACK_COLORS[key]);
-  return {
-    primary: pick("primary"),
-    primaryForeground: pick("primaryForeground"),
-    card: pick("card"),
-    background: pick("background"),
-    foreground: pick("foreground"),
-    muted: pick("muted"),
-    mutedForeground: pick("mutedForeground"),
-    border: pick("border"),
-    chart1: pick("chart1"),
-    destructive: pick("destructive"),
-  };
+function titleCase(slug: string | undefined): string {
+  if (!slug) return "—";
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
 function brandedFallback() {
@@ -123,25 +130,46 @@ export default async function OgImage({
     if (!preset) return brandedFallback();
 
     const config = resolvePresetConfig(preset.code);
-    const rawColors = await extractDarkColors(preset.code);
-    const colors = rawColors ? normalizeColors(rawColors) : FALLBACK_COLORS;
-    const r = RADIUS_PX[config?.radius ?? "default"] ?? 8;
+    const raw = (await extractDarkVars(preset.code)) ?? {};
+    const hex = (key: string, fb: string) => oklchToHex(raw[key], fb);
 
-    const cardStyle = {
-      display: "flex",
-      flexDirection: "column" as const,
-      background: colors.card,
-      border: `1px solid ${colors.border}`,
-      borderRadius: r * 2,
-      padding: 24,
-      width: 540,
-      height: 260,
+    const colors = {
+      primary: hex("primary", FALLBACK.primary),
+      secondary: hex("secondary", FALLBACK.secondary),
+      accent: hex("accent", FALLBACK.accent),
+      destructive: hex("destructive", FALLBACK.destructive),
+      card: hex("card", FALLBACK.card),
+      background: hex("background", FALLBACK.background),
+      foreground: hex("foreground", FALLBACK.foreground),
+      muted: hex("muted", FALLBACK.muted),
+      mutedForeground: hex("muted-foreground", FALLBACK.mutedForeground),
+      border: hex("border", FALLBACK.border),
+      chart1: hex("chart-1", FALLBACK.chart1),
+      chart2: hex("chart-2", FALLBACK.chart2),
+      chart3: hex("chart-3", FALLBACK.chart3),
+      chart4: hex("chart-4", FALLBACK.chart4),
+      chart5: hex("chart-5", FALLBACK.chart5),
     };
 
-    const previewCode =
-      preset.code.length > 28
-        ? `--preset=${preset.code.slice(0, 28)}…`
-        : `--preset=${preset.code}`;
+    const r = RADIUS_PX[config?.radius ?? "default"] ?? 8;
+    const radiusLabel = RADIUS_LABEL[config?.radius ?? "default"] ?? "0.5rem";
+
+    const swatches: Array<{ key: string; label: string; color: string }> = [
+      { key: "primary", label: "Primary", color: colors.primary },
+      { key: "secondary", label: "Secondary", color: colors.secondary },
+      { key: "accent", label: "Accent", color: colors.accent },
+      { key: "destructive", label: "Destructive", color: colors.destructive },
+      { key: "muted", label: "Muted", color: colors.muted },
+      { key: "chart1", label: "Chart 1", color: colors.chart1 },
+      { key: "chart2", label: "Chart 2", color: colors.chart2 },
+      { key: "chart3", label: "Chart 3", color: colors.chart3 },
+      { key: "chart4", label: "Chart 4", color: colors.chart4 },
+      { key: "chart5", label: "Chart 5", color: colors.chart5 },
+    ];
+
+    const displayName = preset.name ?? `--preset=${preset.code.slice(0, 12)}`;
+    const truncatedName =
+      displayName.length > 28 ? `${displayName.slice(0, 28)}…` : displayName;
 
     return new ImageResponse(
       <div
@@ -153,236 +181,129 @@ export default async function OgImage({
           background: colors.background,
           color: colors.foreground,
           fontFamily: "system-ui, sans-serif",
-          padding: 24,
+          padding: 48,
         }}
       >
+        {/* Top bar */}
         <div
           style={{
             display: "flex",
-            flexWrap: "wrap",
-            gap: 24,
-            width: "100%",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          {/* Contribution History */}
-          <div style={cardStyle}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ display: "flex", fontSize: 18, fontWeight: 600 }}>
-                Contribution History
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  borderRadius: 999,
-                  padding: "4px 10px",
-                  fontSize: 12,
-                  background: colors.muted,
-                  color: colors.mutedForeground,
-                }}
-              >
-                +12% vs last month
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                color: colors.mutedForeground,
-                fontSize: 14,
-                marginTop: 4,
-              }}
-            >
-              Last 6 months of activity
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-end",
-                gap: 14,
-                marginTop: 18,
-                height: 90,
-              }}
-            >
-              {[
-                { id: "dec", h: 42 },
-                { id: "jan", h: 70 },
-                { id: "feb", h: 52 },
-                { id: "mar", h: 60 },
-                { id: "apr", h: 36 },
-                { id: "may", h: 88 },
-              ].map((bar) => (
-                <div
-                  key={bar.id}
-                  style={{
-                    display: "flex",
-                    width: 42,
-                    height: bar.h,
-                    background: colors.chart1,
-                    borderRadius: r,
-                  }}
-                />
-              ))}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: 16,
-                marginTop: "auto",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  background: colors.muted,
-                  borderRadius: r * 1.5,
-                  padding: "8px 12px",
-                  flex: 1,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    color: colors.mutedForeground,
-                    fontSize: 10,
-                  }}
-                >
-                  UPCOMING
-                </div>
-                <div style={{ display: "flex", fontSize: 14, fontWeight: 600 }}>
-                  May 25
-                </div>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  background: colors.muted,
-                  borderRadius: r * 1.5,
-                  padding: "8px 12px",
-                  flex: 1,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    color: colors.mutedForeground,
-                    fontSize: 10,
-                  }}
-                >
-                  AUTO-SAVE
-                </div>
-                <div style={{ display: "flex", fontSize: 14, fontWeight: 600 }}>
-                  Accelerated
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Payout Threshold */}
-          <div style={cardStyle}>
-            <div style={{ display: "flex", fontSize: 18, fontWeight: 600 }}>
-              Payout Threshold
-            </div>
-            <div
-              style={{
-                display: "flex",
-                color: colors.mutedForeground,
-                fontSize: 14,
-                marginTop: 4,
-              }}
-            >
-              Set the minimum balance for payouts.
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginTop: 18,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  color: colors.mutedForeground,
-                  fontSize: 13,
-                }}
-              >
-                Minimum Payout
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 30,
-                  fontWeight: 700,
-                }}
-              >
-                $2500.00
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginTop: 12,
-                height: 6,
-                background: colors.muted,
-                borderRadius: 999,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  width: 240,
-                  height: 6,
-                  background: colors.primary,
-                  borderRadius: 999,
-                }}
-              />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                color: colors.mutedForeground,
-                fontSize: 11,
-                marginTop: 6,
-              }}
-            >
-              <div style={{ display: "flex" }}>$50 (MIN)</div>
-              <div style={{ display: "flex" }}>$10,000 (MAX)</div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: "auto",
-                background: colors.primary,
-                color: colors.primaryForeground,
-                borderRadius: 999,
-                padding: "10px 16px",
-                fontSize: 14,
-                fontWeight: 600,
-              }}
-            >
-              Save Threshold
-            </div>
-          </div>
-
-          {/* Distribute Track */}
           <div
             style={{
-              ...cardStyle,
+              display: "flex",
+              fontSize: 20,
+              fontWeight: 600,
+              letterSpacing: -0.3,
+            }}
+          >
+            dialectcn
+          </div>
+          <div
+            style={{
+              display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              padding: "6px 14px",
+              borderRadius: 999,
+              border: `1px solid ${colors.border}`,
+              fontSize: 13,
+              color: colors.mutedForeground,
+              fontFamily: "ui-monospace, monospace",
+            }}
+          >
+            --preset={preset.code.slice(0, 16)}
+            {preset.code.length > 16 ? "…" : ""}
+          </div>
+        </div>
+
+        {/* Title */}
+        <div
+          style={{
+            display: "flex",
+            fontSize: 64,
+            fontWeight: 700,
+            letterSpacing: -1.5,
+            marginTop: 28,
+          }}
+        >
+          {truncatedName}
+        </div>
+
+        {/* Color palette */}
+        <div
+          style={{
+            display: "flex",
+            gap: 14,
+            marginTop: 36,
+          }}
+        >
+          {swatches.map((s) => (
+            <div
+              key={s.key}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                width: 92,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  width: 92,
+                  height: 92,
+                  background: s.color,
+                  borderRadius: r * 1.5,
+                  border: `1px solid ${colors.border}`,
+                }}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  marginTop: 8,
+                  fontSize: 11,
+                  color: colors.mutedForeground,
+                }}
+              >
+                {s.label}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontSize: 11,
+                  color: colors.foreground,
+                  fontFamily: "ui-monospace, monospace",
+                }}
+              >
+                {s.color.toUpperCase()}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Info row: radius sample + typography + style/theme */}
+        <div
+          style={{
+            display: "flex",
+            marginTop: "auto",
+            gap: 28,
+            alignItems: "stretch",
+          }}
+        >
+          {/* Radius sample */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              width: 200,
+              height: 160,
+              padding: 20,
+              borderRadius: r * 2,
+              border: `1px solid ${colors.border}`,
+              background: colors.card,
             }}
           >
             <div
@@ -390,165 +311,175 @@ export default async function OgImage({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 44,
-                height: 44,
-                background: colors.muted,
-                borderRadius: r * 1.5,
-                fontSize: 28,
-              }}
-            >
-              +
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontSize: 18,
-                fontWeight: 600,
-                marginTop: 14,
-              }}
-            >
-              Distribute Track
-            </div>
-            <div
-              style={{
-                display: "flex",
-                color: colors.mutedForeground,
-                fontSize: 14,
-                marginTop: 6,
-              }}
-            >
-              Upload your first master to start reaching listeners.
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 16,
+                width: 72,
+                height: 72,
                 background: colors.primary,
-                color: colors.primaryForeground,
-                borderRadius: 999,
-                padding: "8px 18px",
-                fontSize: 14,
-                fontWeight: 600,
-              }}
-            >
-              Create Release
-            </div>
-          </div>
-
-          {/* Claimable Balance */}
-          <div style={cardStyle}>
-            <div
-              style={{
-                display: "flex",
-                color: colors.mutedForeground,
-                fontSize: 14,
-              }}
-            >
-              Claimable Balance
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontSize: 54,
+                borderRadius: r * 2,
+                fontSize: 34,
                 fontWeight: 700,
-                marginTop: 2,
+                color: oklchToHex(raw["primary-foreground"], "#1a1a1a"),
               }}
             >
-              $0.00
+              Aa
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                alignSelf: "flex-start",
-                marginTop: 6,
-                borderRadius: 999,
-                padding: "4px 10px",
-                fontSize: 12,
-                background: colors.muted,
-                color: colors.foreground,
-              }}
-            >
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <div
                 style={{
                   display: "flex",
-                  width: 6,
-                  height: 6,
-                  borderRadius: 999,
-                  background: colors.destructive,
-                  marginRight: 6,
+                  fontSize: 11,
+                  color: colors.mutedForeground,
                 }}
-              />
-              <div style={{ display: "flex" }}>Pending Setup</div>
+              >
+                RADIUS
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontSize: 16,
+                  fontWeight: 600,
+                }}
+              >
+                {titleCase(config?.radius)} · {radiusLabel}
+              </div>
+            </div>
+          </div>
+
+          {/* Typography */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              flex: 1,
+              height: 160,
+              padding: 20,
+              borderRadius: r * 2,
+              border: `1px solid ${colors.border}`,
+              background: colors.card,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                fontSize: 11,
+                color: colors.mutedForeground,
+              }}
+            >
+              TYPOGRAPHY
             </div>
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
-                marginTop: "auto",
-                background: colors.muted,
-                borderRadius: r * 1.5,
-                padding: "10px 14px",
                 gap: 6,
               }}
             >
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: 13,
+                  alignItems: "baseline",
+                  gap: 10,
                 }}
               >
                 <div
                   style={{
                     display: "flex",
+                    fontSize: 11,
                     color: colors.mutedForeground,
+                    width: 56,
                   }}
                 >
-                  Net Royalties
+                  HEADING
                 </div>
-                <div style={{ display: "flex" }}>$0.00</div>
+                <div style={{ display: "flex", fontSize: 18, fontWeight: 600 }}>
+                  {titleCase(
+                    config?.fontHeading === "inherit"
+                      ? config?.font
+                      : config?.fontHeading,
+                  )}
+                </div>
               </div>
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: 13,
+                  alignItems: "baseline",
+                  gap: 10,
                 }}
               >
                 <div
                   style={{
                     display: "flex",
+                    fontSize: 11,
                     color: colors.mutedForeground,
+                    width: 56,
                   }}
                 >
-                  Total Ready
+                  SANS
                 </div>
-                <div style={{ display: "flex", fontWeight: 600 }}>
-                  $0.00 USD
+                <div style={{ display: "flex", fontSize: 18, fontWeight: 600 }}>
+                  {titleCase(config?.font)}
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginTop: "auto",
-            paddingTop: 16,
-            fontSize: 14,
-            color: colors.mutedForeground,
-          }}
-        >
-          <div style={{ display: "flex", color: colors.foreground }}>
-            dialectcn
+          {/* Style & theme */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              width: 260,
+              height: 160,
+              padding: 20,
+              borderRadius: r * 2,
+              border: `1px solid ${colors.border}`,
+              background: colors.card,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                fontSize: 11,
+                color: colors.mutedForeground,
+              }}
+            >
+              STYLE · THEME
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+              }}
+            >
+              <div style={{ display: "flex", fontSize: 22, fontWeight: 700 }}>
+                {titleCase(config?.style)}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 14,
+                  color: colors.mutedForeground,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    width: 12,
+                    height: 12,
+                    borderRadius: 999,
+                    background: colors.primary,
+                  }}
+                />
+                <div style={{ display: "flex" }}>
+                  {titleCase(config?.theme)} · {titleCase(config?.baseColor)}
+                </div>
+              </div>
+            </div>
           </div>
-          <div style={{ display: "flex" }}>{previewCode}</div>
         </div>
       </div>,
       size,
