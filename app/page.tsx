@@ -1,120 +1,63 @@
-import { SpiralsIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { CookingPot, DeviceMobile, ChartBar, LockKey } from "@phosphor-icons/react/dist/ssr";
 
-const SWATCHES = [
-  "#0b1020",
-  "#2937f0",
-  "#8b5cf6",
-  "#ec4899",
-  "#f97316",
-  "#f59e0b",
-  "#10b981",
-  "#06b6d4",
-  "#111827",
-  "#ef4444",
-  "#22c55e",
-  "#a78bfa",
-];
-
-const FEATURES = [
-  {
-    title: "Brand-inspired",
-    body: "Palette and typography echoes drawn from recognizable brands.",
-  },
-  {
-    title: "Community-submitted",
-    body: "Presets shared by other designers, with likes and filters.",
-  },
-  {
-    title: "Randomly generated",
-    body: "Fresh combinations that surface unexpected pairings.",
-  },
-];
-
-export default function LandingPage() {
+export default function Home() {
   return (
-    <div className="h-full overflow-y-auto">
-      <section className="mx-auto w-full max-w-6xl px-6 pt-16 pb-12 sm:pt-24">
-        <div
-          className="flex animate-in items-center gap-2 fade-in-0 font-mono text-sm tracking-wide text-muted-foreground duration-500"
-          style={{ animationFillMode: "both" }}
-        >
-          <HugeiconsIcon icon={SpiralsIcon} size={12} strokeWidth={1.5} />
-          Dialectcn
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50 p-8">
+      {/* Logo */}
+      <div className="mb-8 flex flex-col items-center gap-3">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-200 text-white">
+          <span className="text-2xl"><CookingPot weight="bold" /></span>
         </div>
-        <h1
-          className="mt-6 max-w-[20ch] animate-in text-balance fade-in-0 font-heading text-5xl font-semibold tracking-tight duration-700 slide-in-from-bottom-4 sm:text-6xl lg:text-7xl"
-          style={{ animationDelay: "120ms", animationFillMode: "both" }}
-        >
-          Presets, ready to paste.
-        </h1>
-        <p
-          className="mt-6 max-w-[56ch] animate-in text-pretty fade-in-0 text-base text-muted-foreground duration-700 slide-in-from-bottom-4 sm:text-lg"
-          style={{ animationDelay: "220ms", animationFillMode: "both" }}
-        >
-          A living catalog of shadcn presets — brand-inspired,
-          community-submitted, and occasionally random. Pick one, copy the code,
-          ship the UI.
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Moji</h1>
+          <p className="text-gray-500 mt-1">Scan. Order. Pay. Done.</p>
+        </div>
+      </div>
+
+      {/* Quick navigation for prototype */}
+      <div className="w-full max-w-sm space-y-3">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider text-center mb-4">
+          Frontend Prototype Preview
         </p>
-        <div
-          className="mt-8 flex animate-in flex-wrap items-center gap-3 fade-in-0 duration-700 slide-in-from-bottom-4"
-          style={{ animationDelay: "320ms", animationFillMode: "both" }}
-        >
-          <Button size="lg" render={<Link href="/feed" />}>
-            Browse the feed
-          </Button>
-          <Button
-            size="lg"
-            variant="ghost"
-            render={
-              // biome-ignore lint/a11y/useAnchorContent: anchor content is rendered via Button children
-              <a
-                href="https://ui.shadcn.com/create"
-                target="_blank"
-                rel="noreferrer"
-              />
-            }
-          >
-            Create your own →
-          </Button>
-        </div>
-      </section>
-      <section className="mx-auto w-full max-w-6xl overflow-hidden px-6 pb-16">
-        <div
-          className="flex animate-in gap-1 fade-in-0 duration-700"
-          style={{ animationDelay: "500ms", animationFillMode: "both" }}
-        >
-          {SWATCHES.concat(SWATCHES).map((color, i) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: decorative swatch row
-              key={`${color}-${i}`}
-              className="h-10 flex-1 rounded-md transition-[flex-grow] duration-300 ease-out will-change-[flex-grow] hover:[flex-grow:2.4]"
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
-      </section>
-      <section className="mx-auto w-full max-w-6xl px-6 pb-24">
-        <dl className="grid gap-8 border-t pt-10 sm:grid-cols-3">
-          {FEATURES.map((f, i) => (
-            <div
-              key={f.title}
-              className="flex animate-in flex-col gap-2 fade-in-0 duration-700 slide-in-from-bottom-2"
-              style={{
-                animationDelay: `${650 + i * 100}ms`,
-                animationFillMode: "both",
-              }}
-            >
-              <dt className="font-heading text-sm font-semibold tracking-tight">
-                {f.title}
-              </dt>
-              <dd className="text-sm text-muted-foreground">{f.body}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+
+        <Link href="/mama-put-kitchen/t/1" className="flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-orange-200 transition-all group">
+          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center group-hover:bg-orange-500 transition-colors text-orange-600 group-hover:text-white">
+            <span className="text-lg"><DeviceMobile weight="fill" /></span>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900 text-sm">Diner Menu Experience</p>
+            <p className="text-xs text-gray-400">QR → Browse → Order → Pay</p>
+          </div>
+          <span className="ml-auto text-gray-300 group-hover:text-orange-400 transition-colors">→</span>
+        </Link>
+
+        <Link href="/dashboard" className="flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all group">
+          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-500 transition-colors text-blue-600 group-hover:text-white">
+            <span className="text-lg"><ChartBar weight="fill" /></span>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900 text-sm">Restaurant Dashboard</p>
+            <p className="text-xs text-gray-400">Menu · Orders · Tables · Analytics</p>
+          </div>
+          <span className="ml-auto text-gray-300 group-hover:text-blue-400 transition-colors">→</span>
+        </Link>
+
+        <Link href="/login" className="flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-gray-200 transition-all group">
+          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-gray-700 transition-colors text-gray-500 group-hover:text-white">
+            <span className="text-lg"><LockKey weight="fill" /></span>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900 text-sm">Auth & Onboarding</p>
+            <p className="text-xs text-gray-400">Signup → Login → Wizard</p>
+          </div>
+          <span className="ml-auto text-gray-300 group-hover:text-gray-500 transition-colors">→</span>
+        </Link>
+      </div>
+
+      <p className="mt-8 text-xs text-gray-400">
+        Frontend prototype — backend integration coming next
+      </p>
     </div>
   );
 }

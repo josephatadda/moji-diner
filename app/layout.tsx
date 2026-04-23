@@ -1,77 +1,49 @@
-import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
-import { DM_Sans, Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { GlobalHotkeys } from "@/components/global-hotkeys";
-import { LoginModal } from "@/components/login-modal";
-import { SubmitModal } from "@/components/submit-modal";
+import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const spaceGroteskHeading = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-heading",
-});
-const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 const geistSans = Geist({
   subsets: ["latin"],
-  variable: "--font-geist-sans",
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700"],
 });
+
 const geistMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "dialectcn — Curated shadcn presets",
-    template: "%s · dialectcn",
+    default: "Moji — Scan. Order. Pay. Done.",
+    template: "%s | Moji",
   },
   description:
-    "Browse brand-inspired, community-submitted, and randomly generated shadcn presets.",
+    "Moji powers QR-based ordering for Nigerian restaurants. Scan, browse the menu, order and pay — no app required.",
+  keywords: ["QR ordering", "restaurant", "Nigeria", "digital menu", "contactless ordering"],
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn(
-        "h-dvh antialiased",
-        "font-sans",
-        geistSans.variable,
-        geistMono.variable,
-        dmSans.variable,
-        spaceGroteskHeading.variable,
-      )}
-    >
-      <head>
-        <link rel="preconnect" href="https://ui.shadcn.com" crossOrigin="" />
-        <link rel="dns-prefetch" href="https://ui.shadcn.com" />
-      </head>
-      <body className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
-        <NuqsAdapter>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <TooltipProvider>
-              <main className="flex min-h-0 flex-1 flex-col">{children}</main>
-              <SubmitModal />
-              <LoginModal />
-              <GlobalHotkeys />
-              <Toaster />
-            </TooltipProvider>
-          </ThemeProvider>
-        </NuqsAdapter>
-        <Analytics />
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="antialiased bg-background text-foreground font-sans">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+          <Toaster richColors closeButton />
+        </ThemeProvider>
       </body>
     </html>
   );
