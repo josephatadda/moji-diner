@@ -1,130 +1,92 @@
 "use client";
 
 import { useState } from "react";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
-import { cn } from "@/lib/utils";
-import { Trophy } from "@phosphor-icons/react";
+import { ModalContainer } from "./ui/ModalContainer";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { WhatsappLogo, User, Trophy, ArrowRight } from "@phosphor-icons/react";
 
 interface PhoneCaptureModalProps {
   open: boolean;
   onClose: () => void;
-  onSkip: () => void;
   onConfirm: (name: string, phone: string) => void;
-  isReturning?: boolean;
+  onSkip: () => void;
   existingPoints?: number;
+  isReturning?: boolean;
 }
 
 export function PhoneCaptureModal({
   open,
   onClose,
-  onSkip,
   onConfirm,
-  isReturning,
-  existingPoints,
+  onSkip,
+  existingPoints = 0,
+  isReturning = false,
 }: PhoneCaptureModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [error, setError] = useState("");
-
-  const validate = (value: string) => {
-    setError("");
-    const digits = value.replace(/\D/g, "");
-    if (digits.length === 11 && digits.startsWith("0")) return true;
-    if (digits.length === 10) return true;
-    return false;
-  };
-
-  const handleConfirm = () => {
-    if (!name.trim()) {
-      setError("Please enter your name");
-      return;
-    }
-    if (!validate(phone)) {
-      setError("Enter a valid Nigerian phone number (e.g. 0801 234 5678)");
-      return;
-    }
-    onConfirm(name, phone);
-    onClose();
-  };
 
   return (
-    <Drawer open={open} onOpenChange={(o) => !o && onClose()}>
-      <DrawerContent>
-        <DrawerHeader className="px-5 pt-8 pb-6 flex flex-col items-center text-center">
-          <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-600">
-            <span className="text-2xl"><Trophy /></span>
-          </div>
-          <DrawerTitle className="text-2xl font-bold text-gray-900 mb-2">
-            Earn Loyalty Points
-          </DrawerTitle>
-          <DrawerDescription className="text-sm text-gray-500 leading-relaxed">
-            Drop your name and phone number to earn points on this order — and every visit.
-          </DrawerDescription>
-        </DrawerHeader>
-
-        <div className="px-5 pb-8 space-y-6">
-          {isReturning && existingPoints !== undefined && (
-            <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 flex items-center gap-3">
-              <span className="text-2xl text-orange-600"><Trophy /></span>
-              <div>
-                <p className="font-semibold text-orange-800 text-sm">Welcome back!</p>
-                <p className="text-xs text-orange-600 mt-0.5">
-                  You have {existingPoints.toLocaleString()} points · Silver tier
-                </p>
-              </div>
+    <ModalContainer
+      isOpen={open}
+      onDismiss={onClose}
+      title={isReturning ? "Welcome back!" : "Join Moji Rewards"}
+      subtitle={isReturning ? "Confirm your details to earn points on this order." : "Earn loyalty points and get your receipt on WhatsApp."}
+    >
+      <div className="space-y-[var(--space-6)] py-[var(--space-2)]">
+        {/* Loyalty Perk Card */}
+        <div className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-muted-fg)] rounded-[var(--radius-lg)] p-[var(--space-4)] text-[var(--color-background)]">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-[var(--color-background)]/20 rounded-full flex items-center justify-center">
+              <Trophy size={20} weight="fill" />
             </div>
-          )}
-
-          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Your name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Tunde"
-                className="w-full px-4 h-12 border border-gray-200 rounded-xl text-base focus:border-gray-400 focus:outline-none transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Your phone number
-              </label>
-              <input
-                type="tel"
-                inputMode="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="0801 234 5678"
-                className={cn(
-                  "w-full px-4 h-12 border rounded-xl text-base focus:outline-none transition-colors",
-                  error ? "border-red-300 bg-red-50" : "border-gray-200 focus:border-gray-400"
-                )}
-              />
-              {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">Current Balance</p>
+              <p className="text-[var(--font-size-heading)] font-black leading-none">{existingPoints.toLocaleString()} Points</p>
             </div>
           </div>
-
-          <div className="space-y-3 pt-2">
-            <button
-              onClick={handleConfirm}
-              className="w-full h-12 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-700 active:scale-[0.97] transition-all ease-out"
-            >
-              Earn Points & Place Order
-            </button>
-
-            <button
-              onClick={() => { onSkip(); onClose(); }}
-              className="w-full py-3 text-gray-500 font-medium text-sm hover:text-gray-700 transition-colors"
-            >
-              Skip — Place order without points
-            </button>
-          </div>
+          <p className="text-[var(--font-size-muted)] opacity-80 leading-relaxed">
+            You're only 250 points away from a <span className="font-bold underline">Free Drink</span> at this restaurant!
+          </p>
         </div>
-      </DrawerContent>
-    </Drawer>
+
+        <div className="space-y-[var(--space-4)]">
+          <Input 
+            label="Your Name"
+            placeholder="e.g. John Doe"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            icon={<User size={20} />}
+          />
+          <Input 
+            label="WhatsApp Number"
+            placeholder="0801 234 5678"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            icon={<WhatsappLogo size={20} weight="fill" className="text-[#25D366]" />}
+          />
+        </div>
+
+        <div className="pt-[var(--space-2)] space-y-[var(--space-3)]">
+          <Button 
+            fullWidth 
+            size="lg" 
+            disabled={!name || phone.length < 10} 
+            onClick={() => onConfirm(name, phone)}
+            rightIcon={<ArrowRight size={20} weight="bold" />}
+          >
+            Continue to Order
+          </Button>
+          <Button variant="ghost" fullWidth onClick={onSkip}>
+            Skip for now
+          </Button>
+        </div>
+
+        <p className="text-[var(--font-size-muted)] text-[var(--color-muted)] text-center px-4">
+          By continuing, you agree to receive order updates and receipts via WhatsApp.
+        </p>
+      </div>
+    </ModalContainer>
   );
 }
