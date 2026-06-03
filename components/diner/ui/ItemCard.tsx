@@ -1,93 +1,102 @@
 "use client";
 
+import type { CartItem } from "@/store/cart";
 import { cn } from "@/lib/utils";
-import { Plus, Minus, CaretRight, BowlFood } from "@phosphor-icons/react";
-import { Button } from "./Button";
+import { formatModifiers, hasModifiers } from "@/lib/diner-utils";
+import { BowlFood } from "@phosphor-icons/react";
+import { DINER } from "./diner-tokens";
 
-interface ItemCardProps {
-  variant?: "menu" | "cart" | "order" | "selectable";
-  name: string;
-  price: number;
-  description?: string;
-  quantity?: number;
-  modifiers?: string[];
-  note?: string;
-  isSelected?: boolean;
-  onSelect?: () => void;
-  onUpdateQuantity?: (q: number) => void;
-  onClick?: () => void;
+interface ItemCardBaseProps {
+  item: CartItem;
 }
 
-export function ItemCard({
-  variant = "menu",
-  name,
-  price,
-  description,
-  quantity,
-  modifiers,
-  note,
-  isSelected,
-  onSelect,
-  onUpdateQuantity,
-  onClick,
-}: ItemCardProps) {
-  const isMenu = variant === "menu";
-  const isCart = variant === "cart";
-  const isOrder = variant === "order";
-  const isSelectable = variant === "selectable";
+interface CartVariantProps extends ItemCardBaseProps {
+  variant: "cart";
+  onIncrement: () => void;
+  onDecrement: () => void;
+}
 
+interface OrderVariantProps extends ItemCardBaseProps {
+  variant: "order";
+}
+
+interface SelectableVariantProps extends ItemCardBaseProps {
+  variant: "selectable";
+  selected: boolean;
+  onToggle: () => void;
+}
+
+type ItemCardProps = CartVariantProps | OrderVariantProps | SelectableVariantProps;
+
+export function ItemCard(props: ItemCardProps) {
+  const { item, variant } = props;
+  const mods = hasModifiers(item.selectedModifiers) ? formatModifiers(item.selectedModifiers) : null;
+
+  if (variant === "order") {
+    return (
+      <div className="flex justify-between items-center px-4 py-3 text-sm">
+        <div className="min-w-0 flex-1">
+          <p className={DINER.cardTitle}>{item.quantity}× {item.itemName}</p>
+          {mods && <p className={DINER.caption}>{mods}</p>}
+          {item.specialNote && <p className="text-xs text-blue-500 mt-0.5 italic">"{item.specialNote}"</p>}
+        </div>
+        <span className={cn(DINER.price, "ml-3 flex-none")}>₦{item.lineTotal.toLocaleString()}</span>
+      </div>
+    );
+  }
+
+  if (variant === "selectable") {
+    const { selected, onToggle } = props as SelectableVariantProps;
+    return (
+      <div
+        onClick={onToggle}
+        className={cn(
+          "flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-colors",
+          selected ? "border-gray-900 bg-gray-50" : "border-gray-100 bg-white hover:border-gray-300"
+        )}
+      >
+        <div className={cn(
+          "w-5 h-5 rounded border flex items-center justify-center flex-none",
+          selected ? "bg-gray-900 border-gray-900 text-white" : "border-gray-300"
+        )}>
+          {selected && <span className="text-xs font-bold">✓</span>}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={DINER.cardTitle}>{item.quantity}× {item.itemName}</p>
+          <p className={cn(DINER.price, "mt-0.5")}>₦{item.lineTotal.toLocaleString()}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // variant === "cart"
+  const { onIncrement, onDecrement } = props as CartVariantProps;
   return (
-    <div 
-      onClick={onClick || onSelect}
-      className={cn(
-        "group relative flex gap-[var(--space-3)] p-[var(--space-3)] bg-[var(--color-background)] border transition-all duration-200",
-        isSelectable ? "rounded-[var(--radius-lg)]" : "rounded-[var(--radius-lg)] border-[var(--color-border)] shadow-sm",
-        isSelectable && isSelected ? "border-[var(--color-primary)] bg-[var(--color-surface)]" : isSelectable ? "border-[var(--color-border)]" : "",
-        onClick || onSelect ? "cursor-pointer active:scale-[0.99]" : ""
-      )}
-    >
-      <div className="w-14 h-14 bg-[var(--color-surface)] rounded-[var(--radius-md)] flex items-center justify-center text-[var(--color-muted-fg)] flex-none">
-        <BowlFood size={28} weight="duotone" />
+    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
+      <div className="w-12 h-12 bg-white shadow-sm border border-gray-100 rounded-xl flex items-center justify-center flex-none text-gray-400">
+        <BowlFood size={20} />
       </div>
       <div className="flex-1 min-w-0 flex flex-col justify-center">
-        <div className="flex justify-between items-start">
-          <h4 className="text-[var(--font-size-body)] font-bold text-[var(--color-primary)] leading-tight truncate">
-            {isOrder && quantity && <span className="text-[var(--color-primary)] mr-1.5 opacity-60">{quantity}×</span>}
-            {name}
-          </h4>
-          {!isCart && !isOrder && <span className="text-[var(--font-size-body)] font-black text-[var(--color-primary)]">₦{price.toLocaleString()}</span>}
-        </div>
-        {description && isMenu && <p className="text-[var(--font-size-muted)] text-[var(--color-muted)] mt-1 line-clamp-2">{description}</p>}
-        {modifiers && modifiers.length > 0 && (
-          <p className="text-[var(--font-size-muted)] text-[var(--color-muted-fg)] mt-0.5 truncate italic">
-            {modifiers.join(", ")}
-          </p>
-        )}
-        {note && <p className="text-[var(--font-size-muted)] text-[var(--color-primary)] opacity-60 mt-0.5 italic">"{note}"</p>}
-        {(isCart || isOrder) && (
-          <p className="text-[var(--font-size-body)] font-black text-[var(--color-primary)] mt-1">₦{price.toLocaleString()}</p>
-        )}
+        <p className={cn(DINER.cardTitle, "leading-tight truncate")}>{item.itemName}</p>
+        {mods && <p className="text-xs text-gray-500 mt-0.5 truncate">{mods}</p>}
+        {item.specialNote && <p className="text-xs text-blue-500 mt-0.5 italic truncate">"{item.specialNote}"</p>}
+        <p className={cn(DINER.price, "mt-1")}>₦{item.lineTotal.toLocaleString()}</p>
       </div>
-      {isCart && onUpdateQuantity && quantity !== undefined && (
-        <div className="flex items-center gap-1.5 flex-none ml-2">
-          <Button variant="icon" size="icon-xs" onClick={(e) => { e.stopPropagation(); onUpdateQuantity(quantity - 1); }} className="bg-[var(--color-surface)]">
-            <Minus size={12} weight="bold" />
-          </Button>
-          <span className="w-5 text-center text-sm font-black text-[var(--color-primary)]">{quantity}</span>
-          <Button variant="icon" size="icon-xs" onClick={(e) => { e.stopPropagation(); onUpdateQuantity(quantity + 1); }} className="bg-[var(--color-primary)] text-[var(--color-background)]">
-            <Plus size={12} weight="bold" />
-          </Button>
-        </div>
-      )}
-      {isMenu && <CaretRight size={16} className="text-[var(--color-muted-fg)] opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all self-center" />}
-      {isSelectable && (
-        <div className={cn(
-          "w-5 h-5 rounded-full border-2 flex items-center justify-center self-center transition-all",
-          isSelected ? "bg-[var(--color-primary)] border-[var(--color-primary)]" : "border-[var(--color-border)] bg-transparent"
-        )}>
-          {isSelected && <span className="w-1.5 h-1.5 bg-[var(--color-background)] rounded-full" />}
-        </div>
-      )}
+      <div className="flex items-center gap-1.5 flex-none">
+        <button
+          onClick={onDecrement}
+          className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 font-bold active:scale-[0.97] transition-all ease-out"
+        >
+          −
+        </button>
+        <span className="w-5 text-center text-sm font-bold">{item.quantity}</span>
+        <button
+          onClick={onIncrement}
+          className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center font-bold active:scale-[0.97] transition-all ease-out"
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }

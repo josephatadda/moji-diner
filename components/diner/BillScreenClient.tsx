@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BillView } from "./BillView";
 import { SplitBillModal } from "./SplitBillModal";
 import { useCartStore } from "@/store/cart";
+import { calculateBill } from "@/lib/diner-utils";
 
 interface Props {
   restaurantSlug: string;
@@ -18,8 +19,7 @@ export function BillScreenClient({ restaurantSlug, tableNumber, restaurantName, 
   const { sessionBatches } = useCartStore();
 
   const sub = sessionBatches.reduce((sum, b) => sum + b.items.reduce((s, i) => s + i.lineTotal, 0), 0);
-  const vat = vatEnabled ? sub * (vatRate / 100) : 0;
-  const total = sub + vat;
+  const { vat, total } = calculateBill({ subtotal: sub, vatRate, vatEnabled });
 
   if (screen === "split") {
     return (

@@ -2,7 +2,6 @@ import { DinerShell } from "@/components/diner/DinerShell";
 import { CartScreen } from "@/components/diner/CartScreen";
 import { CartContextProvider } from "@/components/diner/CartContextProvider";
 import { MOCK_RESTAURANT } from "@/lib/mockData";
-import Link from "next/link";
 
 interface Props {
   params: Promise<{ restaurantSlug: string; tableNumber: string }>;
@@ -25,16 +24,6 @@ export default async function CartPage({ params }: Props) {
         restaurantSlug={restaurantSlug}
         tableNumber={tableNum}
       >
-        <div className="px-0 pt-2">
-          <div className="px-4 mb-2">
-            <Link
-              href={`/${restaurantSlug}/t/${tableNumber}`}
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-700 transition-colors"
-            >
-              ← Back to menu
-            </Link>
-          </div>
-        </div>
         <CartScreen
           restaurantSlug={restaurantSlug}
           tableNumber={tableNum}

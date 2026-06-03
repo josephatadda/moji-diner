@@ -4,9 +4,9 @@ import { useState } from "react";
 import type { MenuItem } from "@/lib/mockData";
 import { useCartStore } from "@/store/cart";
 import { ItemDetailModal } from "./ItemDetailModal";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { BowlFood, Star } from "@phosphor-icons/react";
+import { DINER } from "./ui/diner-tokens";
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -26,7 +26,7 @@ const TAG_COLORS: Record<string, string> = {
 
 export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCardProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const { items: cartItems, addItem, updateQuantity, removeItem } = useCartStore();
+  const { items: cartItems, addItem, updateQuantity } = useCartStore();
 
   const cartEntry = cartItems.find((ci) => ci.menuItemId === item.id);
   const hasModifiers = item.modifierGroups.length > 0;
@@ -47,7 +47,7 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
           "flex gap-3 p-3 rounded-2xl border transition-all",
           item.isAvailable
             ? "bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm"
-            : "bg-gray-50 border-gray-100 opacity-60"
+            : "bg-gray-50 border-gray-100 opacity-60",
         )}
       >
         {/* Thumbnail */}
@@ -55,22 +55,20 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
           onClick={() => item.isAvailable && setModalOpen(true)}
           className={cn(
             "flex-none w-20 h-20 rounded-xl overflow-hidden relative",
-            item.isAvailable && "cursor-pointer"
+            item.isAvailable && "cursor-pointer",
           )}
         >
           <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-500">
-            <span className="text-3xl"><BowlFood /></span>
+            <BowlFood size={28} />
           </div>
           {!item.isAvailable && (
             <div className="absolute inset-0 bg-gray-100/80 flex items-center justify-center">
-              <span className="text-[10px] font-bold text-gray-500 bg-white px-1.5 py-0.5 rounded-full">
-                Sold Out
-              </span>
+              <span className="text-[10px] font-bold text-gray-500 bg-white px-1.5 py-0.5 rounded-full">Sold Out</span>
             </div>
           )}
           {item.isFeatured && item.isAvailable && (
             <span className="absolute top-1 left-1 text-[9px] font-bold bg-orange-500 text-white p-1 rounded-full flex items-center justify-center">
-              <Star />
+              <Star size={10} weight="fill" />
             </span>
           )}
         </div>
@@ -81,11 +79,9 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
             onClick={() => item.isAvailable && setModalOpen(true)}
             className={item.isAvailable ? "cursor-pointer" : undefined}
           >
-            <p className="font-semibold text-gray-900 text-sm leading-snug">{item.name}</p>
+            <p className={cn(DINER.cardTitle, "leading-snug")}>{item.name}</p>
             {item.description && (
-              <p className="text-xs text-gray-400 mt-0.5 line-clamp-2 leading-relaxed">
-                {item.description}
-              </p>
+              <p className={cn(DINER.caption, "mt-0.5 line-clamp-2 leading-relaxed")}>{item.description}</p>
             )}
           </div>
 
@@ -97,7 +93,7 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
                   key={tag}
                   className={cn(
                     "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
-                    TAG_COLORS[tag] ?? "bg-gray-100 text-gray-600"
+                    TAG_COLORS[tag] ?? "bg-gray-100 text-gray-600",
                   )}
                 >
                   {tag}
@@ -109,41 +105,33 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
           {/* Price + action */}
           <div className="flex items-center justify-between mt-2">
             <div>
-              <span className="font-bold text-gray-900 text-sm">
-                ₦{item.price.toLocaleString()}
-              </span>
+              <span className={DINER.price}>₦{item.price.toLocaleString()}</span>
               {item.preparationTimeMins > 0 && (
-                <span className="text-[10px] text-gray-400 ml-1.5">
-                  ~{item.preparationTimeMins}m
-                </span>
+                <span className={cn(DINER.caption, "ml-1.5")}>~{item.preparationTimeMins}m</span>
               )}
             </div>
 
             {item.isAvailable ? (
               cartEntry && !hasModifiers ? (
-                // Quantity stepper
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => updateQuantity(cartEntry.cartId, cartEntry.quantity - 1)}
-                    className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 active:scale-[0.97] transition-all ease-out flex items-center justify-center text-gray-700 font-bold text-sm"
+                    className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 active:scale-[0.97] transition-all ease-out flex items-center justify-center text-gray-700 font-bold text-sm"
                   >
                     −
                   </button>
-                  <span className="w-6 text-center text-sm font-bold text-gray-900">
-                    {cartEntry.quantity}
-                  </span>
+                  <span className="w-5 text-center text-sm font-bold text-gray-900">{cartEntry.quantity}</span>
                   <button
                     onClick={() => addItem(item, 1, {})}
-                    className="w-7 h-7 rounded-full bg-gray-900 hover:bg-gray-700 active:scale-[0.97] transition-all ease-out flex items-center justify-center text-white font-bold text-sm"
+                    className="w-8 h-8 rounded-full bg-gray-900 hover:bg-gray-700 active:scale-[0.97] transition-all ease-out flex items-center justify-center text-white font-bold text-sm"
                   >
                     +
                   </button>
                 </div>
               ) : (
-                // Add button
                 <button
                   onClick={handleAddDirect}
-                  className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold px-3 py-2 rounded-full hover:bg-gray-700 active:scale-[0.97] transition-all ease-out"
+                  className={cn("flex items-center gap-1 bg-gray-900 text-white text-xs font-bold px-3 py-2 rounded-full hover:bg-gray-700", DINER.pressable)}
                 >
                   <span>+</span>
                   <span>Add</span>
@@ -155,7 +143,6 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
         </div>
       </div>
 
-      {/* Item detail / modifier modal */}
       <ItemDetailModal
         item={item}
         open={modalOpen}

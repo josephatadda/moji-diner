@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useCartStore } from "@/store/cart";
+import { useState } from "react";
 import { PhoneCaptureModal } from "./PhoneCaptureModal";
-import { ItemCard } from "./ui/ItemCard";
-import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
-import { ModalContainer } from "./ui/ModalContainer";
-import { StatusTimeline } from "./ui/StatusTimeline";
 import { cn } from "@/lib/utils";
-import { ShoppingCart, ArrowLeft, Clock, CheckCircle } from "@phosphor-icons/react";
+import { BowlFood, ShoppingCart } from "@phosphor-icons/react";
+import { PageHeader } from "./ui/PageHeader";
+import { BillSummary } from "./ui/BillSummary";
+import { ItemCard } from "./ui/ItemCard";
+import { OrderStatusTimeline } from "./ui/OrderStatusTimeline";
+import { DINER } from "./ui/diner-tokens";
+import { groupSessionItems, calculateBill, formatModifiers, hasModifiers } from "@/lib/diner-utils";
 
 interface CartScreenProps {
   restaurantSlug: string;
@@ -27,24 +28,14 @@ export function CartScreen({
   vatEnabled,
   loyaltyEnabled,
 }: CartScreenProps) {
-  const { 
-    items, 
-    sessionBatches, 
-    updateQuantity, 
-    clearCart, 
-    subtotal, 
-    submitCartToSession, 
-    serveAllBatches, 
-    setLoyaltyData 
-  } = useCartStore();
-  
+  const { items, sessionBatches, updateQuantity, clearCart, subtotal, submitCartToSession, serveAllBatches, setLoyaltyData } = useCartStore();
   const [phoneCaptureOpen, setPhoneCaptureOpen] = useState(false);
   const [orderNote, setOrderNote] = useState("");
-  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
+  const [timelineBatchId, setTimelineBatchId] = useState<string | null>(null);
 
+  const menuUrl = `/${restaurantSlug}/t/${tableNumber}`;
   const sub = subtotal();
-  const vat = vatEnabled ? sub * (vatRate / 100) : 0;
-  const total = sub + vat;
+  const { vat, total } = calculateBill({ subtotal: sub, vatRate, vatEnabled });
 
   const handlePlaceOrder = () => {
     if (loyaltyEnabled) {
@@ -59,60 +50,69 @@ export function CartScreen({
     setOrderNote("");
   };
 
-  const activeBatch = sessionBatches.find(b => b.id === selectedBatchId);
-  const allServed = sessionBatches.length > 0 && sessionBatches.every(b => b.status === "served");
-
-  // ORDERS VIEW (When cart is empty but active session exists)
+  // Session orders view
   if (items.length === 0 && sessionBatches.length > 0) {
-    const totalSession = sessionBatches.reduce((sum, b) => sum + b.items.reduce((s, i) => s + i.lineTotal, 0), 0);
-    const vatSession = vatEnabled ? totalSession * (vatRate / 100) : 0;
-    const finalSession = totalSession + vatSession;
+    const sessionSub = sessionBatches.reduce((sum, b) => sum + b.items.reduce((s, i) => s + i.lineTotal, 0), 0);
+    const { vat: sessionVat, total: sessionTotal } = calculateBill({ subtotal: sessionSub, vatRate, vatEnabled });
+    const allServed = sessionBatches.every((b) => b.status === "served");
+    const timelineBatch = sessionBatches.find((b) => b.id === timelineBatchId) ?? null;
 
     return (
-      <div className="bg-[var(--color-background)] min-h-screen">
-        {/* Header */}
-        <div className="px-[var(--space-4)] pt-[var(--space-8)] pb-[var(--space-4)] text-center">
-          <div className="w-16 h-16 bg-[var(--color-success)]/10 text-[var(--color-success)] rounded-full flex items-center justify-center mx-auto mb-[var(--space-4)] text-[var(--color-success)]">
-            <CheckCircle size={32} weight="fill" />
-          </div>
-          <h1 className="text-[var(--font-size-title)] font-bold text-[var(--color-primary)]">Your Orders</h1>
-          <p className="text-[var(--font-size-muted)] text-[var(--color-muted)] mt-1">Live session tab · Table {tableNumber}</p>
-        </div>
+      <div>
+        <PageHeader
+          title="Your Orders"
+          subtitle={`Table ${tableNumber}`}
+          backHref={menuUrl}
+        />
 
-        {/* Active Orders List */}
-        <div className="px-[var(--space-4)] space-y-[var(--space-4)] mt-[var(--space-4)]">
+        <div className="px-4 space-y-4">
           {sessionBatches.map((batch) => {
+            const groupedItems = groupSessionItems([batch]);
             const batchTotal = batch.items.reduce((sum, i) => sum + i.lineTotal, 0);
+            const batchItemCount = batch.items.reduce((sum, i) => sum + i.quantity, 0);
+
             return (
-              <div key={batch.id} className="bg-[var(--color-background)] border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-hidden shadow-sm">
-                <div 
-                  className="px-[var(--space-4)] py-[var(--space-3)] bg-[var(--color-surface)] border-b border-[var(--color-border)] flex justify-between items-center cursor-pointer active:opacity-70 transition-opacity"
-                  onClick={() => setSelectedBatchId(batch.id)}
+              <div key={batch.id} className={DINER.card}>
+                <div
+                  className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-100 transition-colors rounded-t-2xl"
+                  onClick={() => setTimelineBatchId(batch.id)}
                 >
-                  <div>
-                    <p className="text-[var(--font-size-label)] font-bold text-[var(--color-muted)] uppercase tracking-wider">
-                      Order {new Date(batch.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                    <p className="text-[var(--font-size-muted)] text-[var(--color-muted-fg)] mt-0.5">
-                      {batch.items.reduce((sum, i) => sum + i.quantity, 0)} items · ₦{batchTotal.toLocaleString()}
-                    </p>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 font-medium tracking-wide uppercase">
+                      Order {new Date(batch.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <span className={cn(DINER.caption, "mt-0.5")}>
+                      {batchItemCount} items · ₦{batchTotal.toLocaleString()}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-[var(--space-2)] bg-[var(--color-background)] px-[var(--space-2)] py-1 rounded-full border border-[var(--color-border)]">
-                    <div className={cn("w-1.5 h-1.5 rounded-full", batch.status === "preparing" ? "bg-[var(--color-warning)] animate-pulse" : "bg-[var(--color-success)]")} />
-                    <span className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-wider">{batch.status}</span>
+                  <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full border border-gray-200 shadow-sm">
+                    <div className={cn("w-1.5 h-1.5 rounded-full", batch.status === "preparing" ? DINER.statusPreparing : DINER.statusReady)} />
+                    <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wider">{batch.status}</span>
                   </div>
                 </div>
-                <div className="divide-y divide-[var(--color-border)]">
-                  {batch.items.map((item, idx) => (
-                    <ItemCard
-                      key={item.cartId + idx}
-                      variant="order"
-                      name={item.itemName}
-                      quantity={item.quantity}
-                      price={item.lineTotal}
-                      modifiers={Object.values(item.selectedModifiers).flat().map(o => o.name)}
-                      note={item.specialNote}
-                    />
+
+                <div className="divide-y divide-gray-50">
+                  {groupedItems.map((item) => (
+                    <div key={item.cartId} className="flex items-center gap-3 p-4 bg-white">
+                      <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center flex-none text-gray-400">
+                        <BowlFood size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-semibold text-gray-900 leading-tight truncate">
+                            <span className="text-orange-500 mr-1.5 font-bold">{item.quantity}x</span>
+                            {item.itemName}
+                          </p>
+                          <p className="text-sm font-bold text-gray-900 ml-3 flex-none">₦{item.lineTotal.toLocaleString()}</p>
+                        </div>
+                        {hasModifiers(item.selectedModifiers) && (
+                          <p className="text-xs text-gray-400 mt-0.5">{formatModifiers(item.selectedModifiers)}</p>
+                        )}
+                        {item.specialNote && (
+                          <p className="text-xs text-blue-500 mt-0.5 italic">"{item.specialNote}"</p>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -120,158 +120,125 @@ export function CartScreen({
           })}
         </div>
 
-        {/* Session Summary */}
-        <div className="px-[var(--space-4)] mt-[var(--space-8)] mb-[var(--space-12)]">
-          <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] p-[var(--space-4)] space-y-[var(--space-2)]">
-            <div className="flex justify-between text-[var(--font-size-body)] text-[var(--color-muted)]">
-              <span>Subtotal</span>
-              <span>₦{totalSession.toLocaleString()}</span>
-            </div>
-            {vatEnabled && (
-              <div className="flex justify-between text-[var(--font-size-body)] text-[var(--color-muted)]">
-                <span>VAT ({vatRate}%)</span>
-                <span>₦{vatSession.toLocaleString()}</span>
-              </div>
-            )}
-            <div className="h-px bg-[var(--color-border)] my-[var(--space-2)]" />
-            <div className="flex justify-between text-[var(--font-size-heading)] font-bold text-[var(--color-primary)]">
-              <span>Total Bill</span>
-              <span>₦{finalSession.toLocaleString()}</span>
-            </div>
-          </div>
-
-          <div className="mt-[var(--space-6)] space-y-[var(--space-3)]">
-            <Link href={`/${restaurantSlug}/t/${tableNumber}`} className="block w-full">
-              <Button variant="outline" fullWidth>+ Add more items</Button>
-            </Link>
-            <Button 
-              fullWidth 
-              disabled={!allServed}
-              onClick={() => {
-                if (allServed) window.location.href = `/${restaurantSlug}/t/${tableNumber}/bill`;
-              }}
-            >
-              {allServed ? "Request bill" : "Food still being prepared"}
-            </Button>
-            
-            {/* Demo Helper */}
-            {!allServed && (
-              <Button variant="ghost" size="sm" fullWidth onClick={serveAllBatches} className="text-[var(--color-warning)]">
-                [Demo] Mark all as served
-              </Button>
-            )}
-          </div>
+        <div className="px-4 mt-6">
+          <BillSummary
+            subtotal={sessionSub}
+            vat={sessionVat}
+            vatRate={vatRate}
+            vatEnabled={vatEnabled}
+            total={sessionTotal}
+          />
         </div>
 
-        {/* Timeline Modal */}
-        <ModalContainer
-          type="sheet"
-          isOpen={!!selectedBatchId}
-          onDismiss={() => setSelectedBatchId(null)}
-          title="Order Status"
-          subtitle={activeBatch ? `Order placed at ${new Date(activeBatch.timestamp).toLocaleTimeString()}` : ""}
-        >
-          {activeBatch && (
-            <StatusTimeline 
-              steps={[
-                { label: "Order placed", timestamp: new Date(activeBatch.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), state: "completed" },
-                { label: "Being prepared", timestamp: "Kitchen is working", state: activeBatch.status === "preparing" ? "active" : "completed" },
-                { label: "Ready", timestamp: "Ready for pickup", state: activeBatch.status === "ready" ? "active" : activeBatch.status === "served" ? "completed" : "pending" },
-                { label: "Served", timestamp: "Delivered to table", state: activeBatch.status === "served" ? "completed" : "pending" },
-              ]}
-            />
+        <div className="flex flex-col gap-3 px-4 mt-6 pb-8">
+          {!allServed && (
+            <button
+              onClick={serveAllBatches}
+              className="text-xs font-semibold text-orange-600 bg-orange-50 py-2 rounded-xl border border-orange-100 uppercase tracking-wide"
+            >
+              [Demo] Mark all as served
+            </button>
           )}
-        </ModalContainer>
+
+          <Link
+            href={menuUrl}
+            className="flex items-center justify-center w-full h-12 bg-gray-100 text-gray-900 rounded-2xl font-bold text-sm hover:bg-gray-200 transition-colors"
+          >
+            + Add more items
+          </Link>
+
+          <button
+            onClick={() => {
+              if (allServed) {
+                window.location.href = `/${restaurantSlug}/t/${tableNumber}/bill`;
+              }
+            }}
+            disabled={!allServed}
+            className={cn(
+              "w-full h-12 rounded-2xl font-bold text-sm transition-colors",
+              allServed
+                ? "bg-gray-900 text-white hover:bg-gray-800"
+                : "bg-gray-200 text-gray-500 cursor-not-allowed opacity-80"
+            )}
+          >
+            {allServed ? "Request bill" : "Food still being prepared"}
+          </button>
+        </div>
+
+        <OrderStatusTimeline
+          open={!!timelineBatchId}
+          onClose={() => setTimelineBatchId(null)}
+          batch={timelineBatch}
+        />
       </div>
     );
   }
 
-  // EMPTY CART VIEW
+  // Empty cart
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-[var(--space-6)] text-center">
-        <div className="w-20 h-20 bg-[var(--color-surface)] rounded-full flex items-center justify-center mb-[var(--space-4)] text-[var(--color-muted-fg)]">
-          <ShoppingCart size={40} />
-        </div>
-        <h2 className="text-[var(--font-size-heading)] font-bold text-[var(--color-primary)]">Your cart is empty</h2>
-        <p className="text-[var(--font-size-body)] text-[var(--color-muted)] mt-2">Browse the menu and add items to get started.</p>
-        <div className="mt-[var(--space-8)] w-full max-w-xs">
-          <Link href={`/${restaurantSlug}/t/${tableNumber}`} className="block w-full">
-            <Button fullWidth>Browse Menu</Button>
-          </Link>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
+        <ShoppingCart size={48} className="text-gray-300" />
+        <h2 className="text-xl font-bold text-gray-900 mt-4">Your cart is empty</h2>
+        <p className="text-sm text-gray-400 mt-2">Browse the menu and add items to get started.</p>
+        <Link
+          href={menuUrl}
+          className="mt-6 bg-gray-900 text-white px-6 h-12 rounded-2xl text-sm font-bold hover:bg-gray-700 transition-all flex items-center justify-center"
+        >
+          Browse Menu
+        </Link>
       </div>
     );
   }
 
-  // CART VIEW
+  // Active cart
   return (
-    <div className="bg-[var(--color-background)] min-h-screen">
-      {/* Header */}
-      <div className="px-[var(--space-4)] py-[var(--space-4)] flex items-center justify-between border-b border-[var(--color-border)]">
-        <div className="flex items-center gap-3">
-          <Link href={`/${restaurantSlug}/t/${tableNumber}`}>
-            <Button variant="icon" size="icon-sm" className="bg-[var(--color-surface)]"><ArrowLeft size={16} weight="bold" /></Button>
-          </Link>
-          <h1 className="text-[var(--font-size-heading)] font-bold text-[var(--color-primary)]">Your Order</h1>
-        </div>
-        <button onClick={clearCart} className="text-[var(--font-size-label)] font-semibold text-[var(--color-error)]">Clear all</button>
-      </div>
+    <>
+      <PageHeader
+        title="Your Order"
+        backHref={menuUrl}
+        rightAction={
+          <button onClick={() => clearCart()} className="text-xs text-red-500 font-medium hover:text-red-700">
+            Clear all
+          </button>
+        }
+      />
 
-      <div className="px-[var(--space-4)] py-[var(--space-4)] space-y-[var(--space-6)]">
-        {/* Cart Items */}
-        <div className="space-y-[var(--space-3)]">
+      <div className="px-4 space-y-3 pb-8">
+        <div className={DINER.listGap}>
           {items.map((item) => (
             <ItemCard
               key={item.cartId}
               variant="cart"
-              name={item.itemName}
-              quantity={item.quantity}
-              price={item.lineTotal}
-              modifiers={Object.values(item.selectedModifiers).flat().map(o => o.name)}
-              note={item.specialNote}
-              onUpdateQuantity={(q) => updateQuantity(item.cartId, q)}
+              item={item}
+              onIncrement={() => updateQuantity(item.cartId, item.quantity + 1)}
+              onDecrement={() => updateQuantity(item.cartId, item.quantity - 1)}
             />
           ))}
         </div>
 
-        {/* Kitchen Note */}
-        <Input 
-          type="textarea"
-          label="Kitchen Note"
-          placeholder="e.g. No onions, extra spicy..."
-          value={orderNote}
-          onChange={(e) => setOrderNote(e.target.value)}
-        />
-
-        {/* Bill Summary */}
-        <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] p-[var(--space-4)] space-y-[var(--space-2)]">
-          <div className="flex justify-between text-[var(--font-size-body)] text-[var(--color-muted)]">
-            <span>Subtotal</span>
-            <span>₦{sub.toLocaleString()}</span>
-          </div>
-          {vatEnabled && (
-            <div className="flex justify-between text-[var(--font-size-body)] text-[var(--color-muted)]">
-              <span>VAT ({vatRate}%)</span>
-              <span>₦{vat.toLocaleString()}</span>
-            </div>
-          )}
-          <div className="h-px bg-[var(--color-border)] my-[var(--space-2)]" />
-          <div className="flex justify-between text-[var(--font-size-heading)] font-bold text-[var(--color-primary)]">
-            <span>Total</span>
-            <span>₦{total.toLocaleString()}</span>
-          </div>
+        <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 focus-within:border-gray-300 transition-colors">
+          <textarea
+            value={orderNote}
+            onChange={(e) => setOrderNote(e.target.value)}
+            placeholder="Add a note for the kitchen (optional)..."
+            className="w-full bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none resize-none"
+            rows={2}
+          />
         </div>
 
-        {/* Footer info & CTA */}
-        <div className="pt-[var(--space-2)] space-y-[var(--space-4)]">
-          <Button fullWidth size="lg" onClick={handlePlaceOrder}>
-            Place Order · ₦{total.toLocaleString()}
-          </Button>
-          <p className="text-center text-[var(--font-size-muted)] text-[var(--color-muted)]">
-            You'll pay after your food is served
-          </p>
-        </div>
+        <BillSummary subtotal={sub} vat={vat} vatRate={vatRate} vatEnabled={vatEnabled} total={total} />
+
+        <button
+          onClick={handlePlaceOrder}
+          className={cn("w-full h-12 rounded-2xl bg-gray-900 text-white font-bold text-base hover:bg-gray-700", DINER.ctaPress)}
+        >
+          Place Order · ₦{Math.round(total).toLocaleString()}
+        </button>
+
+        <p className="text-center text-xs text-gray-400 pb-4">
+          You'll pay after your food is served
+        </p>
       </div>
 
       <PhoneCaptureModal
@@ -285,6 +252,6 @@ export function CartScreen({
         existingPoints={1250}
         isReturning={false}
       />
-    </div>
+    </>
   );
 }

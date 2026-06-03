@@ -1,81 +1,84 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { SplitLinkCard } from "./ui/SplitLinkCard";
-import { Button } from "./ui/Button";
-import { ArrowLeft, Users, Receipt, ShareNetwork } from "@phosphor-icons/react";
-import Link from "next/link";
+import { CheckCircle } from "@phosphor-icons/react";
+import { DINER } from "./ui/diner-tokens";
 
-interface SplitPartPageProps {
+interface Props {
+  token: string;
+  part: number;
+  totalParts: number;
+  amount: number;
   restaurantName: string;
   tableNumber: number;
-  total: number;
-  parts: number;
 }
 
-export function SplitPartPage({ restaurantName, tableNumber, total, parts }: SplitPartPageProps) {
-  const partAmount = Math.ceil(total / parts);
-  const [paidIndices, setPaidIndices] = useState<number[]>([]);
+export default function SplitPartPage({ token, part, totalParts, amount, restaurantName, tableNumber }: Props) {
+  const [paid, setPaid] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Simulation: Mark the "first" part as the user's part
-  const userPartIndex = 1;
-
-  const getWhatsAppText = (index: number) => {
-    return `Hey! Here is your share of the bill at ${restaurantName} (Table ${tableNumber}). My part is ₦${partAmount.toLocaleString()}. Pay here: ${window.location.href}`;
+  const handlePay = async () => {
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 1200));
+    setPaid(true);
+    setLoading(false);
   };
 
+  if (paid) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className={cn(DINER.card, "p-8 max-w-sm w-full text-center")}>
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+            <CheckCircle size={32} weight="fill" />
+          </div>
+          <h2 className={DINER.title}>Payment Confirmed!</h2>
+          <p className={cn(DINER.caption, "mt-2")}>Your share of the bill has been paid.</p>
+          <div className={cn(DINER.summaryCard, "mt-4")}>
+            <p className={DINER.caption}>Amount paid</p>
+            <p className="text-2xl font-bold text-gray-900 mt-0.5">₦{amount.toLocaleString()}</p>
+          </div>
+          <p className={cn(DINER.caption, "mt-6")}>Powered by Moji</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-[var(--color-background)] min-h-screen">
-      {/* Header */}
-      <div className="px-[var(--space-4)] py-[var(--space-6)] bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-        <div className="flex items-center gap-3 mb-6">
-          <Link href={`/bill`}>
-            <Button variant="icon" size="icon-sm" className="bg-[var(--color-background)]"><ArrowLeft size={16} weight="bold" /></Button>
-          </Link>
-          <h1 className="text-[var(--font-size-title)] font-black text-[var(--color-primary)]">Split Bill</h1>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className={cn(DINER.card, "p-6 max-w-sm w-full")}>
+        <div className="text-center mb-6">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Bill Split</p>
+          <h1 className={cn(DINER.title, "mt-1")}>{restaurantName}</h1>
+          <p className={DINER.caption}>Table {tableNumber}</p>
         </div>
 
-        <div className="flex justify-between items-end">
-          <div>
-            <p className="text-[var(--font-size-label)] font-bold text-[var(--color-muted)] uppercase tracking-[2px]">Total to pay</p>
-            <p className="text-[var(--font-size-heading)] font-black text-[var(--color-primary)] mt-1">₦{total.toLocaleString()}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[var(--font-size-label)] font-bold text-[var(--color-muted)] uppercase tracking-[2px]">Split</p>
-            <p className="text-[var(--font-size-heading)] font-black text-[var(--color-primary)] mt-1">{parts} Ways</p>
-          </div>
+        <div className={cn(DINER.summaryCard, "mb-4 text-center")}>
+          <p className={DINER.caption}>Part {part} of {totalParts}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">₦{amount.toLocaleString()}</p>
         </div>
-      </div>
 
-      {/* Links List */}
-      <div className="px-[var(--space-4)] py-[var(--space-6)] space-y-[var(--space-4)]">
-        <p className="text-[var(--font-size-muted)] text-[var(--color-muted)] px-1 mb-2 font-medium">
-          Share these links with your friends. They can pay their share directly from their phones.
-        </p>
-        
-        {Array.from({ length: parts }).map((_, i) => {
-          const index = i + 1;
-          const isUser = index === userPartIndex;
-          const isPaid = paidIndices.includes(index);
-
-          return (
-            <SplitLinkCard
-              key={index}
-              partIndex={index}
-              amount={partAmount}
-              isPaid={isPaid}
-              isUser={isUser}
-              link={`${window.location.origin}/pay/split/${index}`}
-              whatsappText={getWhatsAppText(index)}
-              onPayNow={() => setPaidIndices([...paidIndices, index])}
+        {/* Part progress indicator */}
+        <div className="flex gap-1.5 mb-6">
+          {Array.from({ length: totalParts }, (_, i) => (
+            <div
+              key={i}
+              className={cn(
+                "h-1.5 flex-1 rounded-full transition-colors",
+                i + 1 < part ? "bg-green-500" : i + 1 === part ? "bg-gray-900" : "bg-gray-200",
+              )}
             />
-          );
-        })}
-      </div>
+          ))}
+        </div>
 
-      <div className="px-[var(--space-4)] pb-[var(--space-12)]">
-        <Button variant="ghost" fullWidth leftIcon={<ShareNetwork size={20} />}>Share all links</Button>
+        <button
+          onClick={handlePay}
+          disabled={loading}
+          className={cn("w-full h-12 rounded-2xl bg-gray-900 text-white font-bold text-base hover:bg-gray-700 disabled:opacity-60", DINER.ctaPress)}
+        >
+          {loading ? "Processing…" : `Pay ₦${amount.toLocaleString()}`}
+        </button>
+        <p className={cn(DINER.caption, "text-center mt-3")}>Powered by Moji</p>
       </div>
     </div>
   );
