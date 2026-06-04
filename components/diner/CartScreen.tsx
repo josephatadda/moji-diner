@@ -92,7 +92,7 @@ export function CartScreen({
           backHref={menuUrl}
         />
 
-        <div className="px-4 space-y-4 pb-44">
+        <div className="px-4 space-y-4">
           {sessionBatches.map((batch) => {
             const groupedItems = groupSessionItems([batch]);
             const batchTotal = batch.items.reduce(
@@ -146,7 +146,7 @@ export function CartScreen({
           })}
         </div>
 
-        <div className="px-4 mt-6 pb-44">
+        <div className="px-4 mt-4 pb-44">
           <BillSummary
             subtotal={sessionSub}
             vat={sessionVat}

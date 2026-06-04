@@ -104,32 +104,55 @@ export function DinerPaymentPanel({
       )}
 
       {method === "card" && (
-        <div className={cn(DINER.card, "p-5 py-8 text-center")}>
-          <DinerIconBadge
-            icon={CreditCard}
-            tone="info"
-            size="lg"
-            className="mx-auto mb-4"
-          />
-          <h3 className={cn(DINER.title, "mb-2 text-lg")}>Pay with Card</h3>
-          <p className={cn(DINER.body, "mx-auto mb-8 max-w-[220px]")}>
-            A waiter will bring the POS terminal to your table for{" "}
-            {formattedAmount}.
+        <div className={cn(DINER.card, "p-5")}>
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl border border-purple-100 bg-purple-50 text-purple-600">
+              <CreditCard size={24} weight="fill" />
+            </div>
+            <div className="min-w-0">
+              <h3 className={DINER.title}>Card payment</h3>
+              <p className={DINER.caption}>POS terminal at your table</p>
+            </div>
+          </div>
+
+          <div className="mb-5 rounded-2xl border border-purple-100 bg-purple-50 px-4 py-5 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wide text-purple-700">
+              Amount to pay
+            </p>
+            <p className="mt-1 text-[32px] font-bold leading-none tracking-tight text-gray-950 tabular-nums">
+              {formattedAmount}
+            </p>
+          </div>
+
+          <p className={cn(DINER.body, "text-center")}>
+            A waiter will bring the POS terminal to your table.
           </p>
         </div>
       )}
 
       {method === "cash" && (
-        <div className={cn(DINER.card, "p-5 py-8 text-center")}>
-          <DinerIconBadge
-            icon={Money}
-            tone="success"
-            size="lg"
-            className="mx-auto mb-4"
-          />
-          <h3 className={cn(DINER.title, "mb-2 text-lg")}>Pay with Cash</h3>
-          <p className={cn(DINER.body, "mx-auto mb-8 max-w-[220px]")}>
-            A waiter will come to your table to collect {formattedAmount}.
+        <div className={cn(DINER.card, "p-5")}>
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl border border-green-100 bg-green-50 text-green-600">
+              <Money size={24} weight="fill" />
+            </div>
+            <div className="min-w-0">
+              <h3 className={DINER.title}>Cash payment</h3>
+              <p className={DINER.caption}>Pay at your table</p>
+            </div>
+          </div>
+
+          <div className="mb-5 rounded-2xl border border-green-100 bg-green-50 px-4 py-5 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wide text-green-700">
+              Amount to pay
+            </p>
+            <p className="mt-1 text-[32px] font-bold leading-none tracking-tight text-gray-950 tabular-nums">
+              {formattedAmount}
+            </p>
+          </div>
+
+          <p className={cn(DINER.body, "text-center")}>
+            A waiter will come to your table to collect your payment.
           </p>
         </div>
       )}

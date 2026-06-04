@@ -10,7 +10,7 @@ import {
   WarningCircle,
 } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { calculateBill, groupSessionItems } from "@/lib/diner-utils";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
@@ -78,8 +78,12 @@ export function BillView({
   const [claimName, setClaimName] = useState("");
   const [claimPhone, setClaimPhone] = useState("");
   const [pointsClaimed, setPointsClaimed] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [claimDrawerOpen, setClaimDrawerOpen] = useState(false);
   const [loyaltyDrawerOpen, setLoyaltyDrawerOpen] = useState(false);
+  const [pointsModalOpen, setPointsModalOpen] = useState(false);
+
+  useEffect(() => setMounted(true), []);
   const [appliedPoints, setAppliedPoints] = useState(0);
   const [receiptIssuedAt] = useState(() => new Date());
   const [receiptId] = useState(() => `MOJI-${Date.now().toString().slice(-6)}`);
@@ -149,49 +153,44 @@ export function BillView({
             </p>
           </section>
 
+          {/* Points CTA — opens modal for details */}
           {loyaltyActive ? (
-            <DinerFeedbackCard
-              title={
-                loyaltyName ? `Nice one, ${loyaltyName}!` : "Points updated"
-              }
-              description={`You earned ${pointsEarned} points on this order.`}
-              icon={Trophy}
-              tone="warning"
+            <button
+              type="button"
+              onClick={() => setPointsModalOpen(true)}
+              className={cn(
+                DINER.card,
+                "flex w-full items-center justify-between p-4 text-left hover:bg-gray-50",
+                DINER.ctaPress,
+              )}
             >
-              <div className="mt-3 space-y-2 border-t border-orange-200/60 pt-3">
-                {safeAppliedPoints > 0 && (
-                  <DinerInfoRow
-                    label="Redeemed"
-                    value={`${safeAppliedPoints.toLocaleString()} pts`}
-                  />
-                )}
-                <DinerInfoRow
-                  label="New balance"
-                  value={`${updatedPointsBalance.toLocaleString()} pts`}
-                  emphasis
-                />
-              </div>
-            </DinerFeedbackCard>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => setClaimDrawerOpen(true)}
-                className={cn(
-                  DINER.card,
-                  "flex w-full items-center justify-between p-4 text-left hover:bg-gray-50",
-                  DINER.ctaPress,
-                )}
-              >
+              <div className="flex items-center gap-3">
+                <DinerIconBadge icon={Trophy} tone="warning" size="sm" />
                 <div>
-                  <h3 className="mb-1 flex items-center gap-2 text-sm font-bold text-gray-900">
-                    <Trophy
-                      size={18}
-                      weight="fill"
-                      className="text-orange-500"
-                    />
-                    Claim your points
-                  </h3>
+                  <p className={DINER.cardTitle}>
+                    {loyaltyName ? `Nice one, ${loyaltyName}!` : "Points updated"}
+                  </p>
+                  <p className={cn(DINER.caption, "mt-0.5")}>
+                    +{pointsEarned} earned · {updatedPointsBalance.toLocaleString()} pts balance
+                  </p>
+                </div>
+              </div>
+              <ArrowRight size={18} weight="bold" className="text-gray-400" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setClaimDrawerOpen(true)}
+              className={cn(
+                DINER.card,
+                "flex w-full items-center justify-between p-4 text-left hover:bg-gray-50",
+                DINER.ctaPress,
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <DinerIconBadge icon={Trophy} tone="warning" size="sm" />
+                <div>
+                  <p className={DINER.cardTitle}>Claim your points</p>
                   <p className={DINER.caption}>
                     You earned{" "}
                     <span className="font-bold text-gray-900">
@@ -200,85 +199,117 @@ export function BillView({
                     today.
                   </p>
                 </div>
-                <ArrowRight size={20} weight="bold" className="text-gray-400" />
-              </button>
-
-              <BottomSheet
-                open={claimDrawerOpen}
-                onClose={() => setClaimDrawerOpen(false)}
-                accessibilityTitle="Save your points"
-                header={
-                  <div className="flex flex-col items-center text-center">
-                    <DinerIconBadge
-                      icon={Trophy}
-                      tone="warning"
-                      size="md"
-                      className="mb-4"
-                    />
-                    <h2 className={cn(DINER.sheetTitle, "mb-2")}>
-                      Save your points
-                    </h2>
-                    <p className={DINER.body}>
-                      You earned {pointsEarned} points on this order. Enter your
-                      details to save them.
-                    </p>
-                  </div>
-                }
-                footer={
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (claimName && claimPhone) {
-                        setLoyaltyData(claimName, claimPhone);
-                        setPointsClaimed(true);
-                        setClaimDrawerOpen(false);
-                        dinerToast.success("Points saved");
-                      }
-                    }}
-                    disabled={!claimName || !claimPhone}
-                    className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
-                  >
-                    Save my points
-                  </button>
-                }
-              >
-                <div className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="claim-name"
-                      className={cn(DINER.inputLabel, "mb-2 block text-left")}
-                    >
-                      Your name
-                    </label>
-                    <input
-                      id="claim-name"
-                      type="text"
-                      placeholder="e.g. Tunde"
-                      value={claimName}
-                      onChange={(event) => setClaimName(event.target.value)}
-                      className={DINER.input}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="claim-phone"
-                      className={cn(DINER.inputLabel, "mb-2 block text-left")}
-                    >
-                      Your phone number
-                    </label>
-                    <input
-                      id="claim-phone"
-                      type="tel"
-                      placeholder="0801 234 5678"
-                      value={claimPhone}
-                      onChange={(event) => setClaimPhone(event.target.value)}
-                      className={DINER.input}
-                    />
-                  </div>
-                </div>
-              </BottomSheet>
-            </>
+              </div>
+              <ArrowRight size={18} weight="bold" className="text-gray-400" />
+            </button>
           )}
+
+          {/* Points details modal */}
+          <BottomSheet
+            open={pointsModalOpen}
+            onClose={() => setPointsModalOpen(false)}
+            accessibilityTitle="Points details"
+            header={
+              <div className="flex flex-col items-center text-center">
+                <DinerIconBadge icon={Trophy} tone="warning" size="md" className="mb-4" />
+                <h2 className={cn(DINER.sheetTitle, "mb-2")}>
+                  {loyaltyName ? `${loyaltyName}'s Points` : "Your Points"}
+                </h2>
+              </div>
+            }
+            footer={
+              <button
+                type="button"
+                onClick={() => setPointsModalOpen(false)}
+                className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
+              >
+                Done
+              </button>
+            }
+          >
+            <div className={cn(DINER.summaryCard, "space-y-3")}>
+              <DinerInfoRow
+                label="Earned on this order"
+                value={`+${pointsEarned} pts`}
+              />
+              {safeAppliedPoints > 0 && (
+                <DinerInfoRow
+                  label="Redeemed"
+                  value={`-${safeAppliedPoints.toLocaleString()} pts`}
+                />
+              )}
+              <DinerInfoRow
+                label="New balance"
+                value={`${updatedPointsBalance.toLocaleString()} pts`}
+                emphasis
+              />
+              {loyaltyPhone && (
+                <DinerInfoRow label="Saved to" value={loyaltyPhone} />
+              )}
+            </div>
+          </BottomSheet>
+
+          {/* Claim points drawer (for users without loyalty) */}
+          <BottomSheet
+            open={claimDrawerOpen}
+            onClose={() => setClaimDrawerOpen(false)}
+            accessibilityTitle="Save your points"
+            header={
+              <div className="flex flex-col items-center text-center">
+                <DinerIconBadge icon={Trophy} tone="warning" size="md" className="mb-4" />
+                <h2 className={cn(DINER.sheetTitle, "mb-2")}>Save your points</h2>
+                <p className={DINER.body}>
+                  You earned {pointsEarned} points on this order. Enter your details to save them.
+                </p>
+              </div>
+            }
+            footer={
+              <button
+                type="button"
+                onClick={() => {
+                  if (claimName && claimPhone) {
+                    setLoyaltyData(claimName, claimPhone);
+                    setPointsClaimed(true);
+                    setClaimDrawerOpen(false);
+                    dinerToast.success("Points saved");
+                  }
+                }}
+                disabled={!claimName || !claimPhone}
+                className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
+              >
+                Save my points
+              </button>
+            }
+          >
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="claim-name" className={cn(DINER.inputLabel, "mb-2 block text-left")}>
+                  Your name
+                </label>
+                <input
+                  id="claim-name"
+                  type="text"
+                  placeholder="e.g. Tunde"
+                  value={claimName}
+                  onChange={(event) => setClaimName(event.target.value)}
+                  className={DINER.input}
+                />
+              </div>
+              <div>
+                <label htmlFor="claim-phone" className={cn(DINER.inputLabel, "mb-2 block text-left")}>
+                  Your phone number
+                </label>
+                <input
+                  id="claim-phone"
+                  type="tel"
+                  placeholder="0801 234 5678"
+                  value={claimPhone}
+                  onChange={(event) => setClaimPhone(event.target.value)}
+                  className={DINER.input}
+                />
+              </div>
+            </div>
+          </BottomSheet>
 
           <DinerReceipt
             items={displayItems}
@@ -343,7 +374,10 @@ export function BillView({
     );
   }
 
-  if (sessionBatches.length === 0) {
+  // Wait for hydration before showing empty state — prevents flash
+  // when navigating from cart (Zustand localStorage loads on client)
+  if (!mounted || sessionBatches.length === 0) {
+    if (!mounted) return null;
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 text-center">
         <DinerIconBadge icon={Receipt} tone="neutral" size="lg" />
