@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { Clock, Star, Storefront } from "@phosphor-icons/react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import type { MenuCategory } from "@/lib/mockData";
-import { MenuItemCard } from "./MenuItemCard";
 import { cn } from "@/lib/utils";
-import { Star, Clock } from "@phosphor-icons/react";
+import { MenuItemCard } from "./MenuItemCard";
 import { DINER } from "./ui/diner-tokens";
 
 interface MenuPageProps {
@@ -54,9 +55,18 @@ export function MenuPage({
 
   const scrollToCategory = (categoryId: string) => {
     setActiveCategory(categoryId);
-    sectionRefs.current[categoryId]?.scrollIntoView({ behavior: "smooth", block: "start" });
-    const tabEl = tabsRef.current?.querySelector(`[data-cat="${categoryId}"]`) as HTMLElement | null;
-    tabEl?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    sectionRefs.current[categoryId]?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    const tabEl = tabsRef.current?.querySelector(
+      `[data-cat="${categoryId}"]`,
+    ) as HTMLElement | null;
+    tabEl?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
   };
 
   const totalItems = categories.reduce((sum, c) => sum + c.items.length, 0);
@@ -64,45 +74,61 @@ export function MenuPage({
   return (
     <div>
       {/* Cover Image & Restaurant Info */}
-      <div className="bg-white pb-4 relative">
-        <div className="h-32 w-full bg-gray-200 overflow-hidden">
+      <div className="bg-white pb-5 relative">
+        <div className="relative h-36 w-full overflow-hidden bg-gray-200">
           {coverImageUrl ? (
-            <img src={coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+            <Image
+              src={coverImageUrl}
+              alt={`${restaurantName ?? "Restaurant"} cover`}
+              fill
+              unoptimized
+              sizes="480px"
+              className="object-cover"
+            />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-orange-100 to-amber-100" />
+            <div className="w-full h-full bg-[linear-gradient(135deg,#fff7ed_0%,#fef3c7_45%,#f3f4f6_100%)]" />
           )}
         </div>
 
         <div className="px-4 -mt-8 relative z-10">
-          <div className="w-16 h-16 bg-white border-[3px] border-white rounded-full shadow-sm flex items-center justify-center mb-3 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+          <div className="relative w-16 h-16 bg-white border-[3px] border-white rounded-xl flex items-center justify-center mb-3 overflow-hidden">
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+              <Image
+                src={logoUrl}
+                alt={`${restaurantName ?? "Restaurant"} logo`}
+                fill
+                unoptimized
+                sizes="64px"
+                className="object-cover"
+              />
             ) : (
-              <span className="text-2xl font-black text-orange-500">{restaurantName?.charAt(0) || "R"}</span>
+              <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-orange-500">
+                <Storefront size={28} weight="fill" />
+              </div>
             )}
           </div>
 
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-none mb-1.5">
-            {restaurantName}
-          </h1>
+          <h1 className={cn(DINER.displayTitle, "mb-1.5")}>{restaurantName}</h1>
 
           {restaurantDescription && (
-            <p className={cn(DINER.body, "leading-relaxed mb-3 pr-4")}>{restaurantDescription}</p>
+            <p className={cn(DINER.body, "leading-relaxed mb-3 pr-4")}>
+              {restaurantDescription}
+            </p>
           )}
 
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-gray-700 rounded-full text-[11px] font-medium border border-gray-100 shadow-sm">
+            <div className={DINER.metaChip}>
               <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
               Table {tableNumber}
             </div>
             {rating && (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-gray-700 rounded-full text-[11px] font-medium border border-gray-100 shadow-sm">
+              <div className={DINER.metaChip}>
                 <Star size={12} weight="fill" className="text-orange-400" />
                 {rating}
               </div>
             )}
             {estimatedWaitMins && (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-gray-700 rounded-full text-[11px] font-medium border border-gray-100 shadow-sm">
+              <div className={DINER.metaChip}>
                 <Clock size={12} className="text-gray-400" />
                 {estimatedWaitMins}
               </div>
@@ -114,20 +140,20 @@ export function MenuPage({
       {/* Sticky category tab bar */}
       <div
         ref={tabsRef}
-        className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 flex gap-1 overflow-x-auto px-4 py-2 scrollbar-none"
+        className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-y border-gray-100 flex gap-1.5 overflow-x-auto px-4 py-2.5 scrollbar-none"
       >
         {categories.map((category) => {
           const isActive = activeCategory === category.id;
           return (
             <button
+              type="button"
               key={category.id}
               data-cat={category.id}
               onClick={() => scrollToCategory(category.id)}
               className={cn(
-                "flex-none px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                isActive
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-500 hover:text-gray-900 hover:bg-gray-100",
+                DINER.categoryTab,
+                isActive && DINER.categoryTabActive,
+                DINER.pressable,
               )}
             >
               {category.name}
@@ -137,18 +163,29 @@ export function MenuPage({
       </div>
 
       {/* Category sections */}
-      <div className="px-4 pt-4 space-y-8">
+      <div className="px-4 pt-5 space-y-8">
         {categories.map((category) => (
           <section
             key={category.id}
             id={`section-${category.id}`}
-            ref={(el) => { sectionRefs.current[category.id] = el; }}
+            ref={(el) => {
+              sectionRefs.current[category.id] = el;
+            }}
+            className="scroll-mt-16"
           >
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-gray-900">{category.name}</h2>
-              {category.description && (
-                <p className={cn(DINER.caption, "mt-0.5")}>{category.description}</p>
-              )}
+            <div className="mb-3.5 flex items-end justify-between gap-3">
+              <div>
+                <h2 className={DINER.sectionTitle}>{category.name}</h2>
+                {category.description && (
+                  <p className={cn(DINER.caption, "mt-0.5")}>
+                    {category.description}
+                  </p>
+                )}
+              </div>
+              <span className="flex-none text-xs font-semibold text-gray-400">
+                {category.items.length}{" "}
+                {category.items.length === 1 ? "item" : "items"}
+              </span>
             </div>
             <div className={DINER.listGap}>
               {category.items.map((item) => (
@@ -165,7 +202,9 @@ export function MenuPage({
       </div>
 
       <div className="px-4 py-8 text-center">
-        <p className={DINER.caption}>{totalItems} items across {categories.length} categories</p>
+        <p className={DINER.caption}>
+          {totalItems} items across {categories.length} categories
+        </p>
         <p className={cn(DINER.caption, "mt-1")}>Powered by Moji</p>
       </div>
     </div>

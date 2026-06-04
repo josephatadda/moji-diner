@@ -1,11 +1,12 @@
 "use client";
 
+import { BowlFood } from "@phosphor-icons/react";
+import Image from "next/image";
 import { useState } from "react";
 import type { MenuItem, ModifierGroup, ModifierOption } from "@/lib/mockData";
-import { useCartStore } from "@/store/cart";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
-import { BowlFood } from "@phosphor-icons/react";
+import { useCartStore } from "@/store/cart";
+import { BottomSheet } from "./ui/BottomSheet";
 import { DINER } from "./ui/diner-tokens";
 
 interface ItemDetailModalProps {
@@ -16,7 +17,9 @@ interface ItemDetailModalProps {
 
 export function ItemDetailModal({ item, open, onClose }: ItemDetailModalProps) {
   const [quantity, setQuantity] = useState(1);
-  const [selectedModifiers, setSelectedModifiers] = useState<Record<string, ModifierOption[]>>({});
+  const [selectedModifiers, setSelectedModifiers] = useState<
+    Record<string, ModifierOption[]>
+  >({});
   const [specialNote, setSpecialNote] = useState("");
   const { addItem } = useCartStore();
 
@@ -35,7 +38,10 @@ export function ItemDetailModal({ item, open, onClose }: ItemDetailModalProps) {
         return { ...prev, [group.id]: alreadySelected ? [] : [option] };
       }
       if (alreadySelected) {
-        return { ...prev, [group.id]: current.filter((o) => o.id !== option.id) };
+        return {
+          ...prev,
+          [group.id]: current.filter((o) => o.id !== option.id),
+        };
       }
       if (current.length >= group.maxSelections) return prev;
       return { ...prev, [group.id]: [...current, option] };
@@ -61,116 +67,159 @@ export function ItemDetailModal({ item, open, onClose }: ItemDetailModalProps) {
   };
 
   return (
-    <Drawer open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DrawerContent className="max-h-[92vh]">
-        {/* Item image */}
-        <div className="w-full h-44 bg-gray-100 flex items-center justify-center flex-none text-gray-500">
-          <BowlFood size={64} />
-        </div>
-
-        <div className="overflow-y-auto flex-1">
-          <DrawerHeader className="px-4 pt-4 pb-2 text-left">
-            <DrawerTitle className={DINER.title}>{item.name}</DrawerTitle>
-            {item.description && (
-              <DrawerDescription className={cn(DINER.body, "mt-1 leading-relaxed")}>
-                {item.description}
-              </DrawerDescription>
-            )}
-            <p className={cn(DINER.priceLarge, "mt-2")}>₦{item.price.toLocaleString()}</p>
-          </DrawerHeader>
-
-          <div className="px-4 pb-4 space-y-6">
-            {/* Modifier groups */}
-            {item.modifierGroups.map((group) => {
-              const selected = selectedModifiers[group.id] ?? [];
-              return (
-                <div key={group.id}>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className={DINER.cardTitle}>{group.name}</p>
-                    <div className="flex items-center gap-1.5">
-                      {group.required ? (
-                        <span className="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full">Required</span>
-                      ) : (
-                        <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Optional</span>
-                      )}
-                      {group.maxSelections > 1 && (
-                        <span className={DINER.caption}>Choose up to {group.maxSelections}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className={DINER.listGap}>
-                    {group.options.map((option) => {
-                      const isSelected = selected.some((o) => o.id === option.id);
-                      return (
-                        <button
-                          key={option.id}
-                          onClick={() => toggleModifier(group, option)}
-                          className={cn(
-                            "w-full flex items-center justify-between p-3 rounded-xl border text-sm text-left transition-all",
-                            isSelected
-                              ? "border-gray-900 bg-gray-900 text-white"
-                              : "border-gray-100 bg-gray-50 text-gray-700 hover:border-gray-200"
-                          )}
-                        >
-                          <span className="font-medium">{option.name}</span>
-                          <span className={cn("text-sm", isSelected ? "text-gray-300" : "text-gray-400")}>
-                            {option.priceDelta > 0 ? `+₦${option.priceDelta.toLocaleString()}` : "Free"}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Special note */}
-            <div>
-              <label className={cn(DINER.sectionHeading, "block mb-2")}>
-                Special note <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <textarea
-                value={specialNote}
-                onChange={(e) => setSpecialNote(e.target.value)}
-                placeholder="No onions, extra spicy, etc."
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-base resize-none h-20 focus:border-gray-400 focus:outline-none transition-colors bg-white"
-              />
-            </div>
-
-            {/* Quantity + Add button */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-gray-100 rounded-full p-1">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-700 font-bold text-lg active:scale-[0.97] transition-all ease-out"
-                >
-                  −
-                </button>
-                <span className="w-8 text-center font-bold text-gray-900">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-700 font-bold text-lg active:scale-[0.97] transition-all ease-out"
-                >
-                  +
-                </button>
-              </div>
-
-              <button
-                onClick={handleAddToCart}
-                disabled={!allGroupsSatisfied}
-                className={cn(
-                  "flex-1 h-12 rounded-2xl font-bold text-sm transition-all",
-                  allGroupsSatisfied
-                    ? "bg-gray-900 text-white hover:bg-gray-700 active:scale-[0.98]"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                )}
-              >
-                Add to order · ₦{total.toLocaleString()}
-              </button>
-            </div>
+    <BottomSheet
+      open={open}
+      onClose={handleClose}
+      accessibilityTitle={item.name}
+      bodyClassName="px-0 pt-1 pb-0"
+      footerClassName="px-4"
+      footer={
+        <div className="flex items-center gap-3">
+          <div className={DINER.stepperShell}>
+            <button
+              type="button"
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className={cn(DINER.stepperButton, "text-lg", DINER.pressable)}
+            >
+              −
+            </button>
+            <span className="w-8 text-center font-bold text-gray-900">
+              {quantity}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQuantity(quantity + 1)}
+              className={cn(DINER.stepperButton, "text-lg", DINER.pressable)}
+            >
+              +
+            </button>
           </div>
+
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={!allGroupsSatisfied}
+            className={cn("flex-1", DINER.primaryCta, DINER.ctaPress)}
+          >
+            Add to order · ₦{total.toLocaleString()}
+          </button>
         </div>
-      </DrawerContent>
-    </Drawer>
+      }
+    >
+      {/* Item image */}
+      <div className="bg-white px-5 pb-4 pt-1">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
+          {item.photoUrl ? (
+            <Image
+              src={item.photoUrl}
+              alt={item.name}
+              fill
+              unoptimized
+              sizes="448px"
+              className="object-contain p-2"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#f9fafb_0%,#f3f4f6_100%)] text-gray-400">
+              <div className="flex h-24 w-24 items-center justify-center rounded-xl border border-gray-200 bg-white">
+                <BowlFood size={48} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-6 px-5 pb-7 pt-4">
+        <div className="space-y-2">
+          <h2 className={DINER.sheetTitle}>{item.name}</h2>
+          {item.description && (
+            <p className="text-sm leading-relaxed text-gray-600">
+              {item.description}
+            </p>
+          )}
+          <p className={cn(DINER.stat, "pt-1")}>
+            ₦{item.price.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Modifier groups */}
+        {item.modifierGroups.map((group) => {
+          const selected = selectedModifiers[group.id] ?? [];
+          return (
+            <div key={group.id} className="space-y-2.5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-gray-900">
+                  {group.name}
+                </p>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {group.required ? (
+                    <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                      Required
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-400">
+                      Optional
+                    </span>
+                  )}
+                  {group.maxSelections > 1 && (
+                    <span className={DINER.caption}>
+                      Choose up to {group.maxSelections}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className={DINER.listGap}>
+                {group.options.map((option) => {
+                  const isSelected = selected.some((o) => o.id === option.id);
+                  return (
+                    <button
+                      type="button"
+                      key={option.id}
+                      onClick={() => toggleModifier(group, option)}
+                      className={cn(
+                        DINER.selectionCard,
+                        isSelected
+                          ? DINER.selectionCardSelected
+                          : "bg-gray-50 text-gray-700",
+                        DINER.pressable,
+                      )}
+                    >
+                      <span className="font-semibold">{option.name}</span>
+                      <span
+                        className={cn(
+                          "text-sm",
+                          isSelected ? "text-gray-300" : "text-gray-400",
+                        )}
+                      >
+                        {option.priceDelta > 0
+                          ? `+₦${option.priceDelta.toLocaleString()}`
+                          : "Free"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Special note */}
+        <div>
+          <label
+            htmlFor="item-special-note"
+            className="mb-2 block text-sm font-medium text-gray-900"
+          >
+            Special note{" "}
+            <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <textarea
+            id="item-special-note"
+            value={specialNote}
+            onChange={(e) => setSpecialNote(e.target.value)}
+            placeholder="No onions, extra spicy, etc."
+            className={cn(DINER.textarea, "h-20 text-base")}
+          />
+        </div>
+      </div>
+    </BottomSheet>
   );
 }

@@ -1,0 +1,60 @@
+import type { DesignToken } from "../types";
+
+export const motionTokens: DesignToken[] = [
+  {
+    name: "duration/instant",
+    value: "0ms",
+    layer: "semantic",
+    category: "motion",
+    usage: "Immediate state changes.",
+    status: "stable",
+  },
+  {
+    name: "duration/fast",
+    value: "100ms",
+    layer: "semantic",
+    category: "motion",
+    usage: "Micro-interactions and active press.",
+    status: "stable",
+  },
+  {
+    name: "duration/base",
+    value: "200ms",
+    layer: "semantic",
+    category: "motion",
+    usage: "Hover, toggle, and fade.",
+    status: "stable",
+  },
+  {
+    name: "duration/slow",
+    value: "350ms",
+    layer: "semantic",
+    category: "motion",
+    usage: "Sheet enter/exit and page transitions.",
+    status: "stable",
+  },
+  {
+    name: "ease/standard",
+    value: "cubic-bezier(0.2, 0, 0, 1)",
+    layer: "semantic",
+    category: "motion",
+    usage: "General transitions.",
+    status: "stable",
+  },
+  {
+    name: "scale/active",
+    value: "scale(0.97)",
+    layer: "semantic",
+    category: "motion",
+    usage: "Button and card press feedback.",
+    status: "stable",
+  },
+  {
+    name: "transition/sheet",
+    value: "duration/slow ease/enter",
+    layer: "component",
+    category: "motion",
+    usage: "Bottom sheet open/close.",
+    status: "stable",
+  },
+];

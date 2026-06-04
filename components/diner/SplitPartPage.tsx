@@ -1,8 +1,10 @@
 "use client";
 
+import { CheckCircle } from "@phosphor-icons/react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { CheckCircle } from "@phosphor-icons/react";
+import { DinerIconBadge } from "./ui/DinerIconBadge";
+import { DinerInfoRow } from "./ui/DinerInfoRow";
 import { DINER } from "./ui/diner-tokens";
 
 interface Props {
@@ -14,7 +16,13 @@ interface Props {
   tableNumber: number;
 }
 
-export default function SplitPartPage({ token, part, totalParts, amount, restaurantName, tableNumber }: Props) {
+export default function SplitPartPage({
+  part,
+  totalParts,
+  amount,
+  restaurantName,
+  tableNumber,
+}: Props) {
   const [paid, setPaid] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -29,14 +37,24 @@ export default function SplitPartPage({ token, part, totalParts, amount, restaur
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className={cn(DINER.card, "p-8 max-w-sm w-full text-center")}>
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
-            <CheckCircle size={32} weight="fill" />
-          </div>
+          <DinerIconBadge
+            icon={CheckCircle}
+            tone="success"
+            size="lg"
+            className="mx-auto mb-4"
+          />
           <h2 className={DINER.title}>Payment Confirmed!</h2>
-          <p className={cn(DINER.caption, "mt-2")}>Your share of the bill has been paid.</p>
-          <div className={cn(DINER.summaryCard, "mt-4")}>
-            <p className={DINER.caption}>Amount paid</p>
-            <p className="text-2xl font-bold text-gray-900 mt-0.5">₦{amount.toLocaleString()}</p>
+          <p className={cn(DINER.caption, "mt-2")}>
+            Your share of the bill has been paid.
+          </p>
+          <div className={cn(DINER.summaryCard, "mt-4 space-y-2 text-left")}>
+            <DinerInfoRow label="Restaurant" value={restaurantName} />
+            <DinerInfoRow label="Table" value={tableNumber} />
+            <DinerInfoRow
+              label="Amount paid"
+              value={`₦${amount.toLocaleString()}`}
+              emphasis
+            />
           </div>
           <p className={cn(DINER.caption, "mt-6")}>Powered by Moji</p>
         </div>
@@ -48,33 +66,44 @@ export default function SplitPartPage({ token, part, totalParts, amount, restaur
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className={cn(DINER.card, "p-6 max-w-sm w-full")}>
         <div className="text-center mb-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Bill Split</p>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+            Bill Split
+          </p>
           <h1 className={cn(DINER.title, "mt-1")}>{restaurantName}</h1>
           <p className={DINER.caption}>Table {tableNumber}</p>
         </div>
 
         <div className={cn(DINER.summaryCard, "mb-4 text-center")}>
-          <p className={DINER.caption}>Part {part} of {totalParts}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">₦{amount.toLocaleString()}</p>
+          <p className={DINER.caption}>
+            Part {part} of {totalParts}
+          </p>
+          <p className={cn(DINER.displayTitleSmall, "mt-1 tabular-nums")}>
+            ₦{amount.toLocaleString()}
+          </p>
         </div>
 
         {/* Part progress indicator */}
         <div className="flex gap-1.5 mb-6">
           {Array.from({ length: totalParts }, (_, i) => (
             <div
-              key={i}
+              key={`progress-${i + 1}`}
               className={cn(
                 "h-1.5 flex-1 rounded-full transition-colors",
-                i + 1 < part ? "bg-green-500" : i + 1 === part ? "bg-gray-900" : "bg-gray-200",
+                i + 1 < part
+                  ? "bg-green-500"
+                  : i + 1 === part
+                    ? "bg-gray-900"
+                    : "bg-gray-200",
               )}
             />
           ))}
         </div>
 
         <button
+          type="button"
           onClick={handlePay}
           disabled={loading}
-          className={cn("w-full h-12 rounded-2xl bg-gray-900 text-white font-bold text-base hover:bg-gray-700 disabled:opacity-60", DINER.ctaPress)}
+          className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
         >
           {loading ? "Processing…" : `Pay ₦${amount.toLocaleString()}`}
         </button>

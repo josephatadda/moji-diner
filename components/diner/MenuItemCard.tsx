@@ -1,11 +1,12 @@
 "use client";
 
+import { BowlFood, Star } from "@phosphor-icons/react";
+import Image from "next/image";
 import { useState } from "react";
 import type { MenuItem } from "@/lib/mockData";
+import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
 import { ItemDetailModal } from "./ItemDetailModal";
-import { cn } from "@/lib/utils";
-import { BowlFood, Star } from "@phosphor-icons/react";
 import { DINER } from "./ui/diner-tokens";
 
 interface MenuItemCardProps {
@@ -24,7 +25,7 @@ const TAG_COLORS: Record<string, string> = {
   "Chef's Special": "bg-purple-100 text-purple-700",
 };
 
-export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCardProps) {
+export function MenuItemCard({ item }: MenuItemCardProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const { items: cartItems, addItem, updateQuantity } = useCartStore();
 
@@ -44,26 +45,41 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
     <>
       <div
         className={cn(
-          "flex gap-3 p-3 rounded-2xl border transition-all",
+          "flex gap-3 rounded-2xl border p-3 transition-colors",
           item.isAvailable
-            ? "bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm"
+            ? "bg-white border-gray-100 hover:border-gray-200"
             : "bg-gray-50 border-gray-100 opacity-60",
         )}
       >
         {/* Thumbnail */}
-        <div
+        <button
+          type="button"
           onClick={() => item.isAvailable && setModalOpen(true)}
+          disabled={!item.isAvailable}
           className={cn(
-            "flex-none w-20 h-20 rounded-xl overflow-hidden relative",
+            "flex-none w-24 h-24 rounded-xl overflow-hidden relative border border-gray-100 bg-gray-50",
             item.isAvailable && "cursor-pointer",
           )}
         >
-          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-500">
-            <BowlFood size={28} />
-          </div>
+          {item.photoUrl ? (
+            <Image
+              src={item.photoUrl}
+              alt={item.name}
+              fill
+              unoptimized
+              sizes="96px"
+              className="object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gray-50 text-gray-400">
+              <BowlFood size={28} />
+            </div>
+          )}
           {!item.isAvailable && (
             <div className="absolute inset-0 bg-gray-100/80 flex items-center justify-center">
-              <span className="text-[10px] font-bold text-gray-500 bg-white px-1.5 py-0.5 rounded-full">Sold Out</span>
+              <span className="text-[10px] font-bold text-gray-500 bg-white px-1.5 py-0.5 rounded-full">
+                Sold Out
+              </span>
             </div>
           )}
           {item.isFeatured && item.isAvailable && (
@@ -71,19 +87,31 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
               <Star size={10} weight="fill" />
             </span>
           )}
-        </div>
+        </button>
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
             onClick={() => item.isAvailable && setModalOpen(true)}
-            className={item.isAvailable ? "cursor-pointer" : undefined}
+            disabled={!item.isAvailable}
+            className={cn(
+              "block w-full text-left",
+              item.isAvailable && "cursor-pointer",
+            )}
           >
             <p className={cn(DINER.cardTitle, "leading-snug")}>{item.name}</p>
             {item.description && (
-              <p className={cn(DINER.caption, "mt-0.5 line-clamp-2 leading-relaxed")}>{item.description}</p>
+              <p
+                className={cn(
+                  DINER.caption,
+                  "mt-1 line-clamp-2 leading-relaxed",
+                )}
+              >
+                {item.description}
+              </p>
             )}
-          </div>
+          </button>
 
           {/* Tags */}
           {item.tags.length > 0 && (
@@ -103,11 +131,15 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
           )}
 
           {/* Price + action */}
-          <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center justify-between gap-2 mt-2.5">
             <div>
-              <span className={DINER.price}>₦{item.price.toLocaleString()}</span>
+              <span className={DINER.price}>
+                ₦{item.price.toLocaleString()}
+              </span>
               {item.preparationTimeMins > 0 && (
-                <span className={cn(DINER.caption, "ml-1.5")}>~{item.preparationTimeMins}m</span>
+                <span className={cn(DINER.caption, "ml-1.5")}>
+                  ~{item.preparationTimeMins}m
+                </span>
               )}
             </div>
 
@@ -115,23 +147,41 @@ export function MenuItemCard({ item, restaurantSlug, tableNumber }: MenuItemCard
               cartEntry && !hasModifiers ? (
                 <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => updateQuantity(cartEntry.cartId, cartEntry.quantity - 1)}
-                    className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 active:scale-[0.97] transition-all ease-out flex items-center justify-center text-gray-700 font-bold text-sm"
+                    type="button"
+                    onClick={() =>
+                      updateQuantity(cartEntry.cartId, cartEntry.quantity - 1)
+                    }
+                    className={cn(
+                      DINER.stepperButton,
+                      "h-9 w-9",
+                      DINER.pressable,
+                    )}
                   >
                     −
                   </button>
-                  <span className="w-5 text-center text-sm font-bold text-gray-900">{cartEntry.quantity}</span>
+                  <span className="w-5 text-center text-sm font-bold text-gray-900">
+                    {cartEntry.quantity}
+                  </span>
                   <button
+                    type="button"
                     onClick={() => addItem(item, 1, {})}
-                    className="w-8 h-8 rounded-full bg-gray-900 hover:bg-gray-700 active:scale-[0.97] transition-all ease-out flex items-center justify-center text-white font-bold text-sm"
+                    className={cn(
+                      DINER.stepperButtonPrimary,
+                      "h-9 w-9",
+                      DINER.pressable,
+                    )}
                   >
                     +
                   </button>
                 </div>
               ) : (
                 <button
+                  type="button"
                   onClick={handleAddDirect}
-                  className={cn("flex items-center gap-1 bg-gray-900 text-white text-xs font-bold px-3 py-2 rounded-full hover:bg-gray-700", DINER.pressable)}
+                  className={cn(
+                    "flex h-9 flex-none items-center gap-1 rounded-full bg-gray-900 px-3 text-xs font-bold text-white hover:bg-gray-800",
+                    DINER.pressable,
+                  )}
                 >
                   <span>+</span>
                   <span>Add</span>

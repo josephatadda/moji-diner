@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { calculateBill } from "@/lib/diner-utils";
+import { useCartStore } from "@/store/cart";
 import { BillView } from "./BillView";
 import { SplitBillModal } from "./SplitBillModal";
-import { useCartStore } from "@/store/cart";
-import { calculateBill } from "@/lib/diner-utils";
 
 interface Props {
   restaurantSlug: string;
@@ -14,21 +14,36 @@ interface Props {
   vatEnabled: boolean;
 }
 
-export function BillScreenClient({ restaurantSlug, tableNumber, restaurantName, vatRate, vatEnabled }: Props) {
+export function BillScreenClient({
+  restaurantSlug,
+  tableNumber,
+  restaurantName,
+  vatRate,
+  vatEnabled,
+}: Props) {
   const [screen, setScreen] = useState<"bill" | "split">("bill");
+  const [splitTotalOverride, setSplitTotalOverride] = useState<number | null>(
+    null,
+  );
   const { sessionBatches } = useCartStore();
 
-  const sub = sessionBatches.reduce((sum, b) => sum + b.items.reduce((s, i) => s + i.lineTotal, 0), 0);
-  const { vat, total } = calculateBill({ subtotal: sub, vatRate, vatEnabled });
+  const sub = sessionBatches.reduce(
+    (sum, b) => sum + b.items.reduce((s, i) => s + i.lineTotal, 0),
+    0,
+  );
+  const { total } = calculateBill({ subtotal: sub, vatRate, vatEnabled });
 
   if (screen === "split") {
     return (
       <SplitBillModal
-        total={total}
+        total={splitTotalOverride ?? total}
         restaurantName={restaurantName}
         restaurantSlug={restaurantSlug}
         tableNumber={tableNumber}
-        onBack={() => setScreen("bill")}
+        onBack={() => {
+          setSplitTotalOverride(null);
+          setScreen("bill");
+        }}
       />
     );
   }
@@ -37,9 +52,13 @@ export function BillScreenClient({ restaurantSlug, tableNumber, restaurantName, 
     <BillView
       restaurantSlug={restaurantSlug}
       tableNumber={tableNumber}
+      restaurantName={restaurantName}
       vatRate={vatRate}
       vatEnabled={vatEnabled}
-      onSplitBill={() => setScreen("split")}
+      onSplitBill={(splitTotal) => {
+        setSplitTotalOverride(splitTotal ?? total);
+        setScreen("split");
+      }}
     />
   );
 }
