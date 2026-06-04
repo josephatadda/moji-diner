@@ -1,13 +1,13 @@
 "use client";
 
+import { Receipt, ShoppingCart } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useCartStore } from "@/store/cart";
-import { formatPrice } from "@/lib/mockData";
-import { ShoppingCart, Receipt } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { DINER } from "./ui/diner-tokens";
 import { useEffect, useState } from "react";
+import { formatPrice } from "@/lib/mockData";
+import { cn } from "@/lib/utils";
+import { useCartStore } from "@/store/cart";
+import { DINER } from "./ui/diner-tokens";
 
 interface DinerShellProps {
   restaurantName: string;
@@ -16,7 +16,11 @@ interface DinerShellProps {
   children: React.ReactNode;
 }
 
-export function DinerShell({ restaurantName, restaurantSlug, tableNumber, children }: DinerShellProps) {
+export function DinerShell({
+  restaurantSlug,
+  tableNumber,
+  children,
+}: DinerShellProps) {
   const { sessionBatches, totalItems, subtotal } = useCartStore();
   const count = totalItems();
   const pathname = usePathname();
@@ -24,7 +28,9 @@ export function DinerShell({ restaurantName, restaurantSlug, tableNumber, childr
   useEffect(() => setMounted(true), []);
 
   const hasOrders = mounted && sessionBatches?.length > 0;
-  const ordersStatus = sessionBatches?.some((b) => b.status === "preparing") ? "orange" : "green";
+  const ordersStatus = sessionBatches?.some((b) => b.status === "preparing")
+    ? "orange"
+    : "green";
 
   const baseUrl = `/${restaurantSlug}/t/${tableNumber}`;
   const isCart = pathname.endsWith("/cart");
@@ -33,7 +39,7 @@ export function DinerShell({ restaurantName, restaurantSlug, tableNumber, childr
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Centered shell — full width mobile, 480px capped on desktop */}
-      <div className="mx-auto max-w-[480px] min-h-screen bg-white relative flex flex-col shadow-[0_0_60px_rgba(0,0,0,0.12)]">
+      <div className="mx-auto max-w-[480px] min-h-screen bg-white relative flex flex-col border-x border-gray-100">
         <main className="flex-1 pb-28">{children}</main>
       </div>
 
@@ -43,18 +49,17 @@ export function DinerShell({ restaurantName, restaurantSlug, tableNumber, childr
           <div className="flex flex-col items-end gap-3 pointer-events-auto">
             {hasOrders && (
               <Link
-                href={`${baseUrl}/cart`}
-                className={cn(
-                  "flex items-center gap-2 bg-white text-gray-900 px-4 h-12 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.15)] hover:bg-gray-50 border border-gray-100 font-bold text-sm",
-                  DINER.pressable,
-                )}
+                href={`${baseUrl}/cart?view=orders`}
+                className={cn(DINER.floatingSecondary, DINER.pressable)}
               >
                 <div className="relative flex items-center justify-center">
                   <Receipt size={18} weight="bold" />
                   <span
                     className={cn(
                       "absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white",
-                      ordersStatus === "orange" ? DINER.statusPreparing : DINER.statusReady,
+                      ordersStatus === "orange"
+                        ? DINER.statusPreparing
+                        : DINER.statusReady,
                     )}
                   />
                 </div>
@@ -63,11 +68,8 @@ export function DinerShell({ restaurantName, restaurantSlug, tableNumber, childr
             )}
 
             <Link
-              href={`${baseUrl}/cart`}
-              className={cn(
-                "flex items-center gap-3 bg-gray-900 text-white px-5 h-12 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:bg-gray-800",
-                DINER.pressable,
-              )}
+              href={`${baseUrl}/cart?view=cart`}
+              className={cn(DINER.floatingPrimary, DINER.pressable)}
             >
               <div className="relative">
                 <ShoppingCart size={20} weight="fill" />
@@ -78,7 +80,9 @@ export function DinerShell({ restaurantName, restaurantSlug, tableNumber, childr
                 )}
               </div>
               <div className="w-px h-4 bg-gray-700 mx-1" />
-              <span className="font-bold text-sm tracking-tight">{mounted ? formatPrice(subtotal()) : "₦0"}</span>
+              <span className="font-bold text-sm tracking-tight">
+                {mounted ? formatPrice(subtotal()) : "₦0"}
+              </span>
             </Link>
           </div>
         </div>

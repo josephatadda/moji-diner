@@ -1,24 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { useCartStore } from "@/store/cart";
-import { Users, Copy, CheckCircle, CreditCard, Money, Trophy, ArrowRight, Receipt } from "@phosphor-icons/react";
+import {
+  ArrowRight,
+  CheckCircle,
+  DownloadSimple,
+  Receipt,
+  Trophy,
+  Users,
+  WarningCircle,
+} from "@phosphor-icons/react";
 import Link from "next/link";
+import { useState } from "react";
+import { calculateBill, groupSessionItems } from "@/lib/diner-utils";
 import { cn } from "@/lib/utils";
-import { PageHeader } from "./ui/PageHeader";
+import { useCartStore } from "@/store/cart";
 import { BillSummary } from "./ui/BillSummary";
-import { ItemCard } from "./ui/ItemCard";
-import { SegmentedTabs } from "./ui/SegmentedTabs";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
+import { BottomSheet } from "./ui/BottomSheet";
+import { DinerFeedbackCard } from "./ui/DinerFeedbackCard";
+import { DinerIconBadge } from "./ui/DinerIconBadge";
+import { DinerInfoRow } from "./ui/DinerInfoRow";
+import { DinerPaymentPanel } from "./ui/DinerPaymentPanel";
+import { DinerReceipt } from "./ui/DinerReceipt";
+import { dinerToast } from "./ui/diner-toast";
 import { DINER } from "./ui/diner-tokens";
-import { groupSessionItems, calculateBill } from "@/lib/diner-utils";
+import { downloadReceiptImage } from "./ui/download-receipt";
+import { FixedActionBar } from "./ui/FixedActionBar";
+import { ItemCard } from "./ui/ItemCard";
+import { PageHeader } from "./ui/PageHeader";
 
 interface BillViewProps {
   restaurantSlug: string;
   tableNumber: number;
+  restaurantName: string;
   vatRate?: number;
   vatEnabled?: boolean;
-  onSplitBill?: () => void;
+  onSplitBill?: (splitTotal?: number) => void;
 }
 
 const TIP_OPTIONS = [
@@ -28,274 +44,322 @@ const TIP_OPTIONS = [
   { label: "Custom", value: -1 },
 ];
 
+const STARTING_LOYALTY_POINTS = 1250;
+
+function paymentMethodLabel(method: "bank" | "card" | "cash") {
+  if (method === "bank") return "Bank transfer";
+  if (method === "card") return "Card";
+  return "Cash";
+}
+
 export function BillView({
   restaurantSlug,
   tableNumber,
+  restaurantName,
   vatRate = 7.5,
   vatEnabled = false,
   onSplitBill,
 }: BillViewProps) {
-  const { sessionBatches, clearSession, loyaltyName, loyaltyPhone, setLoyaltyData } = useCartStore();
+  const {
+    sessionBatches,
+    clearSession,
+    loyaltyName,
+    loyaltyPhone,
+    setLoyaltyData,
+  } = useCartStore();
   const [tipOption, setTipOption] = useState(0);
   const [customTip, setCustomTip] = useState("");
-  const [paymentState, setPaymentState] = useState<"idle" | "method" | "success" | "failed">("idle");
-  const [selectedMethod, setSelectedMethod] = useState<"bank" | "card" | "cash">("bank");
-  const [copied, setCopied] = useState(false);
+  const [paymentState, setPaymentState] = useState<
+    "idle" | "method" | "success" | "failed"
+  >("idle");
+  const [completedMethod, setCompletedMethod] = useState<
+    "bank" | "card" | "cash"
+  >("bank");
   const [claimName, setClaimName] = useState("");
   const [claimPhone, setClaimPhone] = useState("");
   const [pointsClaimed, setPointsClaimed] = useState(false);
   const [claimDrawerOpen, setClaimDrawerOpen] = useState(false);
+  const [loyaltyDrawerOpen, setLoyaltyDrawerOpen] = useState(false);
+  const [appliedPoints, setAppliedPoints] = useState(0);
+  const [receiptIssuedAt] = useState(() => new Date());
+  const [receiptId] = useState(() => `MOJI-${Date.now().toString().slice(-6)}`);
 
   const displayItems = groupSessionItems(sessionBatches);
-  const sub = displayItems.reduce((sum, i) => sum + i.lineTotal, 0);
-  const tipPct = tipOption === -1 ? (parseFloat(customTip) || 0) : tipOption;
-  const { vat, tip, total } = calculateBill({ subtotal: sub, vatRate, vatEnabled, tipPct });
+  const subtotal = displayItems.reduce((sum, item) => sum + item.lineTotal, 0);
+  const tipPct = tipOption === -1 ? parseFloat(customTip) || 0 : tipOption;
+  const {
+    vat,
+    tip,
+    total: totalBeforeDiscount,
+  } = calculateBill({
+    subtotal,
+    vatRate,
+    vatEnabled,
+    tipPct,
+  });
+  const loyaltyActive = Boolean(loyaltyPhone || pointsClaimed);
+  const pointsEarned = Math.floor(subtotal / 100);
+  const maxRedeemablePoints = loyaltyActive
+    ? Math.min(STARTING_LOYALTY_POINTS, Math.floor(totalBeforeDiscount))
+    : 0;
+  const safeAppliedPoints = Math.min(appliedPoints, maxRedeemablePoints);
+  const payableTotal = Math.max(totalBeforeDiscount - safeAppliedPoints, 0);
+  const updatedPointsBalance =
+    STARTING_LOYALTY_POINTS - safeAppliedPoints + pointsEarned;
 
   const menuUrl = `/${restaurantSlug}/t/${tableNumber}`;
   const cartUrl = `/${restaurantSlug}/t/${tableNumber}/cart`;
+  const methodLabel = paymentMethodLabel(completedMethod);
 
-  // Payment method screen
   if (paymentState === "method") {
     return (
       <div>
         <PageHeader
           title="Payment Method"
-          subtitle={`Total: ₦${Math.round(total).toLocaleString()}`}
+          subtitle={`Total: ₦${Math.round(payableTotal).toLocaleString()}`}
           onBack={() => setPaymentState("idle")}
         />
 
-        <div className="px-4 space-y-5 pb-8">
-          <SegmentedTabs
-            options={[
-              { value: "bank", label: "Transfer" },
-              { value: "card", label: "Card" },
-              { value: "cash", label: "Cash" },
-            ]}
-            value={selectedMethod}
-            onChange={setSelectedMethod}
+        <div className="px-4 pb-8">
+          <DinerPaymentPanel
+            amount={payableTotal}
+            onComplete={(method) => {
+              setCompletedMethod(method);
+              setPaymentState("success");
+              dinerToast.success("Payment recorded");
+            }}
           />
-
-          {selectedMethod === "bank" && (
-            <div className={cn(DINER.card, "p-5")}>
-              <h3 className="font-bold text-gray-900 mb-1">Bank Transfer</h3>
-              <p className={cn(DINER.caption, "mb-4")}>Transfer to the restaurant's account</p>
-              <div className={cn(DINER.summaryCard, "space-y-3 mb-6")}>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Bank Name</span>
-                  <span className="font-semibold text-gray-900">GTBank</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Account Name</span>
-                  <span className="font-semibold text-gray-900">Moji Restaurant</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-400">Account No.</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-900 tracking-wider">0123456789</span>
-                    <button
-                      onClick={() => { navigator.clipboard.writeText("0123456789"); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-                      className="p-1.5 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-                    >
-                      {copied ? <CheckCircle size={14} weight="bold" className="text-green-600" /> : <Copy size={14} weight="bold" className="text-gray-700" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => setPaymentState("success")}
-                className={cn("w-full h-12 bg-gray-900 text-white rounded-2xl text-base font-bold", DINER.ctaPress)}
-              >
-                I have transferred ₦{Math.round(total).toLocaleString()}
-              </button>
-            </div>
-          )}
-
-          {selectedMethod === "card" && (
-            <div className={cn(DINER.card, "p-5 text-center py-8")}>
-              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500">
-                <CreditCard size={32} weight="fill" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-lg mb-2">Pay with Card</h3>
-              <p className={cn(DINER.body, "mb-8 max-w-[200px] mx-auto")}>A waiter will bring the POS terminal to your table.</p>
-              <button onClick={() => setPaymentState("success")} className={cn("w-full h-12 bg-gray-900 text-white rounded-2xl text-base font-bold", DINER.ctaPress)}>
-                Mark as paid
-              </button>
-            </div>
-          )}
-
-          {selectedMethod === "cash" && (
-            <div className={cn(DINER.card, "p-5 text-center py-8")}>
-              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
-                <Money size={32} weight="fill" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-lg mb-2">Pay with Cash</h3>
-              <p className={cn(DINER.body, "mb-8 max-w-[200px] mx-auto")}>A waiter will come to your table to collect your cash payment.</p>
-              <button onClick={() => setPaymentState("success")} className={cn("w-full h-12 bg-gray-900 text-white rounded-2xl text-base font-bold", DINER.ctaPress)}>
-                Mark as paid
-              </button>
-            </div>
-          )}
         </div>
       </div>
     );
   }
 
-  // Success screen
   if (paymentState === "success") {
-    const pointsEarned = Math.floor(sub / 100);
-    const mockBalance = 1250 + pointsEarned;
-
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center py-10">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600">
-          <CheckCircle size={40} weight="fill" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900">Payment Successful!</h2>
+      <div>
+        <div className="space-y-5 px-4 pb-44 pt-8">
+          <section className="flex flex-col items-center text-center">
+            <DinerIconBadge icon={CheckCircle} tone="success" size="lg" />
+            <h2 className={cn(DINER.displayTitleSmall, "mt-4")}>
+              Payment successful
+            </h2>
+            <p className={cn(DINER.body, "mt-2 max-w-xs")}>
+              Your payment of ₦{Math.round(payableTotal).toLocaleString()} has
+              been recorded.
+            </p>
+          </section>
 
-        {loyaltyPhone && (
-          <p className={cn(DINER.body, "mt-2 max-w-xs")}>
-            A WhatsApp receipt will be sent to <span className="font-medium text-gray-700">{loyaltyPhone}</span>.
-          </p>
-        )}
-
-        {loyaltyPhone || pointsClaimed ? (
-          <div className="mt-6 w-full max-w-xs p-4 bg-orange-50 border border-orange-100 rounded-2xl text-left">
-            <h3 className="font-bold text-orange-800 flex items-center gap-2 text-sm">
-              <Trophy size={18} weight="fill" />
-              {loyaltyName ? `Nice one, ${loyaltyName}!` : "Points Earned!"}
-            </h3>
-            <p className="text-xs text-orange-700 mt-1">You earned <span className="font-bold">{pointsEarned} points</span> on this order.</p>
-            <div className="mt-3 pt-3 border-t border-orange-200/60 flex justify-between items-center text-sm">
-              <span className="text-orange-800 font-medium">New Balance:</span>
-              <span className="font-bold text-orange-900">{mockBalance.toLocaleString()} pts</span>
-            </div>
-          </div>
-        ) : (
-          <>
-            <button
-              onClick={() => setClaimDrawerOpen(true)}
-              className={cn(DINER.card, "mt-6 w-full max-w-xs p-4 text-left hover:bg-gray-50 flex items-center justify-between group", DINER.ctaPress)}
+          {loyaltyActive ? (
+            <DinerFeedbackCard
+              title={
+                loyaltyName ? `Nice one, ${loyaltyName}!` : "Points updated"
+              }
+              description={`You earned ${pointsEarned} points on this order.`}
+              icon={Trophy}
+              tone="warning"
             >
-              <div>
-                <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm mb-1">
-                  <span className="text-lg">🎁</span> Claim your points
-                </h3>
-                <p className={DINER.caption}>You earned <span className="font-bold text-gray-900">{pointsEarned} points</span> today.</p>
+              <div className="mt-3 space-y-2 border-t border-orange-200/60 pt-3">
+                {safeAppliedPoints > 0 && (
+                  <DinerInfoRow
+                    label="Redeemed"
+                    value={`${safeAppliedPoints.toLocaleString()} pts`}
+                  />
+                )}
+                <DinerInfoRow
+                  label="New balance"
+                  value={`${updatedPointsBalance.toLocaleString()} pts`}
+                  emphasis
+                />
               </div>
-              <ArrowRight size={20} weight="bold" className="text-gray-400 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </DinerFeedbackCard>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setClaimDrawerOpen(true)}
+                className={cn(
+                  DINER.card,
+                  "flex w-full items-center justify-between p-4 text-left hover:bg-gray-50",
+                  DINER.ctaPress,
+                )}
+              >
+                <div>
+                  <h3 className="mb-1 flex items-center gap-2 text-sm font-bold text-gray-900">
+                    <Trophy
+                      size={18}
+                      weight="fill"
+                      className="text-orange-500"
+                    />
+                    Claim your points
+                  </h3>
+                  <p className={DINER.caption}>
+                    You earned{" "}
+                    <span className="font-bold text-gray-900">
+                      {pointsEarned} points
+                    </span>{" "}
+                    today.
+                  </p>
+                </div>
+                <ArrowRight size={20} weight="bold" className="text-gray-400" />
+              </button>
 
-            <Drawer open={claimDrawerOpen} onOpenChange={setClaimDrawerOpen}>
-              <DrawerContent>
-                <DrawerHeader className="px-5 pt-8 pb-6 flex flex-col items-center text-center">
-                  <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-600">
-                    <Trophy size={24} />
+              <BottomSheet
+                open={claimDrawerOpen}
+                onClose={() => setClaimDrawerOpen(false)}
+                accessibilityTitle="Save your points"
+                header={
+                  <div className="flex flex-col items-center text-center">
+                    <DinerIconBadge
+                      icon={Trophy}
+                      tone="warning"
+                      size="md"
+                      className="mb-4"
+                    />
+                    <h2 className={cn(DINER.sheetTitle, "mb-2")}>
+                      Save your points
+                    </h2>
+                    <p className={DINER.body}>
+                      You earned {pointsEarned} points on this order. Enter your
+                      details to save them.
+                    </p>
                   </div>
-                  <DrawerTitle className="text-2xl font-bold text-gray-900 mb-2">
-                    Save your points
-                  </DrawerTitle>
-                  <DrawerDescription className={DINER.body}>
-                    You earned {pointsEarned} points on this order. Enter your details to save them.
-                  </DrawerDescription>
-                </DrawerHeader>
-
-                <div className="px-5 pb-8 space-y-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2 text-left">Your name</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Tunde"
-                        value={claimName}
-                        onChange={(e) => setClaimName(e.target.value)}
-                        className="w-full px-4 h-12 border border-gray-200 rounded-xl text-base focus:border-gray-400 focus:outline-none transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2 text-left">Your phone number</label>
-                      <input
-                        type="tel"
-                        placeholder="0801 234 5678"
-                        value={claimPhone}
-                        onChange={(e) => setClaimPhone(e.target.value)}
-                        className="w-full px-4 h-12 border border-gray-200 rounded-xl text-base focus:border-gray-400 focus:outline-none transition-colors"
-                      />
-                    </div>
-                  </div>
+                }
+                footer={
                   <button
+                    type="button"
                     onClick={() => {
                       if (claimName && claimPhone) {
                         setLoyaltyData(claimName, claimPhone);
                         setPointsClaimed(true);
                         setClaimDrawerOpen(false);
+                        dinerToast.success("Points saved");
                       }
                     }}
                     disabled={!claimName || !claimPhone}
-                    className={cn("w-full h-12 bg-gray-900 text-white font-bold text-base rounded-2xl disabled:opacity-50", DINER.ctaPress)}
+                    className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
                   >
                     Save my points
                   </button>
+                }
+              >
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="claim-name"
+                      className={cn(DINER.inputLabel, "mb-2 block text-left")}
+                    >
+                      Your name
+                    </label>
+                    <input
+                      id="claim-name"
+                      type="text"
+                      placeholder="e.g. Tunde"
+                      value={claimName}
+                      onChange={(event) => setClaimName(event.target.value)}
+                      className={DINER.input}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="claim-phone"
+                      className={cn(DINER.inputLabel, "mb-2 block text-left")}
+                    >
+                      Your phone number
+                    </label>
+                    <input
+                      id="claim-phone"
+                      type="tel"
+                      placeholder="0801 234 5678"
+                      value={claimPhone}
+                      onChange={(event) => setClaimPhone(event.target.value)}
+                      className={DINER.input}
+                    />
+                  </div>
                 </div>
-              </DrawerContent>
-            </Drawer>
-          </>
-        )}
+              </BottomSheet>
+            </>
+          )}
 
-        {/* Receipt */}
-        <div className="mt-8 w-full max-w-xs text-left">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Your Receipt</p>
-          <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 space-y-3">
-            {displayItems.map((item) => (
-              <div key={item.cartId} className="flex justify-between text-sm">
-                <span className="text-gray-600">{item.quantity}× {item.itemName}</span>
-                <span className="font-medium text-gray-900">₦{item.lineTotal.toLocaleString()}</span>
-              </div>
-            ))}
-            <div className="border-t border-dashed border-gray-300 pt-3 space-y-2">
-              <div className="flex justify-between text-sm text-gray-400">
-                <span>Subtotal</span>
-                <span>₦{sub.toLocaleString()}</span>
-              </div>
-              {vatEnabled && vat > 0 && (
-                <div className="flex justify-between text-sm text-gray-400">
-                  <span>VAT ({vatRate}%)</span>
-                  <span>₦{Math.round(vat).toLocaleString()}</span>
-                </div>
+          <DinerReceipt
+            items={displayItems}
+            subtotal={subtotal}
+            vat={vat}
+            vatRate={vatRate}
+            vatEnabled={vatEnabled}
+            tip={tip}
+            discount={safeAppliedPoints}
+            total={payableTotal}
+            tableNumber={tableNumber}
+            paymentMethod={methodLabel}
+            restaurantName={restaurantName}
+            receiptId={receiptId}
+            issuedAt={receiptIssuedAt}
+          />
+
+          <FixedActionBar>
+            <button
+              type="button"
+              onClick={() => {
+                downloadReceiptImage({
+                  restaurantName,
+                  tableNumber,
+                  receiptId,
+                  issuedAt: receiptIssuedAt,
+                  items: displayItems,
+                  subtotal,
+                  vat,
+                  vatRate,
+                  vatEnabled,
+                  tip,
+                  discount: safeAppliedPoints,
+                  total: payableTotal,
+                  paymentMethod: methodLabel,
+                });
+                dinerToast.success("Receipt downloaded");
+              }}
+              className={cn(
+                "flex w-full items-center justify-center gap-2",
+                DINER.outlineCta,
+                DINER.ctaPress,
               )}
-              {tip > 0 && (
-                <div className="flex justify-between text-sm text-gray-400">
-                  <span>Tip</span>
-                  <span>₦{tip.toLocaleString()}</span>
-                </div>
-              )}
-              <div className="border-t border-gray-200 pt-3 flex justify-between font-black text-gray-900 text-base">
-                <span>Total Paid</span>
-                <span>₦{Math.round(total).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
+            >
+              <DownloadSimple size={18} weight="bold" />
+              Download receipt
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                clearSession();
+                window.location.href = menuUrl;
+              }}
+              className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
+            >
+              Close Session
+            </button>
+          </FixedActionBar>
         </div>
-
-        <button
-          onClick={() => { clearSession(); window.location.href = menuUrl; }}
-          className={cn("mt-6 mb-4 w-full max-w-xs h-12 bg-gray-900 text-white rounded-2xl font-bold text-sm", DINER.ctaPress)}
-        >
-          Close Session
-        </button>
       </div>
     );
   }
 
-  // Empty state
   if (sessionBatches.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
-        <Receipt size={48} className="text-gray-300 mb-4" />
-        <h2 className="text-xl font-bold text-gray-900">Your order is being prepared</h2>
-        <p className={cn(DINER.body, "mt-2")}>You'll be able to view and pay your bill once your items are served.</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 text-center">
+        <DinerIconBadge icon={Receipt} tone="neutral" size="lg" />
+        <h2 className={cn(DINER.operationalTitle, "mt-4")}>
+          Your order is being prepared
+        </h2>
+        <p className={cn(DINER.body, "mt-2")}>
+          You'll be able to view and pay your bill once your items are served.
+        </p>
         <Link
           href={menuUrl}
-          className={cn("mt-6 bg-gray-900 text-white px-6 h-12 rounded-2xl text-sm font-bold flex items-center justify-center", DINER.ctaPress)}
+          className={cn(
+            "mt-6 flex items-center justify-center px-6",
+            DINER.primaryCta,
+            DINER.ctaPress,
+          )}
         >
           Browse Menu
         </Link>
@@ -303,75 +367,210 @@ export function BillView({
     );
   }
 
-  // Bill idle state
   return (
     <div>
       <PageHeader title="Your Bill" backHref={cartUrl} />
 
-      <div className="px-4 space-y-4 pb-8">
-        {/* Itemized list */}
-        <div className="bg-gray-50 rounded-2xl divide-y divide-gray-100">
+      <div className="space-y-4 px-4 pb-44">
+        <div className={DINER.listGap}>
           {displayItems.map((item) => (
             <ItemCard key={item.cartId} variant="order" item={item} />
           ))}
         </div>
 
-        {/* Tip selector */}
         <div className={cn(DINER.card, DINER.cardPadding)}>
           <p className={cn(DINER.sectionHeading, "mb-3")}>Add a tip?</p>
           <div className="grid grid-cols-4 gap-2">
-            {TIP_OPTIONS.map((opt) => (
+            {TIP_OPTIONS.map((option) => (
               <button
-                key={opt.label}
-                onClick={() => setTipOption(opt.value)}
+                type="button"
+                key={option.label}
+                onClick={() => setTipOption(option.value)}
                 className={cn(
-                  "py-2.5 rounded-xl text-sm font-semibold border transition-colors",
-                  tipOption === opt.value
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                  "flex h-11 items-center justify-center",
+                  DINER.choicePill,
+                  tipOption === option.value && DINER.choicePillActive,
+                  DINER.pressable,
                 )}
               >
-                {opt.label}
+                {option.label}
               </button>
             ))}
           </div>
           {tipOption === -1 && (
-            <div className="mt-3 relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">₦</span>
+            <div className="relative mt-3">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                ₦
+              </span>
               <input
                 type="number"
                 placeholder="Enter tip amount"
                 value={customTip}
-                onChange={(e) => setCustomTip(e.target.value)}
-                className="w-full pl-10 pr-4 h-12 text-sm border border-gray-200 rounded-2xl focus:outline-none focus:border-gray-400 transition-colors"
+                onChange={(event) => setCustomTip(event.target.value)}
+                className={cn(DINER.input, "pl-10")}
               />
             </div>
           )}
         </div>
 
-        <BillSummary subtotal={sub} vat={vat} vatRate={vatRate} vatEnabled={vatEnabled} tip={tip} total={total} />
+        {loyaltyActive && (
+          <>
+            <button
+              type="button"
+              onClick={() => setLoyaltyDrawerOpen(true)}
+              className={cn(
+                DINER.card,
+                "flex w-full items-center gap-3 p-4 text-left hover:bg-gray-50",
+                DINER.pressable,
+              )}
+            >
+              <DinerIconBadge icon={Trophy} tone="warning" size="sm" />
+              <div className="min-w-0 flex-1">
+                <p className={DINER.cardTitle}>
+                  {safeAppliedPoints > 0
+                    ? `${safeAppliedPoints.toLocaleString()} points applied`
+                    : "Moji points available"}
+                </p>
+                <p className={cn(DINER.caption, "mt-0.5")}>
+                  {STARTING_LOYALTY_POINTS.toLocaleString()} pts available ·{" "}
+                  {pointsEarned.toLocaleString()} pts earned
+                </p>
+              </div>
+              <span
+                className={cn(
+                  "flex-none rounded-full px-3 py-1.5 text-xs font-bold",
+                  safeAppliedPoints > 0
+                    ? "bg-green-50 text-green-700"
+                    : "bg-gray-100 text-gray-700",
+                )}
+              >
+                {safeAppliedPoints > 0
+                  ? `-₦${safeAppliedPoints.toLocaleString()}`
+                  : "View"}
+              </span>
+            </button>
 
-        {paymentState === "failed" && (
-          <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
-            Payment didn't go through. Please try again.
-          </div>
+            <BottomSheet
+              open={loyaltyDrawerOpen}
+              onClose={() => setLoyaltyDrawerOpen(false)}
+              accessibilityTitle="Moji points"
+              header={
+                <div className="flex flex-col items-center text-center">
+                  <DinerIconBadge
+                    icon={Trophy}
+                    tone="warning"
+                    size="md"
+                    className="mb-4"
+                  />
+                  <h2 className={cn(DINER.sheetTitle, "mb-2")}>Moji points</h2>
+                  <p className={DINER.body}>
+                    {loyaltyName
+                      ? `${loyaltyName}, you can use points on this bill.`
+                      : "You can use points on this bill."}
+                  </p>
+                </div>
+              }
+              footer={
+                safeAppliedPoints > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAppliedPoints(0);
+                      setLoyaltyDrawerOpen(false);
+                      dinerToast.success("Points removed");
+                    }}
+                    className={cn("w-full", DINER.secondaryCta, DINER.ctaPress)}
+                  >
+                    Remove points
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={maxRedeemablePoints <= 0}
+                    onClick={() => {
+                      setAppliedPoints(maxRedeemablePoints);
+                      setLoyaltyDrawerOpen(false);
+                      dinerToast.success("Points applied");
+                    }}
+                    className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
+                  >
+                    Apply ₦{maxRedeemablePoints.toLocaleString()} discount
+                  </button>
+                )
+              }
+            >
+              <div className="space-y-4">
+                <div className={cn(DINER.summaryCard, "space-y-3")}>
+                  {loyaltyPhone && (
+                    <DinerInfoRow label="Saved to" value={loyaltyPhone} />
+                  )}
+                  <DinerInfoRow
+                    label="Available"
+                    value={`${STARTING_LOYALTY_POINTS.toLocaleString()} pts`}
+                    emphasis
+                  />
+                  <DinerInfoRow
+                    label="Earn on this bill"
+                    value={`${pointsEarned.toLocaleString()} pts`}
+                  />
+                  <DinerInfoRow label="Redemption" value="1 point = ₦1" />
+                  {safeAppliedPoints > 0 && (
+                    <DinerInfoRow
+                      label="Applied now"
+                      value={`-₦${safeAppliedPoints.toLocaleString()}`}
+                      emphasis
+                    />
+                  )}
+                </div>
+                <p className={cn(DINER.caption, "px-1 leading-relaxed")}>
+                  Points are mocked locally for this demo. Your receipt and
+                  payment total will reflect any discount you apply.
+                </p>
+              </div>
+            </BottomSheet>
+          </>
         )}
 
-        <div className="space-y-2">
+        <BillSummary
+          subtotal={subtotal}
+          vat={vat}
+          vatRate={vatRate}
+          vatEnabled={vatEnabled}
+          tip={tip}
+          discount={safeAppliedPoints}
+          total={payableTotal}
+        />
+
+        {paymentState === "failed" && (
+          <DinerFeedbackCard
+            title="Payment didn't go through"
+            description="Please try again."
+            icon={WarningCircle}
+            tone="danger"
+          />
+        )}
+
+        <FixedActionBar>
           <button
+            type="button"
             onClick={() => setPaymentState("method")}
-            className={cn("w-full h-12 rounded-2xl bg-gray-900 text-white font-bold text-base hover:bg-gray-700", DINER.ctaPress)}
+            className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
           >
-            Pay Now · ₦{Math.round(total).toLocaleString()}
+            Pay Now · ₦{Math.round(payableTotal).toLocaleString()}
           </button>
           <button
-            onClick={onSplitBill}
-            className="w-full h-12 rounded-2xl border border-gray-200 text-gray-700 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+            type="button"
+            onClick={() => onSplitBill?.(payableTotal)}
+            className={cn(
+              "flex w-full items-center justify-center gap-2",
+              DINER.outlineCta,
+              DINER.ctaPress,
+            )}
           >
             <Users size={18} />
             Split Bill
           </button>
-        </div>
+        </FixedActionBar>
       </div>
     </div>
   );

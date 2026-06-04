@@ -1,48 +1,102 @@
 "use client";
 
-import { X } from "@phosphor-icons/react";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { cn } from "@/lib/utils";
+import { DINER } from "./diner-tokens";
 
 interface BottomSheetProps {
   open: boolean;
   onClose: () => void;
-  title: string;
-  description?: string;
   children: React.ReactNode;
+  title?: string;
+  description?: React.ReactNode;
+  header?: React.ReactNode;
   footer?: React.ReactNode;
+  className?: string;
+  bodyClassName?: string;
+  footerClassName?: string;
+  accessibilityTitle?: string;
 }
 
-export function BottomSheet({ open, onClose, title, description, children, footer }: BottomSheetProps) {
+export function BottomSheet({
+  open,
+  onClose,
+  children,
+  title,
+  description,
+  header,
+  footer,
+  className,
+  bodyClassName,
+  footerClassName,
+  accessibilityTitle,
+}: BottomSheetProps) {
+  const hasHeader = Boolean(header || title || description);
+  const dialogTitle = accessibilityTitle ?? title ?? "Modal";
+  const dialogDescription =
+    typeof description === "string"
+      ? description
+      : title
+        ? `${title} content`
+        : "Modal content";
+
   return (
-    <Drawer open={open} onOpenChange={(o) => !o && onClose()}>
-      <DrawerContent className="max-h-[92vh] flex flex-col">
-        {/* Drag handle */}
-        <div className="mx-auto mt-3 w-10 h-1 rounded-full bg-gray-200 flex-none" />
+    <Drawer open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DrawerContent
+        className={cn(
+          "fixed inset-x-4 bottom-[18px] z-50 mx-auto flex w-auto max-w-[448px] flex-col overflow-hidden rounded-[20px] border border-gray-200 bg-white p-0 text-gray-900",
+          "max-h-[calc(100dvh-112px)] data-[vaul-drawer-direction=bottom]:inset-x-4 data-[vaul-drawer-direction=bottom]:bottom-[18px] data-[vaul-drawer-direction=bottom]:max-h-[calc(100dvh-112px)]",
+          "before:hidden [&>div:first-child]:hidden",
+          className,
+        )}
+      >
+        <DrawerTitle className="sr-only">{dialogTitle}</DrawerTitle>
+        <DrawerDescription className="sr-only">
+          {dialogDescription}
+        </DrawerDescription>
 
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center text-gray-500"
-        >
-          <X size={14} weight="bold" />
-        </button>
-
-        {/* Header */}
-        <div className="flex-none px-12 pt-4 pb-2 text-center">
-          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-          {description && (
-            <p className="text-sm text-gray-500 mt-1 leading-relaxed">{description}</p>
-          )}
+        <div className="flex h-8 flex-none items-center justify-center px-5 pt-3">
+          <div className="h-1 w-11 rounded-full bg-gray-200" />
         </div>
 
-        {/* Scrollable body */}
-        <div className="overflow-y-auto flex-1 px-5 pb-4">
+        {hasHeader && (
+          <div className="flex-none px-5 pb-4 pt-4">
+            {header ?? (
+              <div>
+                {title && <h2 className={cn(DINER.sheetTitle)}>{title}</h2>}
+                {description && (
+                  <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                    {description}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div
+          className={cn(
+            "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5",
+            hasHeader ? "pb-6" : "pt-5 pb-6",
+            footer && "pb-8",
+            bodyClassName,
+          )}
+        >
           {children}
         </div>
 
-        {/* Pinned footer */}
         {footer && (
-          <div className="flex-none border-t border-gray-100 px-5 pb-8 pt-4 bg-white">
+          <div
+            className={cn(
+              "flex-none border-t border-gray-100 bg-white px-5 pb-[calc(18px+env(safe-area-inset-bottom))] pt-4",
+              footerClassName,
+            )}
+          >
             {footer}
           </div>
         )}

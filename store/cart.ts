@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { MenuItem, ModifierOption, ModifierGroup } from "@/lib/mockData";
+import type { MenuItem, ModifierOption } from "@/lib/mockData";
 
 export interface CartItem {
   cartId: string; // unique per cart entry (same item+modifiers = different cartId)
@@ -17,6 +17,9 @@ export interface OrderBatch {
   id: string;
   timestamp: number;
   status: "placed" | "preparing" | "ready" | "served";
+  statusTimestamps?: Partial<
+    Record<"placed" | "preparing" | "ready" | "served", number>
+  >;
   items: CartItem[];
 }
 
@@ -36,7 +39,7 @@ interface CartState {
     item: MenuItem,
     quantity: number,
     selectedModifiers: Record<string, ModifierOption[]>,
-    specialNote?: string
+    specialNote?: string,
   ) => void;
   removeItem: (cartId: string) => void;
   updateQuantity: (cartId: string, quantity: number) => void;
@@ -55,7 +58,7 @@ interface CartState {
 function computeLineTotal(
   price: number,
   quantity: number,
-  selectedModifiers: Record<string, ModifierOption[]>
+  selectedModifiers: Record<string, ModifierOption[]>,
 ): number {
   const modifierTotal = Object.values(selectedModifiers)
     .flat()
@@ -80,7 +83,11 @@ export const useCartStore = create<CartState>()(
 
       addItem: (item, quantity, selectedModifiers, specialNote) => {
         const cartId = `${item.id}-${Date.now()}`;
-        const lineTotal = computeLineTotal(item.price, quantity, selectedModifiers);
+        const lineTotal = computeLineTotal(
+          item.price,
+          quantity,
+          selectedModifiers,
+        );
         set((state) => ({
           items: [
             ...state.items,
@@ -99,7 +106,9 @@ export const useCartStore = create<CartState>()(
       },
 
       removeItem: (cartId) =>
-        set((state) => ({ items: state.items.filter((i) => i.cartId !== cartId) })),
+        set((state) => ({
+          items: state.items.filter((i) => i.cartId !== cartId),
+        })),
 
       updateQuantity: (cartId, quantity) => {
         if (quantity <= 0) {
@@ -112,9 +121,13 @@ export const useCartStore = create<CartState>()(
               ? {
                   ...i,
                   quantity,
-                  lineTotal: computeLineTotal(i.itemPrice, quantity, i.selectedModifiers),
+                  lineTotal: computeLineTotal(
+                    i.itemPrice,
+                    quantity,
+                    i.selectedModifiers,
+                  ),
                 }
-              : i
+              : i,
           ),
         }));
       },
@@ -126,14 +139,19 @@ export const useCartStore = create<CartState>()(
       submitCartToSession: () => {
         const { items } = get();
         if (items.length === 0) return;
-        
+
+        const submittedAt = Date.now();
         const newBatch: OrderBatch = {
-          id: `batch-${Date.now()}`,
-          timestamp: Date.now(),
+          id: `batch-${submittedAt}`,
+          timestamp: submittedAt,
           status: "preparing",
+          statusTimestamps: {
+            placed: submittedAt,
+            preparing: submittedAt,
+          },
           items: [...items],
         };
-        
+
         set((state) => ({
           sessionBatches: [...state.sessionBatches, newBatch],
           items: [],
@@ -141,13 +159,26 @@ export const useCartStore = create<CartState>()(
         }));
       },
 
-      serveAllBatches: () => set((state) => ({
-        sessionBatches: state.sessionBatches.map(b => ({ ...b, status: "served" }))
-      })),
+      serveAllBatches: () => {
+        const servedAt = Date.now();
+        set((state) => ({
+          sessionBatches: state.sessionBatches.map((batch) => ({
+            ...batch,
+            status: "served",
+            statusTimestamps: {
+              placed: batch.statusTimestamps?.placed ?? batch.timestamp,
+              preparing: batch.statusTimestamps?.preparing ?? batch.timestamp,
+              ready: batch.statusTimestamps?.ready ?? servedAt,
+              served: batch.statusTimestamps?.served ?? servedAt,
+            },
+          })),
+        }));
+      },
 
       setOrderId: (orderId) => set({ orderId }),
 
-      setLoyaltyData: (name, phone) => set({ loyaltyName: name, loyaltyPhone: phone }),
+      setLoyaltyData: (name, phone) =>
+        set({ loyaltyName: name, loyaltyPhone: phone }),
 
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
 
@@ -155,6 +186,6 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "moji-cart",
-    }
-  )
+    },
+  ),
 );
