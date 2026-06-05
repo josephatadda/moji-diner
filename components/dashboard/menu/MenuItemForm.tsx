@@ -2,13 +2,13 @@
 
 import { Image as ImageIcon, Warning } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import { ds } from "@/components/dashboard/ui/dashboard-tokens";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { ds } from "@/lib/design-tokens";
 import type { Allergen, MenuItem, Tag } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { useMenuStore } from "@/store/menu";

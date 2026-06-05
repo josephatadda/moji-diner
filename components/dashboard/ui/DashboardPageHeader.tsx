@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { t } from "@/lib/design-tokens";
+import { t } from "@/components/dashboard/ui/dashboard-tokens";
 
 type DashboardPageHeaderProps = {
   title: string;

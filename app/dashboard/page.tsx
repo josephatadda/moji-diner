@@ -9,8 +9,8 @@ import {
   QrCode,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import type React from "react";
-import { ds, t } from "@/lib/design-tokens";
+import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
+import { MetricCard } from "@/components/dashboard/ui/MetricCard";
 import {
   MOCK_MENU,
   MOCK_ORDERS,
@@ -20,35 +20,6 @@ import {
 } from "@/lib/mockData";
 
 export const metadata = { title: "Dashboard" };
-
-function StatCard({
-  label,
-  value,
-  sub,
-  icon,
-  accent = false,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  icon: React.ReactNode;
-  accent?: boolean;
-}) {
-  return (
-    <div className={ds.metric.card}>
-      <div className={ds.metric.header}>
-        <p className={ds.metric.label}>{label}</p>
-        <span className={accent ? ds.metric.iconAccent : ds.metric.iconMuted}>
-          {icon}
-        </span>
-      </div>
-      <div>
-        <p className={ds.metric.value}>{value}</p>
-        <p className={ds.metric.sub}>{sub}</p>
-      </div>
-    </div>
-  );
-}
 
 const METHOD_LABEL: Record<PaymentMethod, string> = {
   card: "Card",
@@ -111,27 +82,27 @@ export default function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3 mb-6 lg:grid-cols-4">
-        <StatCard
+        <MetricCard
           label="Active orders"
           value={String(activeOrders)}
           sub="right now"
           icon={<ClipboardText size={18} />}
-          accent
+          iconAccent
         />
-        <StatCard
+        <MetricCard
           label="Today's revenue"
           value={`₦${todayRevenue.toLocaleString()}`}
           sub="from served orders"
           icon={<CurrencyCircleDollar size={18} />}
-          accent
+          iconAccent
         />
-        <StatCard
+        <MetricCard
           label="Menu items"
           value={String(totalItems)}
           sub={`${MOCK_MENU.length} categories`}
           icon={<ForkKnife size={18} />}
         />
-        <StatCard
+        <MetricCard
           label="Tables"
           value="6"
           sub="2 occupied"

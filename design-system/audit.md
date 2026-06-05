@@ -28,3 +28,12 @@ This audit tracks diner-first extraction priorities and future migration work.
 3. Normalize item card family usage across menu, cart, live orders, bill, and split bill.
 4. Normalize fixed CTA footers and scroll padding across item, cart, payment, and split flows.
 5. Audit future modules one at a time after the diner system is reviewed.
+
+## Dashboard Surface — In Progress
+
+The Dashboard is being audited as the second product surface on the shared system.
+
+- **Adapter:** `components/dashboard/ui/dashboard-tokens.ts` (`ds` / `t` / `c` / `sp` / `r`) — mirrors the diner adapter `components/diner/ui/diner-tokens.ts`. It exposes only dashboard aliases + component classes derived from the shared foundations; it is not a separate system. The adapter should thin over time as dashboard components consume the registry more directly.
+- **Sanctioned dashboard variants** (operational surface, not deviations): GRAY neutral scale; controls/cards use `rounded-xl` (radius-12) / `rounded-2xl` (radius-16) instead of the diner `rounded-full`; Geist Sans only (Instrument Serif stays diner display); border-first elevation; content max width 1200px (`layout/dashboard-content-max`).
+- **Shared dashboard primitives:** `components/dashboard/ui/MetricCard.tsx` (one stat card, replaces 4 copies) and `components/dashboard/ui/Toggle.tsx` (one switch).
+- **Remaining per-module work:** migrate `zinc-*` → gray in settings/overview/shell; route module-local one-offs through the adapter; responsive audit across desktop/tablet/mobile.

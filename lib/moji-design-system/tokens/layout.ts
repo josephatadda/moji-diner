@@ -6,7 +6,7 @@ export const layoutTokens: DesignToken[] = [
   [
     "layout/dashboard-content-max",
     "1200px",
-    "Draft dashboard content max width",
+    "Dashboard content max width (in use via the dashboard adapter)",
   ],
   ["layout/sheet-max-height", "85vh", "Max height for bottom sheet"],
   ["layout/modal-sm", "400px", "Small modal width"],
@@ -25,5 +25,5 @@ export const layoutTokens: DesignToken[] = [
   usage,
   layer: "semantic",
   category: "layout",
-  status: name === "layout/dashboard-content-max" ? "draft" : "stable",
+  status: "stable",
 }));

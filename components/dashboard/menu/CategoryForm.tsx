@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ds } from "@/components/dashboard/ui/dashboard-tokens";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
-import { ds } from "@/lib/design-tokens";
 import type { MenuCategory } from "@/lib/mockData";
 import { useMenuStore } from "@/store/menu";
 

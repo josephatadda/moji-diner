@@ -1,17 +1,36 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * MOJI DESIGN SYSTEM — v2.0
+ * DASHBOARD ADAPTER — Moji Design System
  * ═══════════════════════════════════════════════════════════════════════════════
  *
- * Single source of truth for all visual tokens and component classes.
- * Follows shadcn/ui conventions: semantic CSS variables + Tailwind gray scale.
+ * This is the DASHBOARD adapter for the shared Moji Design System. It is NOT a
+ * separate design system and NOT a source of truth.
  *
- * DECISION: GRAY (not zinc).
- *   shadcn default theme is gray-based. 52 existing gray-* uses beats 24 zinc-*.
- *   All new code uses gray. All zinc-* occurrences should be migrated to gray.
+ *   Source of truth:   lib/moji-design-system/  (primitive → semantic → component → pattern)
+ *   Diner adapter:     components/diner/ui/diner-tokens.ts  (DINER.*)
+ *   Dashboard adapter: this file                            (ds / t / c / sp / r)
+ *
+ * RULES
+ *   • Expose ONLY dashboard-friendly aliases + component classes that DERIVE from
+ *     the shared foundations. Never define independent colors, spacing, radii,
+ *     typography, shadows, or one-off values.
+ *   • Every value must map back to a shared foundation token (annotated inline).
+ *   • This adapter should thin over time as dashboard components consume the
+ *     shared system more directly.
+ *
+ * SANCTIONED DASHBOARD VARIANTS (registered in design-system/, not deviations)
+ *   • Neutral scale: GRAY (foundation primitive scale gray.50–gray.950).
+ *   • Controls use rounded-xl (radius scale radius-12 / `radius/card`) — the
+ *     operational variant of the shared radius scale. Diner keeps rounded-full.
+ *   • Geist Sans only. Instrument Serif stays scoped to diner display moments.
+ *   • Border-first elevation: cards separate with border + radius + surface;
+ *     shadows only on floating layers (`shadow/floating`, `shadow/modal`).
+ *   • Content max width 1200px = foundation `layout/dashboard-content-max`.
+ *
+ * Foundation mapping reference: lib/moji-design-system/tokens/{colors,spacing,radius,typography,elevation,layout}.ts
  *
  * USAGE:
- *   import { c, t, sp, r, ds } from "@/lib/design-tokens";
+ *   import { c, t, sp, r, ds } from "@/components/dashboard/ui/dashboard-tokens";
  *   <p className={t.body}>{label}</p>
  *   <button className={ds.btn.primary}>Save</button>
  *
@@ -21,6 +40,8 @@
 // ┌─────────────────────────────────────────────────────────────────────────────
 // │ COLORS  c.*
 // │ Rule: gray for neutrals, orange-500 as the ONE accent, semantic for states
+// │ Derives from: tokens/colors.ts — primitive gray.50–900, orange.500, semantic
+// │   text/*, surface/*, border/*, action/* (action/primary = gray.900, never orange)
 // └─────────────────────────────────────────────────────────────────────────────
 
 export const c = {
@@ -77,6 +98,8 @@ export const c = {
 // │ TYPOGRAPHY  t.*
 // │ Font: Geist Sans (sans), Geist Mono (mono) — loaded in app/layout.tsx
 // │ Rule: sentence case everywhere. Tabular nums on all financial/numeric data.
+// │ Derives from: tokens/typography.ts — Heading/XS, Body/*, Label/*, Utility/*
+// │   (Geist Sans roles only). Instrument Serif Display/Heading stays diner-scoped.
 // └─────────────────────────────────────────────────────────────────────────────
 
 export const t = {
@@ -122,6 +145,8 @@ export const t = {
 // │ SPACING  sp.*
 // │ 4pt grid — all values are multiples of 4px.
 // │ 1=4px  2=8px  3=12px  4=16px  5=20px  6=24px  8=32px  10=40px  12=48px
+// │ Derives from: tokens/spacing.ts — space-1..space-24 scale + aliases
+// │   (page-gutter px-4, card-padding p-4, stack/card/form-gap gap-3, inline gap-2)
 // └─────────────────────────────────────────────────────────────────────────────
 
 export const sp = {
@@ -163,6 +188,9 @@ export const sp = {
 // ┌─────────────────────────────────────────────────────────────────────────────
 // │ RADIUS  r.*
 // │ Rule: inner = sm, interactive = md/lg, containers = xl/2xl
+// │ Derives from: tokens/radius.ts — radius-0..radius-full scale.
+// │   Dashboard operational variant: controls/cards use radius-12 (rounded-xl) /
+// │   radius-16 (rounded-2xl); diner uses radius/button = rounded-full.
 // └─────────────────────────────────────────────────────────────────────────────
 
 export const r = {
@@ -178,7 +206,9 @@ export const r = {
 
 // ┌─────────────────────────────────────────────────────────────────────────────
 // │ COMPONENTS  ds.*
-// │ Pre-composed Tailwind strings for every pattern in the app.
+// │ Pre-composed Tailwind strings for every dashboard pattern.
+// │ Composed only from the c / t / sp / r aliases above (which derive from the
+// │ shared foundations). Border-first elevation; shadows only on floating layers.
 // └─────────────────────────────────────────────────────────────────────────────
 
 export const ds = {

@@ -3,27 +3,10 @@
 import { ArrowRight, Plus, Trophy } from "@phosphor-icons/react";
 import Link from "next/link";
 import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
-import { ds, t } from "@/lib/design-tokens";
+import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
+import { MetricCard } from "@/components/dashboard/ui/MetricCard";
 import { MOCK_LOYALTY_PROFILES } from "@/lib/mockData";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
-
-function MetricCard({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-}) {
-  return (
-    <div className={ds.metric.card}>
-      <p className={ds.metric.label}>{label}</p>
-      <p className={`${ds.metric.value} tabular-nums`}>{value}</p>
-      <p className={ds.metric.sub}>{sub}</p>
-    </div>
-  );
-}
 
 export default function LoyaltyOverviewPage() {
   const loyaltyEnabled = useDashboardSettingsStore(

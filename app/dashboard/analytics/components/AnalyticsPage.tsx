@@ -3,7 +3,8 @@
 import { Export } from "@phosphor-icons/react";
 import { useState } from "react";
 import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
-import { ds, t } from "@/lib/design-tokens";
+import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
+import { MetricCard } from "@/components/dashboard/ui/MetricCard";
 import { formatPrice, MOCK_ANALYTICS } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
@@ -13,32 +14,6 @@ import { RevenueByHourChart } from "./RevenueByHourChart";
 import { TopDishesChart } from "./TopDishesChart";
 
 const RANGES = ["Today", "Yesterday", "Last 7 days", "Last 30 days", "Custom"];
-
-function MetricCard({
-  label,
-  value,
-  trend,
-}: {
-  label: string;
-  value: string;
-  trend: string;
-}) {
-  const positive = trend.startsWith("+") || trend.startsWith("-4");
-  return (
-    <div className={ds.metric.card}>
-      <div className={ds.metric.header}>
-        <p className={ds.metric.label}>{label}</p>
-        <span className={positive ? ds.metric.up : ds.metric.down}>
-          {trend}
-        </span>
-      </div>
-      <div>
-        <p className={ds.metric.value}>{value}</p>
-        <p className={ds.metric.sub}>vs yesterday</p>
-      </div>
-    </div>
-  );
-}
 
 export function AnalyticsPage() {
   const analyticsEnabled = useDashboardSettingsStore(
@@ -100,14 +75,27 @@ export function AnalyticsPage() {
           label="Total revenue"
           value={formatPrice(42500)}
           trend="+12%"
+          sub="vs yesterday"
         />
-        <MetricCard label="Total orders" value="128" trend="+8%" />
+        <MetricCard
+          label="Total orders"
+          value="128"
+          trend="+8%"
+          sub="vs yesterday"
+        />
         <MetricCard
           label="Avg. order value"
           value={formatPrice(3320)}
           trend="-2%"
+          sub="vs yesterday"
         />
-        <MetricCard label="Avg. prep time" value="34 min" trend="-4 min" />
+        <MetricCard
+          label="Avg. prep time"
+          value="34 min"
+          trend="-4 min"
+          trendPositive
+          sub="vs yesterday"
+        />
       </div>
 
       {/* Charts */}

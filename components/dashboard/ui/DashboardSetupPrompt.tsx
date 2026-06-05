@@ -3,7 +3,7 @@
 import type { Icon } from "@phosphor-icons/react";
 import { Gear } from "@phosphor-icons/react";
 import Link from "next/link";
-import { ds, t } from "@/lib/design-tokens";
+import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
 
 type DashboardSetupPromptProps = {
   title: string;

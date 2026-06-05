@@ -4,8 +4,8 @@ import { Plus, Users } from "@phosphor-icons/react";
 import { useState } from "react";
 import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
 import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
+import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
-import { ds, t } from "@/lib/design-tokens";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 
 const MOCK_STAFF = [
