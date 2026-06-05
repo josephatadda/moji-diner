@@ -52,7 +52,7 @@ desktop, with no unintended visual change.
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Adapter relocation + foundation reconciliation; shared `MetricCard`/`Toggle`; register dashboard surface | ✅ done |
-| 1 | Shell & navigation (`layout.tsx`, `dashboard/ui/*`) + tablet treatment | pending |
+| 1 | Shell & navigation (`layout.tsx`, `dashboard/ui/*`) + tablet treatment | ✅ done |
 | 2 | Overview | pending |
 | 3 | Orders (kanban + manual order) | pending |
 | 4 | Menu (cards, forms, item sheet, live preview) | pending |
@@ -63,6 +63,27 @@ desktop, with no unintended visual change.
 | 9 | Analytics (charts + metric cards) | pending |
 | 10 | Staff | pending |
 | 11 | Cross-cutting QA + responsive sweep | pending |
+
+## Phase notes
+
+### Phase 0 — Adapter foundation (commit `8a55103`)
+- Relocated `lib/design-tokens.ts` → `components/dashboard/ui/dashboard-tokens.ts`
+  (all 13 importers rewritten); header rewritten to declare it the adapter.
+- Adapter was already foundation-conformant (no zinc/hex/off-scale values).
+- Consolidated 4 stat-card copies into `MetricCard`; added `Toggle`.
+
+### Phase 1 — Shell & navigation (commit `6f5aab7`)
+- Token-backed `layout.tsx`: `NavItem` → `ds.nav.item / itemActive /
+  itemDisabled / activePip / offBadge`; group labels → `ds.nav.groupLabel`;
+  avatars → `ds.avatar.brand` / `ds.avatar.sm`. Last shell `zinc` removed.
+- `DashboardConfirmDialog` destructive button → `ds.btn.danger`.
+- **New sanctioned `ds.nav` variants:** `itemDisabled`, `offBadge`, `groupLabel`.
+- **Responsive decision:** the persistent sidebar stays at the `lg` breakpoint.
+  Tablet (768–1023) uses the mobile drawer so content keeps the full viewport
+  width for its grids — Tailwind breakpoints are viewport-based, so a sidebar
+  at `md` would cramp `sm:`/`lg:` content grids. Verified clean at 768px.
+- **Flow fix:** the mobile drawer stayed open after a nav tap. Now closes on
+  any route change via a `pathname` effect (nav click, back, programmatic).
 
 ## Per-module loop
 
