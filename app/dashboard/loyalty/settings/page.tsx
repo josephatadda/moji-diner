@@ -57,6 +57,7 @@ export default function LoyaltySettingsPage() {
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setEnabled(!enabled)}
             className={cn(
               "w-12 h-6 rounded-full flex items-center px-1 transition-colors",
@@ -153,7 +154,10 @@ export default function LoyaltySettingsPage() {
           </>
         )}
 
-        <button className="w-full py-3 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition-colors active:scale-[0.97] ease-out">
+        <button
+          type="button"
+          className="w-full py-3 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition-colors active:scale-[0.97] ease-out"
+        >
           Save Settings
         </button>
       </div>

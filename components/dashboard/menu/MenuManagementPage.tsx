@@ -20,6 +20,7 @@ export function MenuManagementPage() {
       {/* Mobile tab switcher */}
       <div className="lg:hidden flex border-b border-gray-100 bg-white sticky top-0 z-30">
         <button
+          type="button"
           onClick={() => setPreviewMode(false)}
           className={`flex-1 py-3 text-sm font-semibold transition-colors ${
             !previewMode
@@ -30,6 +31,7 @@ export function MenuManagementPage() {
           Editor
         </button>
         <button
+          type="button"
           onClick={() => setPreviewMode(true)}
           className={`flex-1 py-3 text-sm font-semibold transition-colors ${
             previewMode
@@ -59,12 +61,14 @@ export function MenuManagementPage() {
             </div>
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={() => setResetOpen(true)}
                 className="px-3 py-2 text-xs font-semibold text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
               >
                 Reset All ↺
               </button>
               <button
+                type="button"
                 onClick={() => setAddCategoryOpen(true)}
                 className="px-4 py-2 text-xs font-bold bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-all"
               >
@@ -85,6 +89,7 @@ export function MenuManagementPage() {
                   Start by adding your first category — e.g. "Starters"
                 </p>
                 <button
+                  type="button"
                   onClick={() => setAddCategoryOpen(true)}
                   className="px-6 py-3 bg-gray-900 text-white font-bold text-sm rounded-xl hover:bg-gray-700 transition-all"
                 >

@@ -81,6 +81,7 @@ export default function StaffPage() {
           <p className={`${t.body} mt-1`}>Manage team access and PIN codes</p>
         </div>
         <button
+          type="button"
           onClick={() => setIsAddingStaff(true)}
           className={`${ds.btn.primary} self-start sm:self-auto flex items-center gap-2`}
         >
@@ -141,6 +142,7 @@ export default function StaffPage() {
                 </div>
                 <div className="col-span-2 flex justify-start sm:justify-end gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                   <button
+                    type="button"
                     onClick={() =>
                       dashboardToast(
                         "PIN editing is mocked in this preview",
@@ -152,6 +154,7 @@ export default function StaffPage() {
                     Edit PIN
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       setStaff((current) =>
                         current.map((staffMember) =>
@@ -203,6 +206,7 @@ export default function StaffPage() {
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       setStaff((current) =>
                         current.map((staffMember) =>
@@ -243,8 +247,11 @@ export default function StaffPage() {
       >
         <form onSubmit={handleAddStaffSubmit} className="space-y-4 px-1 py-2">
           <div className={ds.form.field}>
-            <label className={ds.input.label}>Full name</label>
+            <label htmlFor="staff-name" className={ds.input.label}>
+              Full name
+            </label>
             <input
+              id="staff-name"
               required
               name="name"
               type="text"
@@ -253,16 +260,21 @@ export default function StaffPage() {
             />
           </div>
           <div className={ds.form.field}>
-            <label className={ds.input.label}>Role</label>
-            <select name="role" className={ds.input.select}>
+            <label htmlFor="staff-role" className={ds.input.label}>
+              Role
+            </label>
+            <select id="staff-role" name="role" className={ds.input.select}>
               <option value="staff">Staff</option>
               <option value="manager">Manager</option>
               <option value="kitchen">Kitchen</option>
             </select>
           </div>
           <div className={ds.form.field}>
-            <label className={ds.input.label}>4-digit PIN</label>
+            <label htmlFor="staff-pin" className={ds.input.label}>
+              4-digit PIN
+            </label>
             <input
+              id="staff-pin"
               required
               name="pin"
               type="text"

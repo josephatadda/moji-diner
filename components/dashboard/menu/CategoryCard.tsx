@@ -36,6 +36,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
         {/* Category header */}
         <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-50">
           <button
+            type="button"
             onClick={() => setCollapsed(!collapsed)}
             className="flex items-center gap-2 flex-1 text-left"
           >
@@ -57,18 +58,21 @@ export function CategoryCard({ category }: CategoryCardProps) {
           </button>
           <div className="flex items-center gap-1">
             <button
+              type="button"
               onClick={() => setAddItemOpen(true)}
               className="px-3 py-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all"
             >
               + Item
             </button>
             <button
+              type="button"
               onClick={() => setEditCategoryOpen(true)}
               className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-all text-sm"
             >
               <PencilSimple />
             </button>
             <button
+              type="button"
               onClick={handleDeleteCategory}
               className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all text-sm"
             >
@@ -84,6 +88,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
               <div className="px-4 py-8 text-center">
                 <p className="text-sm text-gray-400">No items yet</p>
                 <button
+                  type="button"
                   onClick={() => setAddItemOpen(true)}
                   className="mt-2 text-sm font-semibold text-orange-500 hover:text-orange-600"
                 >
@@ -97,7 +102,6 @@ export function CategoryCard({ category }: CategoryCardProps) {
                     key={item.id}
                     item={item}
                     categoryId={category.id}
-                    allCategories={[{ id: category.id, name: category.name }]}
                   />
                 ))}
               </div>

@@ -164,6 +164,7 @@ export default function OrdersPage() {
           description="Live tracking for dine-in, QR, and staff-created orders."
           actions={
             <button
+              type="button"
               onClick={() => setIsManualOrderOpen(true)}
               className={`${ds.btn.primary} hidden sm:inline-flex`}
             >
@@ -230,11 +231,12 @@ export default function OrdersPage() {
           className="space-y-4 px-1 py-2"
         >
           <div className={ds.form.field}>
-            <label className={ds.input.label}>
+            <label htmlFor="manual-order-location" className={ds.input.label}>
               {tableOrderingEnabled ? "Table number" : "Order location"}
               <span className="text-gray-400"> (optional)</span>
             </label>
             <input
+              id="manual-order-location"
               type="number"
               placeholder={tableOrderingEnabled ? "e.g. 5" : "Counter order"}
               className={ds.input.base}
@@ -243,9 +245,12 @@ export default function OrdersPage() {
             />
           </div>
           <div className="space-y-3">
-            <label className={ds.input.label}>Add items</label>
+            <label htmlFor="manual-order-category" className={ds.input.label}>
+              Add items
+            </label>
             <div className="flex gap-2">
               <select
+                id="manual-order-category"
                 className={ds.input.select}
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
@@ -292,9 +297,9 @@ export default function OrdersPage() {
               <p className="text-xs font-semibold text-gray-500 uppercase">
                 Order Summary
               </p>
-              {selectedItems.map((line, idx) => (
+              {selectedItems.map((line) => (
                 <div
-                  key={idx}
+                  key={line.item.id}
                   className="flex justify-between items-center text-sm"
                 >
                   <span className="font-medium text-gray-900">
@@ -352,6 +357,7 @@ export default function OrdersPage() {
         </form>
       </ResponsiveDialog>
       <button
+        type="button"
         onClick={() => setIsManualOrderOpen(true)}
         className={`${ds.btn.primary} fixed bottom-4 right-4 z-20 sm:hidden`}
       >

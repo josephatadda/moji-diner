@@ -83,6 +83,7 @@ export default function CustomerListPage() {
         <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1 gap-1">
           {["All", "Bronze", "Silver", "Gold"].map((t) => (
             <button
+              type="button"
               key={t}
               onClick={() => setFilter(t)}
               className={cn(

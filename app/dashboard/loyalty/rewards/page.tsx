@@ -7,7 +7,6 @@ import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPr
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { ds, t } from "@/lib/design-tokens";
 import { MOCK_REWARDS } from "@/lib/mockData";
-import { cn } from "@/lib/utils";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 
 export default function RewardsPage() {
@@ -69,6 +68,7 @@ export default function RewardsPage() {
           </div>
         </div>
         <button
+          type="button"
           onClick={() => setIsCreatingReward(true)}
           className={`${ds.btn.primary} self-start sm:self-auto`}
         >
@@ -108,12 +108,14 @@ export default function RewardsPage() {
                   42 redeemed
                 </span>
                 <button
+                  type="button"
                   onClick={() => toggle(reward.id)}
                   className={ds.btn.tab}
                 >
                   Deactivate
                 </button>
                 <button
+                  type="button"
                   onClick={() => setEditingReward(reward)}
                   className={ds.btn.icon}
                 >
@@ -145,12 +147,16 @@ export default function RewardsPage() {
                 </div>
                 <div className="flex items-center gap-2 self-end sm:self-auto">
                   <button
+                    type="button"
                     onClick={() => toggle(reward.id)}
                     className={ds.btn.tab}
                   >
                     Reactivate
                   </button>
-                  <button className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors">
+                  <button
+                    type="button"
+                    className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                  >
                     <Trash size={16} />
                   </button>
                 </div>
@@ -169,8 +175,11 @@ export default function RewardsPage() {
       >
         <form onSubmit={handleCreateSubmit} className="space-y-4 px-1 py-2">
           <div className={ds.form.field}>
-            <label className={ds.input.label}>Reward name</label>
+            <label htmlFor="create-reward-name" className={ds.input.label}>
+              Reward name
+            </label>
             <input
+              id="create-reward-name"
               required
               type="text"
               placeholder="e.g. Free Drink"
@@ -178,8 +187,11 @@ export default function RewardsPage() {
             />
           </div>
           <div className={ds.form.field}>
-            <label className={ds.input.label}>Points required</label>
+            <label htmlFor="create-reward-points" className={ds.input.label}>
+              Points required
+            </label>
             <input
+              id="create-reward-points"
               required
               type="number"
               placeholder="e.g. 100"
@@ -187,15 +199,20 @@ export default function RewardsPage() {
             />
           </div>
           <div className={ds.form.field}>
-            <label className={ds.input.label}>Reward type</label>
-            <select className={ds.input.select}>
+            <label htmlFor="create-reward-type" className={ds.input.label}>
+              Reward type
+            </label>
+            <select id="create-reward-type" className={ds.input.select}>
               <option value="free_item">Free Item</option>
               <option value="discount">Discount</option>
             </select>
           </div>
           <div className={ds.form.field}>
-            <label className={ds.input.label}>Value (₦ or %)</label>
+            <label htmlFor="create-reward-value" className={ds.input.label}>
+              Value (₦ or %)
+            </label>
             <input
+              id="create-reward-value"
               required
               type="number"
               placeholder="e.g. 1500"
@@ -227,8 +244,11 @@ export default function RewardsPage() {
         {editingReward && (
           <form onSubmit={handleEditSubmit} className="space-y-4 px-1 py-2">
             <div className={ds.form.field}>
-              <label className={ds.input.label}>Reward name</label>
+              <label htmlFor="edit-reward-name" className={ds.input.label}>
+                Reward name
+              </label>
               <input
+                id="edit-reward-name"
                 required
                 type="text"
                 defaultValue={editingReward.name}
@@ -236,8 +256,11 @@ export default function RewardsPage() {
               />
             </div>
             <div className={ds.form.field}>
-              <label className={ds.input.label}>Points required</label>
+              <label htmlFor="edit-reward-points" className={ds.input.label}>
+                Points required
+              </label>
               <input
+                id="edit-reward-points"
                 required
                 type="number"
                 defaultValue={editingReward.pointsRequired}
@@ -245,8 +268,11 @@ export default function RewardsPage() {
               />
             </div>
             <div className={ds.form.field}>
-              <label className={ds.input.label}>Reward type</label>
+              <label htmlFor="edit-reward-type" className={ds.input.label}>
+                Reward type
+              </label>
               <select
+                id="edit-reward-type"
                 defaultValue={editingReward.rewardType}
                 className={ds.input.select}
               >
@@ -255,8 +281,11 @@ export default function RewardsPage() {
               </select>
             </div>
             <div className={ds.form.field}>
-              <label className={ds.input.label}>Value (₦ or %)</label>
+              <label htmlFor="edit-reward-value" className={ds.input.label}>
+                Value (₦ or %)
+              </label>
               <input
+                id="edit-reward-value"
                 required
                 type="number"
                 defaultValue={editingReward.rewardValue}

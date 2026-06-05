@@ -52,6 +52,7 @@ function ToggleSwitch({
 }) {
   return (
     <button
+      type="button"
       onClick={onChange}
       className={cn(
         "w-11 h-6 rounded-full flex items-center px-1 transition-colors duration-200",
@@ -79,6 +80,7 @@ function SaveButton({
   };
   return (
     <button
+      type="button"
       onClick={handleSave}
       className={cn(
         "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.97]",
@@ -121,10 +123,13 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-500 mb-1.5">
-        {label}
+      {/* biome-ignore lint/a11y/noLabelWithoutControl: children is the labelled control (implicit association) */}
+      <label className="block">
+        <span className="block text-xs font-medium text-gray-500 mb-1.5">
+          {label}
+        </span>
+        {children}
       </label>
-      {children}
       {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
     </div>
   );
@@ -160,10 +165,10 @@ export default function SettingsPage() {
 
   const [hours, setHours] = useState(
     DAYS.reduce(
-      (acc, d) => ({
-        ...acc,
-        [d]: { open: d !== "Sun", from: "09:00", to: "22:00" },
-      }),
+      (acc, d) => {
+        acc[d] = { open: d !== "Sun", from: "09:00", to: "22:00" };
+        return acc;
+      },
       {} as Record<string, { open: boolean; from: string; to: string }>,
     ),
   );
@@ -197,6 +202,7 @@ export default function SettingsPage() {
           <nav className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-none pb-1 lg:pb-0">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
+                type="button"
                 key={id}
                 onClick={() => setTab(id)}
                 className={cn(
@@ -545,6 +551,7 @@ export default function SettingsPage() {
                       className={`${inputCls} pl-9 pr-10 font-mono`}
                     />
                     <button
+                      type="button"
                       onClick={() => setSecretVisible((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
@@ -574,6 +581,7 @@ export default function SettingsPage() {
                     https://moji.app/api/webhooks/paystack/rest-001
                   </code>
                   <button
+                    type="button"
                     onClick={handleCopyWebhook}
                     className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shrink-0"
                   >
@@ -828,56 +836,54 @@ export default function SettingsPage() {
           )}
           {/* ── SECURITY ── */}
           {tab === "security" && (
-            <>
-              <SectionCard title="Change Password">
-                <p className="text-sm text-gray-500">
-                  Update your admin login password. You will be logged out of
-                  all other active sessions.
-                </p>
-                <Field label="Current Password">
-                  <div className="relative">
-                    <Key
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      size={15}
-                    />
-                    <input
-                      type="password"
-                      placeholder="••••••••"
-                      className={`${inputCls} pl-9`}
-                    />
-                  </div>
-                </Field>
-                <Field label="New Password">
-                  <div className="relative">
-                    <Key
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      size={15}
-                    />
-                    <input
-                      type="password"
-                      placeholder="••••••••"
-                      className={`${inputCls} pl-9`}
-                    />
-                  </div>
-                </Field>
-                <Field label="Confirm New Password">
-                  <div className="relative">
-                    <Key
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      size={15}
-                    />
-                    <input
-                      type="password"
-                      placeholder="••••••••"
-                      className={`${inputCls} pl-9`}
-                    />
-                  </div>
-                </Field>
-                <div className="flex justify-end pt-1">
-                  <SaveButton label="Update Password" />
+            <SectionCard title="Change Password">
+              <p className="text-sm text-gray-500">
+                Update your admin login password. You will be logged out of all
+                other active sessions.
+              </p>
+              <Field label="Current Password">
+                <div className="relative">
+                  <Key
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={15}
+                  />
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className={`${inputCls} pl-9`}
+                  />
                 </div>
-              </SectionCard>
-            </>
+              </Field>
+              <Field label="New Password">
+                <div className="relative">
+                  <Key
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={15}
+                  />
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className={`${inputCls} pl-9`}
+                  />
+                </div>
+              </Field>
+              <Field label="Confirm New Password">
+                <div className="relative">
+                  <Key
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={15}
+                  />
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className={`${inputCls} pl-9`}
+                  />
+                </div>
+              </Field>
+              <div className="flex justify-end pt-1">
+                <SaveButton label="Update Password" />
+              </div>
+            </SectionCard>
           )}
         </div>
       </div>

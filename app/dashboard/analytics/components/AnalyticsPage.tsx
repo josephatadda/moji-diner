@@ -72,6 +72,7 @@ export function AnalyticsPage() {
           <div className="flex bg-white border border-gray-200 p-1 rounded-xl gap-0.5 overflow-x-auto scrollbar-none">
             {RANGES.map((r) => (
               <button
+                type="button"
                 key={r}
                 onClick={() => setRange(r)}
                 className={cn(
@@ -83,7 +84,10 @@ export function AnalyticsPage() {
               </button>
             ))}
           </div>
-          <button className={`${ds.btn.ghost} hidden lg:inline-flex`}>
+          <button
+            type="button"
+            className={`${ds.btn.ghost} hidden lg:inline-flex`}
+          >
             <Export size={15} />
             Export
           </button>

@@ -129,6 +129,7 @@ function RestaurantSwitcher() {
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors"
       >
@@ -147,13 +148,19 @@ function RestaurantSwitcher() {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <button
+            type="button"
+            aria-label="Close restaurant switcher"
+            className="fixed inset-0 z-10 cursor-default"
+            onClick={() => setOpen(false)}
+          />
           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-20 overflow-hidden">
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 border-b border-gray-50">
               Switch restaurant
             </p>
             {MOCK_RESTAURANTS.map((r) => (
               <button
+                type="button"
                 key={r.id}
                 onClick={() => {
                   setActive(r);
@@ -283,7 +290,9 @@ export default function DashboardLayout({
 
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div
+        <button
+          type="button"
+          aria-label="Close menu"
           className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
@@ -304,6 +313,7 @@ export default function DashboardLayout({
         {/* Mobile header */}
         <header className="flex h-14 items-center justify-between border-b border-gray-100 bg-white px-4 lg:hidden shrink-0">
           <button
+            type="button"
             onClick={() => setMobileOpen(true)}
             className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 text-gray-600"
           >

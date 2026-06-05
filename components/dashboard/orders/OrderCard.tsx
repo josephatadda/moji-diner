@@ -58,8 +58,10 @@ export function OrderCard({ order }: { order: Order }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white transition-colors hover:border-gray-200">
       {/* Card Header (always visible) */}
-      <div
-        className="cursor-pointer p-3"
+      <button
+        type="button"
+        aria-expanded={expanded}
+        className="w-full cursor-pointer p-3 text-left"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center justify-between mb-2">
@@ -93,7 +95,7 @@ export function OrderCard({ order }: { order: Order }) {
             ₦{order.grandTotal.toLocaleString()}
           </p>
         </div>
-      </div>
+      </button>
 
       {/* Expanded details */}
       {expanded && (
@@ -131,6 +133,7 @@ export function OrderCard({ order }: { order: Order }) {
       {nextStatus && (
         <div className="border-t border-gray-100 bg-gray-50 p-2">
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               updateOrderStatus(order.id, nextStatus);

@@ -42,60 +42,52 @@ export default function TransactionsPage() {
   const paymentsEnabled = useDashboardSettingsStore(
     (state) => state.features.payments,
   );
-  // Extend mock data for a richer table
-  const allTxns = [
-    ...MOCK_TRANSACTIONS,
-    // Extra rows for a useful demo
-    {
-      id: "txn-006",
-      orderId: "ord-008",
-      tableNumber: 5,
-      dinerName: "Ngozi Eze",
-      amount: 5400,
-      method: "card" as PaymentMethod,
-      status: "success" as const,
-      reference: "MJI-CC4491",
-      createdAt: new Date(Date.now() - 1000 * 60 * 145),
-    },
-    {
-      id: "txn-007",
-      orderId: "ord-009",
-      tableNumber: 2,
-      dinerName: "Biodun Sule",
-      amount: 8900,
-      method: "bank_transfer" as PaymentMethod,
-      status: "success" as const,
-      reference: "MJI-AA2287",
-      createdAt: new Date(Date.now() - 1000 * 60 * 200),
-    },
-    {
-      id: "txn-008",
-      orderId: "ord-010",
-      tableNumber: 1,
-      dinerName: "Fatima Yusuf",
-      amount: 12300,
-      method: "ussd" as PaymentMethod,
-      status: "pending" as const,
-      reference: "MJI-BB3312",
-      createdAt: new Date(Date.now() - 1000 * 60 * 240),
-    },
-  ];
+  // Extend mock data for a richer table (computed once on mount)
+  const allTxns = useMemo(
+    () => [
+      ...MOCK_TRANSACTIONS,
+      // Extra rows for a useful demo
+      {
+        id: "txn-006",
+        orderId: "ord-008",
+        tableNumber: 5,
+        dinerName: "Ngozi Eze",
+        amount: 5400,
+        method: "card" as PaymentMethod,
+        status: "success" as const,
+        reference: "MJI-CC4491",
+        createdAt: new Date(Date.now() - 1000 * 60 * 145),
+      },
+      {
+        id: "txn-007",
+        orderId: "ord-009",
+        tableNumber: 2,
+        dinerName: "Biodun Sule",
+        amount: 8900,
+        method: "bank_transfer" as PaymentMethod,
+        status: "success" as const,
+        reference: "MJI-AA2287",
+        createdAt: new Date(Date.now() - 1000 * 60 * 200),
+      },
+      {
+        id: "txn-008",
+        orderId: "ord-010",
+        tableNumber: 1,
+        dinerName: "Fatima Yusuf",
+        amount: 12300,
+        method: "ussd" as PaymentMethod,
+        status: "pending" as const,
+        reference: "MJI-BB3312",
+        createdAt: new Date(Date.now() - 1000 * 60 * 240),
+      },
+    ],
+    [],
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeMethod, setActiveMethod] = useState<
     "All" | "Card" | "Transfer" | "USSD"
   >("All");
-
-  if (!paymentsEnabled) {
-    return (
-      <DashboardSetupPrompt
-        title="Payments are not configured"
-        description="Enable payments to track card, transfer, USSD, and cash activity from diner bills."
-        featureLabel="payments"
-        icon={ArrowDown}
-      />
-    );
-  }
 
   const filteredTxns = useMemo(() => {
     return allTxns.filter((txn) => {
@@ -110,6 +102,17 @@ export default function TransactionsPage() {
       return matchesSearch && matchesMethod;
     });
   }, [allTxns, searchQuery, activeMethod]);
+
+  if (!paymentsEnabled) {
+    return (
+      <DashboardSetupPrompt
+        title="Payments are not configured"
+        description="Enable payments to track card, transfer, USSD, and cash activity from diner bills."
+        featureLabel="payments"
+        icon={ArrowDown}
+      />
+    );
+  }
 
   const totalRevenue = filteredTxns
     .filter((t) => t.status === "success")
@@ -133,6 +136,7 @@ export default function TransactionsPage() {
           </div>
         </div>
         <button
+          type="button"
           onClick={() =>
             dashboardToast("CSV export is mocked in this preview", "info")
           }
@@ -183,6 +187,7 @@ export default function TransactionsPage() {
         <div className="flex gap-2">
           {(["All", "Card", "Transfer", "USSD"] as const).map((f) => (
             <button
+              type="button"
               key={f}
               onClick={() => setActiveMethod(f)}
               className={activeMethod === f ? ds.btn.tabActive : ds.btn.tab}

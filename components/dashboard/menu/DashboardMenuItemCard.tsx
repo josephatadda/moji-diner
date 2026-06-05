@@ -12,13 +12,11 @@ import { MenuItemForm } from "./MenuItemForm";
 interface DashboardMenuItemCardProps {
   item: MenuItem;
   categoryId: string;
-  allCategories: { id: string; name: string }[];
 }
 
 export function DashboardMenuItemCard({
   item,
   categoryId,
-  allCategories,
 }: DashboardMenuItemCardProps) {
   const { toggleAvailability, deleteItem } = useMenuStore();
   const [editOpen, setEditOpen] = useState(false);
@@ -32,7 +30,9 @@ export function DashboardMenuItemCard({
     <>
       <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group">
         {/* Thumbnail */}
-        <div
+        <button
+          type="button"
+          aria-label={`Edit ${item.name}`}
           className={cn(
             "flex-none w-14 h-14 rounded-xl overflow-hidden relative cursor-pointer",
             !item.isAvailable && "opacity-50",
@@ -44,11 +44,12 @@ export function DashboardMenuItemCard({
               <BowlFood />
             </span>
           </div>
-        </div>
+        </button>
 
         {/* Info */}
-        <div
-          className="flex-1 min-w-0 cursor-pointer"
+        <button
+          type="button"
+          className="flex-1 min-w-0 cursor-pointer text-left"
           onClick={() => setEditOpen(true)}
         >
           <div className="flex items-center gap-2">
@@ -79,12 +80,13 @@ export function DashboardMenuItemCard({
               {item.tags.slice(0, 2).join(" · ")}
             </p>
           )}
-        </div>
+        </button>
 
         {/* Actions */}
         <div className="flex items-center gap-1 flex-none">
           {/* Availability toggle */}
           <button
+            type="button"
             onClick={() => {
               toggleAvailability(item.id);
               dashboardToast(
@@ -109,6 +111,7 @@ export function DashboardMenuItemCard({
 
           {/* Edit */}
           <button
+            type="button"
             onClick={() => setEditOpen(true)}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-all text-sm opacity-0 group-hover:opacity-100"
           >
@@ -117,6 +120,7 @@ export function DashboardMenuItemCard({
 
           {/* Delete */}
           <button
+            type="button"
             onClick={handleDelete}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all text-sm opacity-0 group-hover:opacity-100"
           >

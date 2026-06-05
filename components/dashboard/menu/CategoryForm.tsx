@@ -21,6 +21,7 @@ export function CategoryForm({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset form each time the dialog reopens
   useEffect(() => {
     if (existingCategory) {
       setName(existingCategory.name);
@@ -60,13 +61,15 @@ export function CategoryForm({
     >
       <div className={ds.form.stack}>
         <div className={ds.form.field}>
-          <label className={ds.input.label}>
+          <label htmlFor="category-name" className={ds.input.label}>
             Category name <span className="text-red-500">*</span>
           </label>
           <input
+            id="category-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Starters, Mains, Drinks"
+            // biome-ignore lint/a11y/noAutofocus: intentional focus on first field when dialog opens
             autoFocus
             onKeyDown={(e) => e.key === "Enter" && handleSave()}
             className={ds.input.base}
@@ -74,11 +77,12 @@ export function CategoryForm({
         </div>
 
         <div className={ds.form.field}>
-          <label className={ds.input.label}>
+          <label htmlFor="category-description" className={ds.input.label}>
             Description{" "}
             <span className="text-gray-400 font-normal">(optional)</span>
           </label>
           <input
+            id="category-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Short description shown to diners"
@@ -87,10 +91,11 @@ export function CategoryForm({
         </div>
 
         <div className={ds.form.actions}>
-          <button onClick={onClose} className={ds.btn.ghost}>
+          <button type="button" onClick={onClose} className={ds.btn.ghost}>
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSave}
             disabled={!name.trim()}
             className={ds.btn.primary}

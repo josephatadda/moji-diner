@@ -9,7 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ds } from "@/lib/design-tokens";
-import type { Allergen, MenuItem, ModifierGroup, Tag } from "@/lib/mockData";
+import type { Allergen, MenuItem, Tag } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { useMenuStore } from "@/store/menu";
 
@@ -37,7 +37,7 @@ export function MenuItemForm({
   categoryId,
   existingItem,
 }: MenuItemFormProps) {
-  const { addItem, updateItem, categories } = useMenuStore();
+  const { addItem, updateItem } = useMenuStore();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -48,6 +48,7 @@ export function MenuItemForm({
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [selectedAllergens, setSelectedAllergens] = useState<Allergen[]>([]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset form each time the sheet reopens
   useEffect(() => {
     if (existingItem) {
       setName(existingItem.name);
@@ -139,10 +140,11 @@ export function MenuItemForm({
 
           {/* Name */}
           <div className={ds.form.field}>
-            <label className={ds.input.label}>
+            <label htmlFor="menu-item-name" className={ds.input.label}>
               Item name <span className="text-red-500">*</span>
             </label>
             <input
+              id="menu-item-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Jollof Rice + Chicken"
@@ -152,13 +154,14 @@ export function MenuItemForm({
 
           {/* Description */}
           <div className={ds.form.field}>
-            <label className={ds.input.label}>
+            <label htmlFor="menu-item-description" className={ds.input.label}>
               Description{" "}
               <span className="text-gray-400 font-normal">
                 (optional, max 200 chars)
               </span>
             </label>
             <textarea
+              id="menu-item-description"
               value={description}
               onChange={(e) => setDescription(e.target.value.slice(0, 200))}
               placeholder="Describe the dish…"
@@ -173,10 +176,11 @@ export function MenuItemForm({
           {/* Price + Prep time */}
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className={ds.input.label}>
+              <label htmlFor="menu-item-price" className={ds.input.label}>
                 Price ₦ <span className="text-red-500">*</span>
               </label>
               <input
+                id="menu-item-price"
                 type="number"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
@@ -186,8 +190,11 @@ export function MenuItemForm({
               />
             </div>
             <div className="w-32">
-              <label className={ds.input.label}>Prep time (min)</label>
+              <label htmlFor="menu-item-prep" className={ds.input.label}>
+                Prep time (min)
+              </label>
               <input
+                id="menu-item-prep"
                 type="number"
                 value={prepTime}
                 onChange={(e) => setPrepTime(e.target.value)}
@@ -223,6 +230,7 @@ export function MenuItemForm({
                   <p className="text-xs text-gray-400">{sub}</p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => set(!value)}
                   className={cn(
                     "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
@@ -242,10 +250,11 @@ export function MenuItemForm({
 
           {/* Tags */}
           <div>
-            <label className={ds.input.label}>Tags</label>
+            <p className={ds.input.label}>Tags</p>
             <div className="flex flex-wrap gap-2">
               {ALL_TAGS.map((tag) => (
                 <button
+                  type="button"
                   key={tag}
                   onClick={() => toggleTag(tag)}
                   className={cn(
@@ -263,10 +272,11 @@ export function MenuItemForm({
 
           {/* Allergens */}
           <div>
-            <label className={ds.input.label}>Allergens</label>
+            <p className={ds.input.label}>Allergens</p>
             <div className="flex flex-wrap gap-2">
               {ALL_ALLERGENS.map((a) => (
                 <button
+                  type="button"
                   key={a}
                   onClick={() => toggleAllergen(a)}
                   className={cn(
@@ -284,10 +294,15 @@ export function MenuItemForm({
 
           {/* Actions */}
           <div className={ds.form.stickyActions}>
-            <button onClick={onClose} className={ds.btn.ghostFull}>
+            <button
+              type="button"
+              onClick={onClose}
+              className={ds.btn.ghostFull}
+            >
               Cancel
             </button>
             <button
+              type="button"
               onClick={handleSave}
               disabled={!name.trim() || !price}
               className={ds.btn.primaryFull}

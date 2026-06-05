@@ -66,6 +66,7 @@ export default function TablesPage() {
         </div>
         <div className="flex gap-2 shrink-0">
           <button
+            type="button"
             onClick={() =>
               dashboardToast(
                 "Bulk PDF download is mocked in this preview",
@@ -77,6 +78,7 @@ export default function TablesPage() {
             ↓ Download All PDF
           </button>
           <button
+            type="button"
             onClick={() => setIsAddingTable(true)}
             className={ds.btn.primary}
           >
@@ -165,6 +167,7 @@ export default function TablesPage() {
 
                 <div className="col-span-4 flex w-full justify-start sm:justify-end mt-2 sm:mt-0">
                   <button
+                    type="button"
                     onClick={() => setSelectedTable(table)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold rounded-lg transition-colors border border-transparent hover:border-gray-300"
                   >
@@ -196,6 +199,7 @@ export default function TablesPage() {
           </div>
           <div className="flex gap-3 w-full max-w-sm px-4">
             <button
+              type="button"
               onClick={() => {
                 if (selectedTable) {
                   navigator.clipboard.writeText(
@@ -209,6 +213,7 @@ export default function TablesPage() {
               Copy Link
             </button>
             <button
+              type="button"
               onClick={() =>
                 dashboardToast("PNG download is mocked in this preview", "info")
               }
@@ -229,8 +234,11 @@ export default function TablesPage() {
       >
         <form onSubmit={handleAddTableSubmit} className="space-y-4 px-1 py-2">
           <div className={ds.form.field}>
-            <label className={ds.input.label}>Table name/label</label>
+            <label htmlFor="table-label" className={ds.input.label}>
+              Table name/label
+            </label>
             <input
+              id="table-label"
               required
               name="label"
               type="text"
@@ -239,8 +247,11 @@ export default function TablesPage() {
             />
           </div>
           <div className={ds.form.field}>
-            <label className={ds.input.label}>Table number</label>
+            <label htmlFor="table-number" className={ds.input.label}>
+              Table number
+            </label>
             <input
+              id="table-number"
               required
               name="tableNumber"
               type="number"
@@ -249,8 +260,11 @@ export default function TablesPage() {
             />
           </div>
           <div className={ds.form.field}>
-            <label className={ds.input.label}>Seating capacity</label>
+            <label htmlFor="table-capacity" className={ds.input.label}>
+              Seating capacity
+            </label>
             <input
+              id="table-capacity"
               required
               name="capacity"
               type="number"
