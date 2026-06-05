@@ -1,16 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { DashboardConfirmDialog } from "@/components/dashboard/ui/DashboardConfirmDialog";
+import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
+import { MOCK_RESTAURANT } from "@/lib/mockData";
 import { useMenuStore } from "@/store/menu";
 import { CategoryCard } from "./CategoryCard";
 import { CategoryForm } from "./CategoryForm";
 import { MenuPreview } from "./MenuPreview";
-import { MOCK_RESTAURANT } from "@/lib/mockData";
 
 export function MenuManagementPage() {
   const { categories, resetAllAvailability } = useMenuStore();
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState(false); // mobile only
+  const [resetOpen, setResetOpen] = useState(false);
 
   return (
     <div className="h-full">
@@ -19,7 +22,9 @@ export function MenuManagementPage() {
         <button
           onClick={() => setPreviewMode(false)}
           className={`flex-1 py-3 text-sm font-semibold transition-colors ${
-            !previewMode ? "text-gray-900 border-b-2 border-gray-900" : "text-gray-400"
+            !previewMode
+              ? "text-gray-900 border-b-2 border-gray-900"
+              : "text-gray-400"
           }`}
         >
           Editor
@@ -27,7 +32,9 @@ export function MenuManagementPage() {
         <button
           onClick={() => setPreviewMode(true)}
           className={`flex-1 py-3 text-sm font-semibold transition-colors ${
-            previewMode ? "text-gray-900 border-b-2 border-gray-900" : "text-gray-400"
+            previewMode
+              ? "text-gray-900 border-b-2 border-gray-900"
+              : "text-gray-400"
           }`}
         >
           Preview
@@ -52,11 +59,7 @@ export function MenuManagementPage() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => {
-                  if (window.confirm("Mark all items as available again?")) {
-                    resetAllAvailability();
-                  }
-                }}
+                onClick={() => setResetOpen(true)}
                 className="px-3 py-2 text-xs font-semibold text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
               >
                 Reset All ↺
@@ -75,7 +78,9 @@ export function MenuManagementPage() {
             {categories.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <span className="text-5xl mb-4">🍽</span>
-                <h3 className="text-lg font-bold text-gray-900">Your menu is empty</h3>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Your menu is empty
+                </h3>
                 <p className="text-sm text-gray-400 mt-1 mb-6">
                   Start by adding your first category — e.g. "Starters"
                 </p>
@@ -105,13 +110,30 @@ export function MenuManagementPage() {
             <p className="text-xs text-gray-400 mt-0.5">Diner view at 375px</p>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
-            <MenuPreview categories={categories} restaurantName={MOCK_RESTAURANT.name} />
+            <MenuPreview
+              categories={categories}
+              restaurantName={MOCK_RESTAURANT.name}
+            />
           </div>
         </div>
       </div>
 
       {/* Add category form */}
-      <CategoryForm open={addCategoryOpen} onClose={() => setAddCategoryOpen(false)} />
+      <CategoryForm
+        open={addCategoryOpen}
+        onClose={() => setAddCategoryOpen(false)}
+      />
+      <DashboardConfirmDialog
+        open={resetOpen}
+        onOpenChange={setResetOpen}
+        title="Reset availability?"
+        description="Every menu item will be marked available again. Sold-out states will be cleared."
+        confirmLabel="Reset all"
+        onConfirm={() => {
+          resetAllAvailability();
+          dashboardToast("All items are available again");
+        }}
+      />
     </div>
   );
 }

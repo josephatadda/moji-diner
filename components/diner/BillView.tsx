@@ -4,6 +4,7 @@ import {
   ArrowRight,
   CheckCircle,
   DownloadSimple,
+  Info,
   Receipt,
   Trophy,
   Users,
@@ -168,10 +169,13 @@ export function BillView({
                 <DinerIconBadge icon={Trophy} tone="warning" size="sm" />
                 <div>
                   <p className={DINER.cardTitle}>
-                    {loyaltyName ? `Nice one, ${loyaltyName}!` : "Points updated"}
+                    {loyaltyName
+                      ? `Nice one, ${loyaltyName}!`
+                      : "Points updated"}
                   </p>
                   <p className={cn(DINER.caption, "mt-0.5")}>
-                    +{pointsEarned} earned · {updatedPointsBalance.toLocaleString()} pts balance
+                    +{pointsEarned} earned ·{" "}
+                    {updatedPointsBalance.toLocaleString()} pts balance
                   </p>
                 </div>
               </div>
@@ -211,7 +215,12 @@ export function BillView({
             accessibilityTitle="Points details"
             header={
               <div className="flex flex-col items-center text-center">
-                <DinerIconBadge icon={Trophy} tone="warning" size="md" className="mb-4" />
+                <DinerIconBadge
+                  icon={Trophy}
+                  tone="warning"
+                  size="md"
+                  className="mb-4"
+                />
                 <h2 className={cn(DINER.sheetTitle, "mb-2")}>
                   {loyaltyName ? `${loyaltyName}'s Points` : "Your Points"}
                 </h2>
@@ -256,10 +265,18 @@ export function BillView({
             accessibilityTitle="Save your points"
             header={
               <div className="flex flex-col items-center text-center">
-                <DinerIconBadge icon={Trophy} tone="warning" size="md" className="mb-4" />
-                <h2 className={cn(DINER.sheetTitle, "mb-2")}>Save your points</h2>
+                <DinerIconBadge
+                  icon={Trophy}
+                  tone="warning"
+                  size="md"
+                  className="mb-4"
+                />
+                <h2 className={cn(DINER.sheetTitle, "mb-2")}>
+                  Save your points
+                </h2>
                 <p className={DINER.body}>
-                  You earned {pointsEarned} points on this order. Enter your details to save them.
+                  You earned {pointsEarned} points on this order. Enter your
+                  details to save them.
                 </p>
               </div>
             }
@@ -283,7 +300,10 @@ export function BillView({
           >
             <div className="space-y-4">
               <div>
-                <label htmlFor="claim-name" className={cn(DINER.inputLabel, "mb-2 block text-left")}>
+                <label
+                  htmlFor="claim-name"
+                  className={cn(DINER.inputLabel, "mb-2 block text-left")}
+                >
                   Your name
                 </label>
                 <input
@@ -296,7 +316,10 @@ export function BillView({
                 />
               </div>
               <div>
-                <label htmlFor="claim-phone" className={cn(DINER.inputLabel, "mb-2 block text-left")}>
+                <label
+                  htmlFor="claim-phone"
+                  className={cn(DINER.inputLabel, "mb-2 block text-left")}
+                >
                   Your phone number
                 </label>
                 <input
@@ -556,10 +579,17 @@ export function BillView({
                     />
                   )}
                 </div>
-                <p className={cn(DINER.caption, "px-1 leading-relaxed")}>
-                  Points are mocked locally for this demo. Your receipt and
-                  payment total will reflect any discount you apply.
-                </p>
+                <div className="flex gap-2 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2.5 text-blue-800">
+                  <Info
+                    size={16}
+                    weight="fill"
+                    className="mt-0.5 flex-none text-blue-600"
+                  />
+                  <p className="text-xs leading-relaxed">
+                    Points are mocked locally for this demo. Your receipt and
+                    payment total will reflect any discount you apply.
+                  </p>
+                </div>
               </div>
             </BottomSheet>
           </>

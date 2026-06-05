@@ -1,13 +1,15 @@
 "use client";
 
+import { CaretRight, PencilSimple, Trash } from "@phosphor-icons/react";
 import { useState } from "react";
+import { DashboardConfirmDialog } from "@/components/dashboard/ui/DashboardConfirmDialog";
+import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
 import type { MenuCategory } from "@/lib/mockData";
+import { cn } from "@/lib/utils";
 import { useMenuStore } from "@/store/menu";
+import { CategoryForm } from "./CategoryForm";
 import { DashboardMenuItemCard } from "./DashboardMenuItemCard";
 import { MenuItemForm } from "./MenuItemForm";
-import { CategoryForm } from "./CategoryForm";
-import { cn } from "@/lib/utils";
-import { CaretRight, PencilSimple, Trash } from "@phosphor-icons/react";
 
 interface CategoryCardProps {
   category: MenuCategory;
@@ -17,16 +19,15 @@ export function CategoryCard({ category }: CategoryCardProps) {
   const { deleteCategory } = useMenuStore();
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [editCategoryOpen, setEditCategoryOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
   const handleDeleteCategory = () => {
     if (category.items.length > 0) {
-      alert("Move or delete items in this category first.");
+      dashboardToast("Move or delete items in this category first", "error");
       return;
     }
-    if (window.confirm(`Delete category "${category.name}"?`)) {
-      deleteCategory(category.id);
-    }
+    setDeleteOpen(true);
   };
 
   return (
@@ -38,12 +39,20 @@ export function CategoryCard({ category }: CategoryCardProps) {
             onClick={() => setCollapsed(!collapsed)}
             className="flex items-center gap-2 flex-1 text-left"
           >
-            <span className={cn("text-xs text-gray-400 transition-transform", collapsed ? "" : "rotate-90")}>
+            <span
+              className={cn(
+                "text-xs text-gray-400 transition-transform",
+                collapsed ? "" : "rotate-90",
+              )}
+            >
               <CaretRight />
             </span>
             <div>
               <p className="font-bold text-gray-900 text-sm">{category.name}</p>
-              <p className="text-xs text-gray-400">{category.items.length} item{category.items.length !== 1 ? "s" : ""}</p>
+              <p className="text-xs text-gray-400">
+                {category.items.length} item
+                {category.items.length !== 1 ? "s" : ""}
+              </p>
             </div>
           </button>
           <div className="flex items-center gap-1">
@@ -106,6 +115,18 @@ export function CategoryCard({ category }: CategoryCardProps) {
         open={editCategoryOpen}
         onClose={() => setEditCategoryOpen(false)}
         existingCategory={category}
+      />
+      <DashboardConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete category?"
+        description={`This will remove "${category.name}" from the menu. Empty categories can be restored only by adding them again.`}
+        confirmLabel="Delete category"
+        destructive
+        onConfirm={() => {
+          deleteCategory(category.id);
+          dashboardToast("Category deleted");
+        }}
       />
     </>
   );

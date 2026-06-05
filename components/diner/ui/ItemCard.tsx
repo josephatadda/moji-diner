@@ -1,6 +1,6 @@
 "use client";
 
-import { BowlFood } from "@phosphor-icons/react";
+import { BowlFood, Check } from "@phosphor-icons/react";
 import { formatModifiers, hasModifiers } from "@/lib/diner-utils";
 import { cn } from "@/lib/utils";
 import type { CartItem } from "@/store/cart";
@@ -80,7 +80,7 @@ export function ItemCard(props: ItemCardProps) {
         className={cn(
           "w-full text-left flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-colors",
           selected
-            ? "border-gray-900 bg-gray-50"
+            ? "border-green-500 bg-white"
             : "border-gray-100 bg-white hover:border-gray-300",
           DINER.pressable,
         )}
@@ -89,11 +89,11 @@ export function ItemCard(props: ItemCardProps) {
           className={cn(
             "w-5 h-5 rounded-md border flex items-center justify-center flex-none",
             selected
-              ? "bg-gray-900 border-gray-900 text-white"
+              ? "border-green-500 bg-green-500 text-white"
               : "border-gray-300",
           )}
         >
-          {selected && <span className="text-xs font-bold">✓</span>}
+          {selected && <Check size={14} weight="bold" />}
         </div>
         <div
           className={cn(

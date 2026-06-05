@@ -1,11 +1,21 @@
-import { Plus, ArrowRight } from "@phosphor-icons/react/dist/ssr";
+"use client";
+
+import { ArrowRight, Plus, Trophy } from "@phosphor-icons/react";
 import Link from "next/link";
-import { MOCK_LOYALTY_PROFILES } from "@/lib/mockData";
+import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
 import { ds, t } from "@/lib/design-tokens";
+import { MOCK_LOYALTY_PROFILES } from "@/lib/mockData";
+import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 
-export const metadata = { title: "Loyalty" };
-
-function MetricCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+function MetricCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+}) {
   return (
     <div className={ds.metric.card}>
       <p className={ds.metric.label}>{label}</p>
@@ -16,11 +26,25 @@ function MetricCard({ label, value, sub }: { label: string; value: string; sub: 
 }
 
 export default function LoyaltyOverviewPage() {
+  const loyaltyEnabled = useDashboardSettingsStore(
+    (state) => state.features.loyalty,
+  );
   const tiers = [
     { label: "Bronze", members: 180, pct: 77, color: "bg-orange-400" },
-    { label: "Silver", members:  42, pct: 18, color: "bg-gray-400"   },
-    { label: "Gold",   members:  12, pct:  5, color: "bg-yellow-400" },
+    { label: "Silver", members: 42, pct: 18, color: "bg-gray-400" },
+    { label: "Gold", members: 12, pct: 5, color: "bg-yellow-400" },
   ];
+
+  if (!loyaltyEnabled) {
+    return (
+      <DashboardSetupPrompt
+        title="Loyalty is not enabled"
+        description="Enable loyalty when this restaurant wants to award points, create rewards, and track regular customers."
+        featureLabel="loyalty"
+        icon={Trophy}
+      />
+    );
+  }
 
   return (
     <div className={ds.page}>
@@ -28,9 +52,14 @@ export default function LoyaltyOverviewPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className={t.h1}>Loyalty</h1>
-          <p className={`${t.body} mt-1`}>Reward regulars and grow your customer base</p>
+          <p className={`${t.body} mt-1`}>
+            Reward regulars and grow your customer base
+          </p>
         </div>
-        <Link href="/dashboard/loyalty/rewards" className={`${ds.btn.primary} self-start sm:self-auto`}>
+        <Link
+          href="/dashboard/loyalty/rewards"
+          className={`${ds.btn.primary} self-start sm:self-auto`}
+        >
           <Plus size={15} weight="bold" />
           New reward
         </Link>
@@ -38,14 +67,21 @@ export default function LoyaltyOverviewPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-        <MetricCard label="Total members"          value="234"    sub="+12 this week" />
-        <MetricCard label="Orders with loyalty"    value="67%"    sub="avg. across all orders" />
-        <MetricCard label="Points in circulation"  value="12,450" sub="active rewards liability" />
+        <MetricCard label="Total members" value="234" sub="+12 this week" />
+        <MetricCard
+          label="Orders with loyalty"
+          value="67%"
+          sub="avg. across all orders"
+        />
+        <MetricCard
+          label="Points in circulation"
+          value="12,450"
+          sub="active rewards liability"
+        />
       </div>
 
       {/* Two-up cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-
         {/* Tier breakdown */}
         <div className={ds.card.base}>
           <div className={ds.card.header}>
@@ -55,11 +91,18 @@ export default function LoyaltyOverviewPage() {
             {tiers.map((tier) => (
               <div key={tier.label}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-semibold text-gray-900">{tier.label}</span>
-                  <span className={t.meta}>{tier.members} members · {tier.pct}%</span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {tier.label}
+                  </span>
+                  <span className={t.meta}>
+                    {tier.members} members · {tier.pct}%
+                  </span>
                 </div>
                 <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${tier.color}`} style={{ width: `${tier.pct}%` }} />
+                  <div
+                    className={`h-full rounded-full ${tier.color}`}
+                    style={{ width: `${tier.pct}%` }}
+                  />
                 </div>
               </div>
             ))}
@@ -78,10 +121,16 @@ export default function LoyaltyOverviewPage() {
             {MOCK_LOYALTY_PROFILES.map((profile) => (
               <div key={profile.phone} className={ds.card.row}>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{profile.phone}</p>
-                  <p className={`${t.meta} mt-0.5`}>Earned 46 pts · Order #4821</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {profile.phone}
+                  </p>
+                  <p className={`${t.meta} mt-0.5`}>
+                    Earned 46 pts · Order #4821
+                  </p>
                 </div>
-                <span className={`${ds.badge.base} ${ds.badge.green}`}>+46 pts</span>
+                <span className={`${ds.badge.base} ${ds.badge.green}`}>
+                  +46 pts
+                </span>
               </div>
             ))}
           </div>
@@ -91,9 +140,21 @@ export default function LoyaltyOverviewPage() {
       {/* Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          { href: "/dashboard/loyalty/customers", label: "Customer list", desc: "View profiles and visit history" },
-          { href: "/dashboard/loyalty/rewards",   label: "Rewards",       desc: "Configure prizes and discounts" },
-          { href: "/dashboard/loyalty/settings",  label: "Settings",      desc: "Adjust earning rate and tiers" },
+          {
+            href: "/dashboard/loyalty/customers",
+            label: "Customer list",
+            desc: "View profiles and visit history",
+          },
+          {
+            href: "/dashboard/loyalty/rewards",
+            label: "Rewards",
+            desc: "Configure prizes and discounts",
+          },
+          {
+            href: "/dashboard/loyalty/settings",
+            label: "Settings",
+            desc: "Adjust earning rate and tiers",
+          },
         ].map((item) => (
           <Link
             key={item.href}
@@ -101,10 +162,15 @@ export default function LoyaltyOverviewPage() {
             className={`${ds.card.base} p-4 hover:border-orange-200 transition-all flex items-center justify-between group`}
           >
             <div>
-              <p className="text-sm font-semibold text-gray-900">{item.label}</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {item.label}
+              </p>
               <p className={`${t.meta} mt-0.5`}>{item.desc}</p>
             </div>
-            <ArrowRight size={16} className="text-gray-300 group-hover:text-orange-400 transition-colors shrink-0" />
+            <ArrowRight
+              size={16}
+              className="text-gray-300 group-hover:text-orange-400 transition-colors shrink-0"
+            />
           </Link>
         ))}
       </div>

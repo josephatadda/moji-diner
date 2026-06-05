@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useOrdersStore } from "@/store/orders";
+import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
 import type { Order, OrderStatus } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
+import { useOrdersStore } from "@/store/orders";
 
 export function OrderCard({ order }: { order: Order }) {
   const { updateOrderStatus } = useOrdersStore();
@@ -18,62 +19,107 @@ export function OrderCard({ order }: { order: Order }) {
 
   const getNextStatusText = (status: OrderStatus) => {
     switch (status) {
-      case "pending": return "Confirm → Kitchen";
-      case "in_kitchen": return "Mark Ready";
-      case "ready": return "Mark Served";
-      default: return "";
+      case "pending":
+        return "Confirm → Kitchen";
+      case "in_kitchen":
+        return "Mark Ready";
+      case "ready":
+        return "Mark Served";
+      default:
+        return "";
     }
   };
 
   const getNextStatus = (status: OrderStatus): OrderStatus | null => {
     switch (status) {
-      case "pending": return "in_kitchen";
-      case "in_kitchen": return "ready";
-      case "ready": return "served";
-      default: return null;
+      case "pending":
+        return "in_kitchen";
+      case "in_kitchen":
+        return "ready";
+      case "ready":
+        return "served";
+      default:
+        return null;
     }
   };
 
   const nextStatus = getNextStatus(order.status);
+  const statusLabel: Record<OrderStatus, string> = {
+    pending: "Pending",
+    in_kitchen: "In kitchen",
+    ready: "Ready",
+    served: "Served",
+    paid: "Paid",
+  };
+
+  const tableLabel =
+    order.tableNumber > 0 ? `Table ${order.tableNumber}` : "Counter";
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden transition-all hover:shadow-md">
+    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white transition-colors hover:border-gray-200">
       {/* Card Header (always visible) */}
-      <div 
-        className="p-3 cursor-pointer"
+      <div
+        className="cursor-pointer p-3"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-gray-900">Table {order.tableNumber}</span>
-            {isNew && <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[9px] font-bold rounded-full animate-pulse">NEW</span>}
-            {order.source === "staff" && <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[9px] font-bold rounded-full">STAFF</span>}
+            <span className="font-bold text-gray-900">{tableLabel}</span>
+            {isNew && (
+              <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[9px] font-bold text-blue-700">
+                NEW
+              </span>
+            )}
+            {order.source === "staff" && (
+              <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold text-violet-700">
+                STAFF
+              </span>
+            )}
           </div>
-          <span className={cn("px-2 py-0.5 rounded-full text-xs font-bold", ageColor)}>
+          <span
+            className={cn(
+              "px-2 py-0.5 rounded-full text-xs font-bold",
+              ageColor,
+            )}
+          >
             {ageMins}m
           </span>
         </div>
-        <p className="text-sm text-gray-500 truncate">
-          {order.items.length} items · ₦{order.grandTotal.toLocaleString()}
-        </p>
+        <div className="flex items-end justify-between gap-3">
+          <p className="truncate text-sm text-gray-500">
+            {order.items.length} item{order.items.length === 1 ? "" : "s"}
+          </p>
+          <p className="text-sm font-bold text-gray-900 tabular-nums">
+            ₦{order.grandTotal.toLocaleString()}
+          </p>
+        </div>
       </div>
 
       {/* Expanded details */}
       {expanded && (
-        <div className="px-3 pb-3 border-t border-gray-50 pt-2 bg-gray-50/50">
+        <div className="border-t border-gray-50 bg-gray-50/60 px-3 pb-3 pt-2">
           <div className="space-y-2 mb-3">
-            {order.items.map(item => (
+            {order.items.map((item) => (
               <div key={item.id} className="text-sm">
                 <div className="flex items-start justify-between">
-                  <span className="font-medium text-gray-900"><span className="text-gray-400 mr-1">{item.quantity}x</span>{item.itemName}</span>
+                  <span className="font-medium text-gray-900">
+                    <span className="text-gray-400 mr-1">{item.quantity}x</span>
+                    {item.itemName}
+                  </span>
                 </div>
                 {Object.values(item.selectedModifiers).flat().length > 0 && (
                   <p className="text-xs text-gray-500 ml-4">
-                    + {Object.values(item.selectedModifiers).flat().map(m => m.name).join(", ")}
+                    +{" "}
+                    {Object.values(item.selectedModifiers)
+                      .flat()
+                      .map((m) => m.name)
+                      .join(", ")}
                   </p>
                 )}
                 {item.specialNote && (
-                  <p className="text-xs text-blue-600 italic ml-4">"{item.specialNote}"</p>
+                  <p className="ml-4 text-xs italic text-blue-600">
+                    "{item.specialNote}"
+                  </p>
                 )}
               </div>
             ))}
@@ -83,11 +129,14 @@ export function OrderCard({ order }: { order: Order }) {
 
       {/* Actions */}
       {nextStatus && (
-        <div className="p-2 bg-gray-50 border-t border-gray-100">
-          <button 
+        <div className="border-t border-gray-100 bg-gray-50 p-2">
+          <button
             onClick={(e) => {
               e.stopPropagation();
               updateOrderStatus(order.id, nextStatus);
+              dashboardToast(
+                `Order moved to ${statusLabel[nextStatus].toLowerCase()}`,
+              );
             }}
             className="w-full py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-700 active:scale-[0.97] transition-all ease-out"
           >

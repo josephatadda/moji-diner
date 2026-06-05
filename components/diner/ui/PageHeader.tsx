@@ -35,7 +35,7 @@ export function PageHeader({
   );
 
   return (
-    <div className="sticky top-0 z-30 flex items-center gap-3 bg-white/95 px-4 pt-5 pb-4 mb-2 backdrop-blur-sm border-b border-gray-100/80">
+    <div className="sticky top-0 z-30 mb-4 flex items-center gap-3 border-b border-gray-100/80 bg-white/95 px-4 pt-5 pb-4 backdrop-blur-sm">
       {backHref ? (
         <Link
           href={backHref}

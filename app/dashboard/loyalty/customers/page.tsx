@@ -1,19 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { MagnifyingGlass, ArrowRight, CaretLeft } from "@phosphor-icons/react";
+import {
+  ArrowRight,
+  CaretLeft,
+  MagnifyingGlass,
+  Trophy,
+} from "@phosphor-icons/react";
 import Link from "next/link";
-import { MOCK_LOYALTY_PROFILES, formatPrice } from "@/lib/mockData";
+import { useState } from "react";
+import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
+import { formatPrice, MOCK_LOYALTY_PROFILES } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
+import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 
 const TIER_BADGE: Record<string, string> = {
-  Gold:   "bg-yellow-100 text-yellow-700",
+  Gold: "bg-yellow-100 text-yellow-700",
   Silver: "bg-gray-100 text-gray-600",
   Bronze: "bg-orange-100 text-orange-700",
 };
-const TIER_ICON: Record<string, string> = { Gold: "🥇", Silver: "🥈", Bronze: "🥉" };
+const TIER_ICON: Record<string, string> = {
+  Gold: "🥇",
+  Silver: "🥈",
+  Bronze: "🥉",
+};
 
 export default function CustomerListPage() {
+  const loyaltyEnabled = useDashboardSettingsStore(
+    (state) => state.features.loyalty,
+  );
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
 
@@ -23,22 +37,41 @@ export default function CustomerListPage() {
     return matchSearch && matchFilter;
   });
 
+  if (!loyaltyEnabled) {
+    return (
+      <DashboardSetupPrompt
+        title="Loyalty is not enabled"
+        description="Enable loyalty before viewing customer points, tiers, and visit history."
+        featureLabel="loyalty"
+        icon={Trophy}
+      />
+    );
+  }
+
   return (
     <div className="px-4 py-6 lg:px-8 lg:py-8 max-w-[1200px] mx-auto w-full">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/dashboard/loyalty" className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <Link
+          href="/dashboard/loyalty"
+          className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+        >
           <CaretLeft size={18} weight="bold" />
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Loyalty Members</h1>
-          <p className="text-sm text-gray-500 mt-1">Searchable customer database with visit history</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Searchable customer database with visit history
+          </p>
         </div>
       </div>
 
       {/* Search + Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <div className="relative flex-1">
-          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <MagnifyingGlass
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={16}
+          />
           <input
             type="text"
             placeholder="Search by phone..."
@@ -54,7 +87,9 @@ export default function CustomerListPage() {
               onClick={() => setFilter(t)}
               className={cn(
                 "px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors",
-                filter === t ? "bg-gray-900 text-white" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                filter === t
+                  ? "bg-gray-900 text-white"
+                  : "text-gray-500 hover:text-gray-900 hover:bg-gray-50",
               )}
             >
               {t}
@@ -75,13 +110,23 @@ export default function CustomerListPage() {
         </div>
         <div className="divide-y divide-gray-100">
           {filtered.map((profile) => (
-            <div key={profile.phone} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
+            <div
+              key={profile.phone}
+              className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors"
+            >
               <div className="col-span-4">
-                <p className="font-semibold text-gray-900 text-sm">{profile.phone}</p>
+                <p className="font-semibold text-gray-900 text-sm">
+                  {profile.phone}
+                </p>
                 <p className="text-xs text-gray-400">Joined Jan 2026</p>
               </div>
               <div className="col-span-2">
-                <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold", TIER_BADGE[profile.tier])}>
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold",
+                    TIER_BADGE[profile.tier],
+                  )}
+                >
                   {TIER_ICON[profile.tier]} {profile.tier}
                 </span>
               </div>
@@ -110,18 +155,33 @@ export default function CustomerListPage() {
       {/* Mobile Card Stack */}
       <div className="lg:hidden space-y-3">
         {filtered.map((profile) => (
-          <div key={profile.phone} className="bg-white border border-gray-100 rounded-2xl p-4">
+          <div
+            key={profile.phone}
+            className="bg-white border border-gray-100 rounded-2xl p-4"
+          >
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="font-semibold text-gray-900 text-sm">{profile.phone}</p>
-                <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-1", TIER_BADGE[profile.tier])}>
+                <p className="font-semibold text-gray-900 text-sm">
+                  {profile.phone}
+                </p>
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-1",
+                    TIER_BADGE[profile.tier],
+                  )}
+                >
                   {TIER_ICON[profile.tier]} {profile.tier}
                 </span>
               </div>
-              <span className="text-sm font-bold text-gray-900">{profile.totalPoints.toLocaleString()} pts</span>
+              <span className="text-sm font-bold text-gray-900">
+                {profile.totalPoints.toLocaleString()} pts
+              </span>
             </div>
             <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-100 pt-3">
-              <span>{formatPrice(profile.totalSpent)} total · {profile.totalVisits} visits</span>
+              <span>
+                {formatPrice(profile.totalSpent)} total · {profile.totalVisits}{" "}
+                visits
+              </span>
               <Link
                 href={`/dashboard/loyalty/customers/${profile.phone}`}
                 className="flex items-center gap-1 font-semibold text-orange-500 hover:text-orange-600 transition-colors"
@@ -135,7 +195,9 @@ export default function CustomerListPage() {
 
       {filtered.length === 0 && (
         <div className="h-40 flex items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl">
-          <p className="text-sm text-gray-400 font-medium">No customers match your search</p>
+          <p className="text-sm text-gray-400 font-medium">
+            No customers match your search
+          </p>
         </div>
       )}
     </div>

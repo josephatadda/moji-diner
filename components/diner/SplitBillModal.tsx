@@ -113,7 +113,7 @@ export function SplitBillModal({
 
       {!generated ? (
         <>
-          <div className="flex-none px-4 pb-4">
+          <div className="flex-none px-4 pb-5">
             <SegmentedTabs
               options={[
                 { value: "equally", label: "Equally" },

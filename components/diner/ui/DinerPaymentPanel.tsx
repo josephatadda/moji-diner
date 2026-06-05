@@ -9,7 +9,6 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { DinerIconBadge } from "./DinerIconBadge";
 import { DinerInfoRow } from "./DinerInfoRow";
 import { dinerToast } from "./diner-toast";
 import { DINER } from "./diner-tokens";
@@ -42,8 +41,8 @@ export function DinerPaymentPanel({
       />
 
       {method === "bank" && (
-        <div className={cn(DINER.card, "p-5")}>
-          <div className="mb-4 flex items-center gap-3">
+        <div className={cn(DINER.card, "p-4")}>
+          <div className="mb-3 flex items-center gap-3">
             <div className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-blue-600">
               <Bank size={24} weight="fill" />
             </div>
@@ -53,7 +52,7 @@ export function DinerPaymentPanel({
             </div>
           </div>
 
-          <div className="mb-5 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-5 text-center">
+          <div className="mb-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-center">
             <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
               Amount to transfer
             </p>
@@ -62,7 +61,7 @@ export function DinerPaymentPanel({
             </p>
           </div>
 
-          <div className={cn(DINER.summaryCard, "mb-6 space-y-3")}>
+          <div className={cn(DINER.summaryCard, "space-y-3")}>
             <DinerInfoRow label="Bank Name" value="GTBank" />
             <DinerInfoRow label="Account Name" value="Moji Restaurant" />
             <div className="flex items-center justify-between gap-4 text-sm">

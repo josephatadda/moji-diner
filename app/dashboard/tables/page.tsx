@@ -1,36 +1,85 @@
 "use client";
 
+import { DeviceMobile } from "@phosphor-icons/react";
 import { useState } from "react";
 import QRCode from "react-qr-code";
-import { MOCK_TABLES, MOCK_RESTAURANT } from "@/lib/mockData";
+import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
+import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { ds, t } from "@/lib/design-tokens";
+import { MOCK_RESTAURANT, MOCK_TABLES } from "@/lib/mockData";
+import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 
 export default function TablesPage() {
-  const [selectedTable, setSelectedTable] = useState<typeof MOCK_TABLES[0] | null>(null);
+  const tablesEnabled = useDashboardSettingsStore(
+    (state) => state.features.tables,
+  );
+  const [tables, setTables] = useState(MOCK_TABLES);
+  const [selectedTable, setSelectedTable] = useState<
+    (typeof MOCK_TABLES)[0] | null
+  >(null);
   const [isAddingTable, setIsAddingTable] = useState(false);
 
-  const pendingCount = MOCK_TABLES.filter(t => t.status === "awaiting_payment").length;
-  const occupiedCount = MOCK_TABLES.filter(t => t.status === "occupied").length;
+  const pendingCount = tables.filter(
+    (t) => t.status === "awaiting_payment",
+  ).length;
+  const occupiedCount = tables.filter((t) => t.status === "occupied").length;
 
   const handleAddTableSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const form = new FormData(e.currentTarget as HTMLFormElement);
+    const tableNumber = Number(form.get("tableNumber")) || tables.length + 1;
+    setTables((current) => [
+      ...current,
+      {
+        id: `tbl-${Date.now()}`,
+        restaurantId: MOCK_RESTAURANT.id,
+        tableNumber,
+        label: String(form.get("label") || `Table ${tableNumber}`),
+        capacity: Number(form.get("capacity")) || 4,
+        status: "available",
+      },
+    ]);
     setIsAddingTable(false);
-    // Real implementation would save to DB here
+    dashboardToast("Table added");
   };
+
+  if (!tablesEnabled) {
+    return (
+      <DashboardSetupPrompt
+        title="Table ordering is off"
+        description="Enable tables and QR codes when this restaurant wants dine-in guests to order from assigned tables."
+        featureLabel="tables"
+        icon={DeviceMobile}
+      />
+    );
+  }
 
   return (
     <div className={ds.page}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className={t.h1}>Tables &amp; QR Codes</h1>
-          <p className={`${t.body} mt-1`}>Manage your dining floor and print QR codes</p>
+          <p className={`${t.body} mt-1`}>
+            Manage your dining floor and print QR codes
+          </p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <button className={ds.btn.ghost}>
+          <button
+            onClick={() =>
+              dashboardToast(
+                "Bulk PDF download is mocked in this preview",
+                "info",
+              )
+            }
+            className={ds.btn.ghost}
+          >
             ↓ Download All PDF
           </button>
-          <button onClick={() => setIsAddingTable(true)} className={ds.btn.primary}>
+          <button
+            onClick={() => setIsAddingTable(true)}
+            className={ds.btn.primary}
+          >
             + Add Table
           </button>
         </div>
@@ -39,15 +88,19 @@ export default function TablesPage() {
       {/* Floor Summary */}
       <div className="grid grid-cols-3 gap-3 mb-8">
         <div className={ds.metric.card}>
-          <span className={ds.metric.value}>{MOCK_TABLES.length}</span>
+          <span className={ds.metric.value}>{tables.length}</span>
           <span className={ds.metric.label}>Total Tables</span>
         </div>
         <div className={ds.metric.card}>
-          <span className={`${ds.metric.value} text-orange-600`}>{occupiedCount}</span>
+          <span className={`${ds.metric.value} text-orange-600`}>
+            {occupiedCount}
+          </span>
           <span className={ds.metric.label}>Occupied</span>
         </div>
         <div className={ds.metric.card}>
-          <span className={`${ds.metric.value} text-blue-600`}>{pendingCount}</span>
+          <span className={`${ds.metric.value} text-blue-600`}>
+            {pendingCount}
+          </span>
           <span className={ds.metric.label}>Awaiting Bill</span>
         </div>
       </div>
@@ -60,35 +113,58 @@ export default function TablesPage() {
           <div className="col-span-3">Status</div>
           <div className="col-span-4 text-right">QR Code</div>
         </div>
-        
+
         <div className="divide-y divide-gray-100">
-          {MOCK_TABLES.map(table => {
+          {tables.map((table) => {
             const statusConfig = {
-              available: { bg: "bg-green-100", text: "text-green-700", label: "Available" },
-              occupied: { bg: "bg-orange-100", text: "text-orange-700", label: "Occupied" },
-              awaiting_payment: { bg: "bg-blue-100", text: "text-blue-700", label: "Awaiting Payment" },
+              available: {
+                bg: "bg-green-100",
+                text: "text-green-700",
+                label: "Available",
+              },
+              occupied: {
+                bg: "bg-orange-100",
+                text: "text-orange-700",
+                label: "Occupied",
+              },
+              awaiting_payment: {
+                bg: "bg-blue-100",
+                text: "text-blue-700",
+                label: "Awaiting Payment",
+              },
             }[table.status];
 
             return (
-              <div key={table.id} className="flex flex-col sm:grid sm:grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-start sm:items-center hover:bg-gray-50 transition-colors">
+              <div
+                key={table.id}
+                className="flex flex-col sm:grid sm:grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-start sm:items-center hover:bg-gray-50 transition-colors"
+              >
                 <div className="col-span-3">
-                  <p className="font-bold text-gray-900 leading-none mb-1">{table.label}</p>
-                  <p className="text-xs text-gray-400">Table {table.tableNumber}</p>
+                  <p className="font-bold text-gray-900 leading-none mb-1">
+                    {table.label}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Table {table.tableNumber}
+                  </p>
                 </div>
-                
+
                 <div className="col-span-2 sm:text-center text-sm text-gray-600">
-                  <span className="sm:hidden font-medium mr-1 text-gray-400">Capacity:</span>
+                  <span className="sm:hidden font-medium mr-1 text-gray-400">
+                    Capacity:
+                  </span>
                   {table.capacity} <span className="text-xs">seats</span>
                 </div>
 
                 <div className="col-span-3">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${statusConfig.bg} ${statusConfig.text}`}>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${statusConfig.bg} ${statusConfig.text}`}
+                  >
                     {statusConfig.label}
                   </span>
                 </div>
 
                 <div className="col-span-4 flex w-full justify-start sm:justify-end mt-2 sm:mt-0">
-                  <button 
+                  <button
                     onClick={() => setSelectedTable(table)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold rounded-lg transition-colors border border-transparent hover:border-gray-300"
                   >
@@ -119,10 +195,25 @@ export default function TablesPage() {
             )}
           </div>
           <div className="flex gap-3 w-full max-w-sm px-4">
-            <button className="flex-1 py-3 text-sm font-semibold bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">
+            <button
+              onClick={() => {
+                if (selectedTable) {
+                  navigator.clipboard.writeText(
+                    `http://localhost:3000/${MOCK_RESTAURANT.slug}/t/${selectedTable.tableNumber}`,
+                  );
+                  dashboardToast("Table link copied");
+                }
+              }}
+              className="flex-1 py-3 text-sm font-semibold bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+            >
               Copy Link
             </button>
-            <button className="flex-1 py-3 text-sm font-bold bg-gray-900 text-white hover:bg-gray-700 rounded-xl transition-colors">
+            <button
+              onClick={() =>
+                dashboardToast("PNG download is mocked in this preview", "info")
+              }
+              className="flex-1 py-3 text-sm font-bold bg-gray-900 text-white hover:bg-gray-700 rounded-xl transition-colors"
+            >
               Download PNG
             </button>
           </div>
@@ -137,21 +228,47 @@ export default function TablesPage() {
         description="Create a new table for your restaurant floor."
       >
         <form onSubmit={handleAddTableSubmit} className="space-y-4 px-1 py-2">
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Table Name/Label</label>
-            <input required type="text" placeholder="e.g. VIP Booth 1" className={ds.input.base} />
+          <div className={ds.form.field}>
+            <label className={ds.input.label}>Table name/label</label>
+            <input
+              required
+              name="label"
+              type="text"
+              placeholder="e.g. VIP Booth 1"
+              className={ds.input.base}
+            />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Table Number</label>
-            <input required type="number" placeholder="e.g. 12" className={ds.input.base} />
+          <div className={ds.form.field}>
+            <label className={ds.input.label}>Table number</label>
+            <input
+              required
+              name="tableNumber"
+              type="number"
+              placeholder="e.g. 12"
+              className={ds.input.base}
+            />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Seating Capacity</label>
-            <input required type="number" placeholder="e.g. 4" className={ds.input.base} />
+          <div className={ds.form.field}>
+            <label className={ds.input.label}>Seating capacity</label>
+            <input
+              required
+              name="capacity"
+              type="number"
+              placeholder="e.g. 4"
+              className={ds.input.base}
+            />
           </div>
-          <div className="pt-2 flex justify-end gap-2">
-            <button type="button" onClick={() => setIsAddingTable(false)} className={ds.btn.ghost}>Cancel</button>
-            <button type="submit" className={ds.btn.primary}>Save Table</button>
+          <div className={ds.form.actions}>
+            <button
+              type="button"
+              onClick={() => setIsAddingTable(false)}
+              className={ds.btn.ghost}
+            >
+              Cancel
+            </button>
+            <button type="submit" className={ds.btn.primary}>
+              Save Table
+            </button>
           </div>
         </form>
       </ResponsiveDialog>

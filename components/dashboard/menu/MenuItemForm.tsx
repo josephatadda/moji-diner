@@ -1,13 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import type { MenuItem, Tag, Allergen, ModifierGroup } from "@/lib/mockData";
-import { useMenuStore } from "@/store/menu";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
 import { Image as ImageIcon, Warning } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { ds } from "@/lib/design-tokens";
+import type { Allergen, MenuItem, ModifierGroup, Tag } from "@/lib/mockData";
+import { cn } from "@/lib/utils";
+import { useMenuStore } from "@/store/menu";
 
-const ALL_TAGS: Tag[] = ["Spicy", "Vegetarian", "Vegan", "Gluten-Free", "Bestseller", "New", "Chef's Special"];
+const ALL_TAGS: Tag[] = [
+  "Spicy",
+  "Vegetarian",
+  "Vegan",
+  "Gluten-Free",
+  "Bestseller",
+  "New",
+  "Chef's Special",
+];
 const ALL_ALLERGENS: Allergen[] = ["Nuts", "Dairy", "Gluten", "Eggs", "Fish"];
 
 interface MenuItemFormProps {
@@ -17,7 +31,12 @@ interface MenuItemFormProps {
   existingItem?: MenuItem;
 }
 
-export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuItemFormProps) {
+export function MenuItemForm({
+  open,
+  onClose,
+  categoryId,
+  existingItem,
+}: MenuItemFormProps) {
   const { addItem, updateItem, categories } = useMenuStore();
 
   const [name, setName] = useState("");
@@ -40,15 +59,25 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
       setSelectedTags(existingItem.tags);
       setSelectedAllergens(existingItem.allergens);
     } else {
-      setName(""); setDescription(""); setPrice(""); setIsAvailable(true);
-      setIsFeatured(false); setPrepTime("15"); setSelectedTags([]); setSelectedAllergens([]);
+      setName("");
+      setDescription("");
+      setPrice("");
+      setIsAvailable(true);
+      setIsFeatured(false);
+      setPrepTime("15");
+      setSelectedTags([]);
+      setSelectedAllergens([]);
     }
   }, [existingItem, open]);
 
   const toggleTag = (tag: Tag) =>
-    setSelectedTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]);
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
   const toggleAllergen = (a: Allergen) =>
-    setSelectedAllergens((prev) => prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]);
+    setSelectedAllergens((prev) =>
+      prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a],
+    );
 
   const handleSave = () => {
     if (!name.trim() || !price) return;
@@ -101,43 +130,50 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
         <div className="px-5 py-4 space-y-5 pb-8">
           {/* Photo placeholder */}
           <div className="w-full h-36 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-100 transition-colors text-gray-400">
-            <span className="text-3xl"><ImageIcon /></span>
+            <span className="text-3xl">
+              <ImageIcon />
+            </span>
             <p className="text-sm font-medium text-gray-500">Upload photo</p>
             <p className="text-xs text-gray-400">JPEG or PNG, max 5MB</p>
           </div>
 
           {/* Name */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <div className={ds.form.field}>
+            <label className={ds.input.label}>
               Item name <span className="text-red-500">*</span>
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Jollof Rice + Chicken"
-              className="w-full h-11 px-3.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400 transition-colors"
+              className={ds.input.base}
             />
           </div>
 
           {/* Description */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Description <span className="text-gray-400 font-normal">(optional, max 200 chars)</span>
+          <div className={ds.form.field}>
+            <label className={ds.input.label}>
+              Description{" "}
+              <span className="text-gray-400 font-normal">
+                (optional, max 200 chars)
+              </span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value.slice(0, 200))}
               placeholder="Describe the dish…"
               rows={3}
-              className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400 resize-none transition-colors"
+              className={ds.input.textarea}
             />
-            <p className="text-xs text-gray-400 text-right mt-1">{description.length}/200</p>
+            <p className="text-xs text-gray-400 text-right mt-1">
+              {description.length}/200
+            </p>
           </div>
 
           {/* Price + Prep time */}
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className={ds.input.label}>
                 Price ₦ <span className="text-red-500">*</span>
               </label>
               <input
@@ -146,18 +182,18 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0"
                 min="0"
-                className="w-full h-11 px-3.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400 transition-colors"
+                className={ds.input.base}
               />
             </div>
             <div className="w-32">
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Prep time (min)</label>
+              <label className={ds.input.label}>Prep time (min)</label>
               <input
                 type="number"
                 value={prepTime}
                 onChange={(e) => setPrepTime(e.target.value)}
                 placeholder="15"
                 min="1"
-                className="w-full h-11 px-3.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400 transition-colors"
+                className={ds.input.base}
               />
             </div>
           </div>
@@ -165,10 +201,23 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
           {/* Toggles */}
           <div className="space-y-3">
             {[
-              { label: "Available", sub: "Diners can order this item", value: isAvailable, set: setIsAvailable },
-              { label: "Featured", sub: "Show at the top of the menu", value: isFeatured, set: setIsFeatured },
+              {
+                label: "Available",
+                sub: "Diners can order this item",
+                value: isAvailable,
+                set: setIsAvailable,
+              },
+              {
+                label: "Featured",
+                sub: "Show at the top of the menu",
+                value: isFeatured,
+                set: setIsFeatured,
+              },
             ].map(({ label, sub, value, set }) => (
-              <div key={label} className="flex items-center justify-between py-2">
+              <div
+                key={label}
+                className="flex items-center justify-between py-2"
+              >
                 <div>
                   <p className="text-sm font-semibold text-gray-900">{label}</p>
                   <p className="text-xs text-gray-400">{sub}</p>
@@ -177,13 +226,13 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
                   onClick={() => set(!value)}
                   className={cn(
                     "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
-                    value ? "bg-green-500" : "bg-gray-200"
+                    value ? "bg-green-500" : "bg-gray-200",
                   )}
                 >
                   <span
                     className={cn(
                       "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
-                      value ? "translate-x-6" : "translate-x-1"
+                      value ? "translate-x-6" : "translate-x-1",
                     )}
                   />
                 </button>
@@ -193,7 +242,7 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Tags</label>
+            <label className={ds.input.label}>Tags</label>
             <div className="flex flex-wrap gap-2">
               {ALL_TAGS.map((tag) => (
                 <button
@@ -203,7 +252,7 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
                     "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
                     selectedTags.includes(tag)
                       ? "bg-gray-900 text-white border-gray-900"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300",
                   )}
                 >
                   {tag}
@@ -214,7 +263,7 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
 
           {/* Allergens */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Allergens</label>
+            <label className={ds.input.label}>Allergens</label>
             <div className="flex flex-wrap gap-2">
               {ALL_ALLERGENS.map((a) => (
                 <button
@@ -224,7 +273,7 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
                     "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
                     selectedAllergens.includes(a)
                       ? "bg-red-600 text-white border-red-600"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300",
                   )}
                 >
                   <Warning className="inline-block mr-1" /> {a}
@@ -234,19 +283,16 @@ export function MenuItemForm({ open, onClose, categoryId, existingItem }: MenuIt
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={onClose}
-              className="flex-1 h-11 border border-gray-200 text-sm font-semibold text-gray-600 rounded-xl hover:bg-gray-50 transition-all"
-            >
+          <div className={ds.form.stickyActions}>
+            <button onClick={onClose} className={ds.btn.ghostFull}>
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={!name.trim() || !price}
-              className="flex-1 h-11 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className={ds.btn.primaryFull}
             >
-              {existingItem ? "Save Changes" : "Add Item"}
+              {existingItem ? "Save changes" : "Add item"}
             </button>
           </div>
         </div>
