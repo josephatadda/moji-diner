@@ -43,11 +43,32 @@ in the system, not one-offs:
 - `components/dashboard/ui/MetricCard.tsx` — one stat card (replaces 4 copies).
 - `components/dashboard/ui/Toggle.tsx` — one switch.
 
+## Visual polish (module phases)
+
+Phases 0–1 (foundation + shell) were structural/token passes with intentionally
+minimal visual change. **Phases 2–10 are an active visual refresh** — not just a
+value-for-value token swap. For each module, beyond conformance:
+
+- **Hierarchy** — correct heading/label/value emphasis and **font weights** via
+  `t.*`; make the primary element in each card/row dominant; de-emphasize meta.
+- **Balance & alignment** — even out uneven padding, ragged alignment, and
+  unbalanced grids; make sibling cards/rows feel like one family.
+- **Typography** — consistent sizes/weights, tabular-nums for numerics.
+- **Component refinement** — route through shared primitives; tighten weak spots.
+- **Border-first elevation** — cards use border + radius + surface, no default
+  shadow.
+
+**Preserved either way:** layouts, structure, the established look/identity, and
+the **overall spacing density** (regularize onto the 4pt scale; do not globally
+tighten or loosen). The refresh sharpens hierarchy/balance/type — it does not
+restyle the product or change its density.
+
 ## Phased rollout
 
 Each phase is a self-contained, reviewable commit. Every phase ends green
 (`tsc --noEmit` + `biome check`), flows verified, responsive at mobile/tablet/
-desktop, with no unintended visual change.
+desktop. After a module phase, it should read as a more polished, consistent
+version of the same screen.
 
 | Phase | Scope | Status |
 |---|---|---|
