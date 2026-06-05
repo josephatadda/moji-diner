@@ -41,11 +41,7 @@ export function DashboardConfirmDialog({
         </button>
         <button
           type="button"
-          className={
-            destructive
-              ? "inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-red-700 active:scale-[0.98]"
-              : ds.btn.primary
-          }
+          className={destructive ? ds.btn.danger : ds.btn.primary}
           onClick={() => {
             onConfirm();
             onOpenChange(false);

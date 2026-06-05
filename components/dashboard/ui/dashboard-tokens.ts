@@ -462,8 +462,17 @@ export const ds = {
     item: "flex items-center gap-3 pl-3 pr-4 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors relative",
     itemActive:
       "flex items-center gap-3 pl-3 pr-4 py-2 rounded-lg text-sm font-semibold bg-orange-50 text-orange-600 relative",
+    /** Disabled optional module — routes to Settings, shows an "Off" badge */
+    itemDisabled:
+      "flex items-center gap-3 pl-3 pr-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-50 hover:text-gray-500 transition-colors relative",
     activePip:
       "absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full bg-orange-500",
+    /** "Off" badge on a disabled nav item */
+    offBadge:
+      "ml-auto rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-bold text-gray-400",
+    /** Section group label (Main / Others) */
+    groupLabel:
+      "text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2 px-3",
   },
 
   // ── LAYOUT ────────────────────────────────────────────────────────────────
