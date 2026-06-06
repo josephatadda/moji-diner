@@ -115,3 +115,6 @@ export type PresetRow = typeof preset.$inferSelect;
 export type NewPresetRow = typeof preset.$inferInsert;
 export type LikeRow = typeof like.$inferSelect;
 export type UserRow = typeof user.$inferSelect;
+
+// Restaurant domain (Moji) — additive, separate module.
+export * from "./schema/restaurant";
