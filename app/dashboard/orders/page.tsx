@@ -10,14 +10,21 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "react";
 import { OrderCard } from "@/components/dashboard/orders/OrderCard";
-import { DashboardPageHeader } from "@/components/dashboard/ui/DashboardPageHeader";
-import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
-import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
-import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
-import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import {
+  DashboardButton,
+  DashboardField,
+  DashboardInput,
+  DashboardModal,
+  DashboardPageHeader,
+  DashboardSelect,
+  DashboardSetupPrompt,
+  dashboardToast,
+  ds,
+  t,
+} from "@/components/dashboard/ui";
 import type { MenuItem, OrderStatus } from "@/lib/mockData";
-import { MOCK_MENU } from "@/lib/mockData";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
+import { useMenuStore } from "@/store/menu";
 import { useOrdersStore } from "@/store/orders";
 
 const COLUMNS: {
@@ -66,9 +73,10 @@ export default function OrdersPage() {
     (state) => state.features.tables,
   );
   const taxes = useDashboardSettingsStore((state) => state.taxes);
+  const menuCategories = useMenuStore((state) => state.categories);
   const [isManualOrderOpen, setIsManualOrderOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState(
-    MOCK_MENU[0]?.id || "",
+    menuCategories[0]?.id || "",
   );
   const [selectedItems, setSelectedItems] = useState<
     { item: MenuItem; qty: number }[]
@@ -92,7 +100,9 @@ export default function OrdersPage() {
     setSelectedItems((prev) => prev.filter((p) => p.item.id !== itemId));
   };
 
-  const selectedCategory = MOCK_MENU.find((c) => c.id === selectedCategoryId);
+  const selectedCategory = menuCategories.find(
+    (c) => c.id === selectedCategoryId,
+  );
   const orderTotal = selectedItems.reduce(
     (sum, p) => sum + p.item.price * p.qty,
     0,
@@ -163,13 +173,12 @@ export default function OrdersPage() {
           title="Order queue"
           description="Live tracking for dine-in, QR, and staff-created orders."
           actions={
-            <button
-              type="button"
+            <DashboardButton
               onClick={() => setIsManualOrderOpen(true)}
-              className={`${ds.btn.primary} hidden sm:inline-flex`}
+              className="hidden sm:inline-flex"
             >
               + Manual order
-            </button>
+            </DashboardButton>
           }
         />
       </div>
@@ -220,54 +229,67 @@ export default function OrdersPage() {
         </div>
       </div>
       {/* Manual Order Modal */}
-      <ResponsiveDialog
+      <DashboardModal
         open={isManualOrderOpen}
         onOpenChange={setIsManualOrderOpen}
-        title="New Manual Order"
+        title="New manual order"
         description="Record an order taken at the counter or over the phone."
+        maxWidth="lg"
+        footer={
+          <div className="flex justify-end gap-2">
+            <DashboardButton
+              variant="ghost"
+              onClick={() => setIsManualOrderOpen(false)}
+            >
+              Cancel
+            </DashboardButton>
+            <DashboardButton type="submit" form="manual-order-form">
+              Create order
+            </DashboardButton>
+          </div>
+        }
       >
         <form
+          id="manual-order-form"
           onSubmit={handleManualOrderSubmit}
-          className="space-y-4 px-1 py-2"
+          className="space-y-5"
         >
-          <div className={ds.form.field}>
-            <label htmlFor="manual-order-location" className={ds.input.label}>
-              {tableOrderingEnabled ? "Table number" : "Order location"}
-              <span className="text-gray-400"> (optional)</span>
-            </label>
-            <input
+          <DashboardField
+            id="manual-order-location"
+            label={tableOrderingEnabled ? "Table number" : "Order location"}
+            optional
+          >
+            <DashboardInput
               id="manual-order-location"
               type="number"
               placeholder={tableOrderingEnabled ? "e.g. 5" : "Counter order"}
-              className={ds.input.base}
               value={tableNumber}
               onChange={(event) => setTableNumber(event.target.value)}
             />
-          </div>
+          </DashboardField>
           <div className="space-y-3">
             <label htmlFor="manual-order-category" className={ds.input.label}>
               Add items
             </label>
             <div className="flex gap-2">
-              <select
+              <DashboardSelect
                 id="manual-order-category"
-                className={ds.input.select}
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
               >
-                {MOCK_MENU.map((cat) => (
+                {menuCategories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>
                 ))}
-              </select>
+              </DashboardSelect>
             </div>
 
-            <div className="border border-gray-100 rounded-xl max-h-48 overflow-y-auto divide-y divide-gray-50">
+            <div className="max-h-48 overflow-y-auto rounded-xl border border-gray-100 bg-white divide-y divide-gray-50">
               {selectedCategory?.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-2 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors"
                 >
                   <div>
                     <p className="text-sm font-semibold text-gray-900">
@@ -277,23 +299,22 @@ export default function OrdersPage() {
                       ₦{item.price.toLocaleString()}
                     </p>
                   </div>
-                  <button
-                    type="button"
+                  <DashboardButton
+                    variant="icon"
                     onClick={() => {
                       handleAddItem(item);
                       setFormError("");
                     }}
-                    className="p-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     <Plus size={14} weight="bold" />
-                  </button>
+                  </DashboardButton>
                 </div>
               ))}
             </div>
           </div>
 
           {selectedItems.length > 0 && (
-            <div className="bg-gray-50 p-3 rounded-xl space-y-2">
+            <div className="bg-gray-50 p-3 rounded-xl space-y-2 border border-gray-100">
               <p className="text-xs font-semibold text-gray-500 uppercase">
                 Order Summary
               </p>
@@ -342,27 +363,14 @@ export default function OrdersPage() {
               {formError}
             </p>
           )}
-          <div className={ds.form.actions}>
-            <button
-              type="button"
-              onClick={() => setIsManualOrderOpen(false)}
-              className={ds.btn.ghost}
-            >
-              Cancel
-            </button>
-            <button type="submit" className={ds.btn.primary}>
-              Create order
-            </button>
-          </div>
         </form>
-      </ResponsiveDialog>
-      <button
-        type="button"
+      </DashboardModal>
+      <DashboardButton
         onClick={() => setIsManualOrderOpen(true)}
-        className={`${ds.btn.primary} fixed bottom-4 right-4 z-20 sm:hidden`}
+        className="fixed bottom-4 right-4 z-20 sm:hidden"
       >
         + Manual order
-      </button>
+      </DashboardButton>
     </div>
   );
 }

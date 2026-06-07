@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ArrowRight,
   ClipboardText,
@@ -7,19 +9,18 @@ import {
   HandWaving,
   PencilSimple,
   QrCode,
-} from "@phosphor-icons/react/dist/ssr";
+} from "@phosphor-icons/react";
 import Link from "next/link";
 import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
 import { MetricCard } from "@/components/dashboard/ui/MetricCard";
 import {
-  MOCK_MENU,
   MOCK_ORDERS,
-  MOCK_RESTAURANT,
   MOCK_TRANSACTIONS,
   type PaymentMethod,
 } from "@/lib/mockData";
-
-export const metadata = { title: "Dashboard" };
+import { useDashboardSettingsStore } from "@/store/dashboard-settings";
+import { useMenuStore } from "@/store/menu";
+import { useOrdersStore } from "@/store/orders";
 
 const METHOD_LABEL: Record<PaymentMethod, string> = {
   card: "Card",
@@ -38,13 +39,17 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const activeOrders = MOCK_ORDERS.filter(
+  const menuCategories = useMenuStore((state) => state.categories);
+  const profile = useDashboardSettingsStore((state) => state.profile);
+  const dashboardOrders = useOrdersStore((state) => state.orders);
+  const orders = dashboardOrders.length ? dashboardOrders : MOCK_ORDERS;
+  const activeOrders = orders.filter(
     (o) => o.status !== "served" && o.status !== "paid",
   ).length;
-  const totalItems = MOCK_MENU.reduce((s, c) => s + c.items.length, 0);
-  const todayRevenue = MOCK_ORDERS.filter(
-    (o) => o.status === "served" || o.status === "paid",
-  ).reduce((s, o) => s + o.grandTotal, 0);
+  const totalItems = menuCategories.reduce((s, c) => s + c.items.length, 0);
+  const todayRevenue = orders
+    .filter((o) => o.status === "served" || o.status === "paid")
+    .reduce((s, o) => s + o.grandTotal, 0);
 
   return (
     <div className={`${ds.page}`}>
@@ -55,28 +60,35 @@ export default function DashboardPage() {
           <HandWaving className="text-orange-400" weight="fill" size={22} />
         </h1>
         <p className={`${t.body} mt-1`}>
-          {MOCK_RESTAURANT.name} · {MOCK_RESTAURANT.city}
+          {profile.name} · {profile.city}
         </p>
       </div>
 
       {/* Accepting orders banner */}
-      <div className="flex items-center justify-between bg-green-50 border border-green-100 rounded-2xl px-5 py-4 mb-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-none" />
-          <div>
-            <p className="font-semibold text-green-800 text-sm">
-              Accepting orders
-            </p>
-            <p className="text-xs text-green-600 mt-0.5">
-              Diners can scan and order right now
+      <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-gray-50 text-green-600">
+            <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-semibold text-gray-900">
+                Diner ordering is live
+              </p>
+              <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-700">
+                Accepting orders
+              </span>
+            </div>
+            <p className="mt-0.5 text-xs text-gray-500">
+              QR menu and table orders are available to guests.
             </p>
           </div>
         </div>
         <button
           type="button"
-          className="text-xs font-semibold text-green-700 bg-green-100 hover:bg-green-200 px-3 py-1.5 rounded-lg transition-colors"
+          className="h-8 rounded-xl border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
         >
-          Pause
+          Pause orders
         </button>
       </div>
 
@@ -87,19 +99,17 @@ export default function DashboardPage() {
           value={String(activeOrders)}
           sub="right now"
           icon={<ClipboardText size={18} />}
-          iconAccent
         />
         <MetricCard
           label="Today's revenue"
           value={`₦${todayRevenue.toLocaleString()}`}
           sub="from served orders"
           icon={<CurrencyCircleDollar size={18} />}
-          iconAccent
         />
         <MetricCard
           label="Menu items"
           value={String(totalItems)}
-          sub={`${MOCK_MENU.length} categories`}
+          sub={`${menuCategories.length} categories`}
           icon={<ForkKnife size={18} />}
         />
         <MetricCard
@@ -115,9 +125,7 @@ export default function DashboardPage() {
         {/* Recent orders */}
         <div className="bg-white rounded-2xl border border-gray-100">
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-50">
-            <h2 className="text-sm font-semibold text-zinc-900">
-              Recent orders
-            </h2>
+            <h2 className={t.h4}>Recent orders</h2>
             <Link
               href="/dashboard/orders"
               className="flex items-center gap-1 text-xs font-semibold text-orange-500 hover:text-orange-600 transition-colors"
@@ -126,14 +134,14 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="divide-y divide-gray-50">
-            {MOCK_ORDERS.slice(0, 4).map((order) => (
+            {orders.slice(0, 4).map((order) => (
               <div
                 key={order.id}
                 className="flex items-center justify-between px-5 py-3.5"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-zinc-900 text-sm">
+                    <p className="font-semibold text-gray-900 text-sm">
                       Table {order.tableNumber}
                     </p>
                     <span
@@ -151,7 +159,7 @@ export default function DashboardPage() {
                     min ago
                   </p>
                 </div>
-                <p className="font-bold text-zinc-900 text-sm [font-variant-numeric:tabular-nums]">
+                <p className={t.price}>
                   ₦
                   {order.grandTotal.toLocaleString(undefined, {
                     maximumFractionDigits: 0,
@@ -165,9 +173,7 @@ export default function DashboardPage() {
         {/* Recent transactions */}
         <div className="bg-white rounded-2xl border border-gray-100">
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-50">
-            <h2 className="text-sm font-semibold text-zinc-900">
-              Recent transactions
-            </h2>
+            <h2 className={t.h4}>Recent transactions</h2>
             <Link
               href="/dashboard/analytics"
               className="flex items-center gap-1 text-xs font-semibold text-orange-500 hover:text-orange-600 transition-colors"
@@ -191,7 +197,7 @@ export default function DashboardPage() {
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-zinc-900">
+                      <p className="text-sm font-semibold text-gray-900">
                         Table {txn.tableNumber}
                       </p>
                       <span
@@ -209,7 +215,7 @@ export default function DashboardPage() {
                       className={`text-sm font-bold [font-variant-numeric:tabular-nums] ${
                         txn.status === "failed"
                           ? "text-red-500"
-                          : "text-zinc-900"
+                          : "text-gray-900"
                       }`}
                     >
                       {txn.status === "failed" ? "−" : "+"}₦
@@ -229,9 +235,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick actions */}
-      <h2 className="text-sm font-semibold text-zinc-900 mb-3">
-        Quick actions
-      </h2>
+      <h2 className={`${t.h4} mb-3`}>Quick actions</h2>
       <div className="grid grid-cols-2 gap-3">
         <Link
           href="/dashboard/menu"
@@ -240,7 +244,7 @@ export default function DashboardPage() {
           <span className="text-xl text-orange-500 mb-3 block">
             <PencilSimple weight="duotone" />
           </span>
-          <p className="font-semibold text-zinc-900 text-sm">Edit menu</p>
+          <p className="font-semibold text-gray-900 text-sm">Edit menu</p>
           <p className="text-xs text-gray-400 mt-0.5">Add or update items</p>
         </Link>
         <Link
@@ -250,7 +254,7 @@ export default function DashboardPage() {
           <span className="text-xl text-blue-500 mb-3 block">
             <QrCode weight="duotone" />
           </span>
-          <p className="font-semibold text-zinc-900 text-sm">QR codes</p>
+          <p className="font-semibold text-gray-900 text-sm">QR codes</p>
           <p className="text-xs text-gray-400 mt-0.5">Download table codes</p>
         </Link>
       </div>

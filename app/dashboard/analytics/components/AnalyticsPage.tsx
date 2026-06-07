@@ -2,8 +2,13 @@
 
 import { Export } from "@phosphor-icons/react";
 import { useState } from "react";
-import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
-import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
+import {
+  DashboardButton,
+  DashboardPageHeader,
+  DashboardSetupPrompt,
+  dashboardToast,
+} from "@/components/dashboard/ui";
+import { ds } from "@/components/dashboard/ui/dashboard-tokens";
 import { MetricCard } from "@/components/dashboard/ui/MetricCard";
 import { formatPrice, MOCK_ANALYTICS } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
@@ -34,40 +39,43 @@ export function AnalyticsPage() {
 
   return (
     <div className={ds.page}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className={t.h1}>Analytics</h1>
-          <p className={`${t.body} mt-1`}>
-            Performance metrics for {range.toLowerCase()}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Range selector */}
-          <div className="flex bg-white border border-gray-200 p-1 rounded-xl gap-0.5 overflow-x-auto scrollbar-none">
-            {RANGES.map((r) => (
-              <button
-                type="button"
-                key={r}
-                onClick={() => setRange(r)}
-                className={cn(
-                  range === r ? ds.btn.tabActive : ds.btn.tab,
-                  "whitespace-nowrap",
-                )}
-              >
-                {r}
-              </button>
-            ))}
+      <DashboardPageHeader
+        title="Analytics"
+        description={`Performance metrics for ${range.toLowerCase()}.`}
+        actions={
+          <div className="flex items-center gap-2">
+            {/* Range selector */}
+            <div className="flex bg-white border border-gray-200 p-1 rounded-xl gap-0.5 overflow-x-auto scrollbar-none">
+              {RANGES.map((r) => (
+                <button
+                  type="button"
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className={cn(
+                    range === r ? ds.btn.tabActive : ds.btn.tab,
+                    "whitespace-nowrap",
+                  )}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <DashboardButton
+              variant="ghost"
+              className="hidden lg:inline-flex"
+              onClick={() =>
+                dashboardToast(
+                  "Analytics export is mocked in this preview",
+                  "info",
+                )
+              }
+            >
+              <Export size={15} />
+              Export
+            </DashboardButton>
           </div>
-          <button
-            type="button"
-            className={`${ds.btn.ghost} hidden lg:inline-flex`}
-          >
-            <Export size={15} />
-            Export
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">

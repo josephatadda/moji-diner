@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { MOCK_MENU, type MenuCategory, type MenuItem } from "@/lib/mockData";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { type MenuCategory, type MenuItem, MOCK_MENU } from "@/lib/mockData";
 
 interface MenuState {
   categories: MenuCategory[];
@@ -20,76 +21,87 @@ interface MenuState {
   getCategoryById: (categoryId: string) => MenuCategory | undefined;
 }
 
-export const useMenuStore = create<MenuState>()((set, get) => ({
-  categories: MOCK_MENU,
-  isLoading: false,
+export const useMenuStore = create<MenuState>()(
+  persist(
+    (set, get) => ({
+      categories: MOCK_MENU,
+      isLoading: false,
 
-  setCategories: (categories) => set({ categories }),
+      setCategories: (categories) => set({ categories }),
 
-  addCategory: (category) =>
-    set((state) => ({ categories: [...state.categories, category] })),
+      addCategory: (category) =>
+        set((state) => ({ categories: [...state.categories, category] })),
 
-  updateCategory: (categoryId, updates) =>
-    set((state) => ({
-      categories: state.categories.map((c) =>
-        c.id === categoryId ? { ...c, ...updates } : c
-      ),
-    })),
+      updateCategory: (categoryId, updates) =>
+        set((state) => ({
+          categories: state.categories.map((c) =>
+            c.id === categoryId ? { ...c, ...updates } : c,
+          ),
+        })),
 
-  deleteCategory: (categoryId) =>
-    set((state) => ({
-      categories: state.categories.filter((c) => c.id !== categoryId),
-    })),
+      deleteCategory: (categoryId) =>
+        set((state) => ({
+          categories: state.categories.filter((c) => c.id !== categoryId),
+        })),
 
-  addItem: (categoryId, item) =>
-    set((state) => ({
-      categories: state.categories.map((c) =>
-        c.id === categoryId ? { ...c, items: [...c.items, item] } : c
-      ),
-    })),
+      addItem: (categoryId, item) =>
+        set((state) => ({
+          categories: state.categories.map((c) =>
+            c.id === categoryId ? { ...c, items: [...c.items, item] } : c,
+          ),
+        })),
 
-  updateItem: (itemId, updates) =>
-    set((state) => ({
-      categories: state.categories.map((c) => ({
-        ...c,
-        items: c.items.map((i) => (i.id === itemId ? { ...i, ...updates } : i)),
-      })),
-    })),
+      updateItem: (itemId, updates) =>
+        set((state) => ({
+          categories: state.categories.map((c) => ({
+            ...c,
+            items: c.items.map((i) =>
+              i.id === itemId ? { ...i, ...updates } : i,
+            ),
+          })),
+        })),
 
-  deleteItem: (itemId) =>
-    set((state) => ({
-      categories: state.categories.map((c) => ({
-        ...c,
-        items: c.items.filter((i) => i.id !== itemId),
-      })),
-    })),
+      deleteItem: (itemId) =>
+        set((state) => ({
+          categories: state.categories.map((c) => ({
+            ...c,
+            items: c.items.filter((i) => i.id !== itemId),
+          })),
+        })),
 
-  toggleAvailability: (itemId) =>
-    set((state) => ({
-      categories: state.categories.map((c) => ({
-        ...c,
-        items: c.items.map((i) =>
-          i.id === itemId ? { ...i, isAvailable: !i.isAvailable } : i
-        ),
-      })),
-    })),
+      toggleAvailability: (itemId) =>
+        set((state) => ({
+          categories: state.categories.map((c) => ({
+            ...c,
+            items: c.items.map((i) =>
+              i.id === itemId ? { ...i, isAvailable: !i.isAvailable } : i,
+            ),
+          })),
+        })),
 
-  resetAllAvailability: () =>
-    set((state) => ({
-      categories: state.categories.map((c) => ({
-        ...c,
-        items: c.items.map((i) => ({ ...i, isAvailable: true })),
-      })),
-    })),
+      resetAllAvailability: () =>
+        set((state) => ({
+          categories: state.categories.map((c) => ({
+            ...c,
+            items: c.items.map((i) => ({ ...i, isAvailable: true })),
+          })),
+        })),
 
-  getItemById: (itemId) => {
-    for (const cat of get().categories) {
-      const item = cat.items.find((i) => i.id === itemId);
-      if (item) return item;
-    }
-    return undefined;
-  },
+      getItemById: (itemId) => {
+        for (const cat of get().categories) {
+          const item = cat.items.find((i) => i.id === itemId);
+          if (item) return item;
+        }
+        return undefined;
+      },
 
-  getCategoryById: (categoryId) =>
-    get().categories.find((c) => c.id === categoryId),
-}));
+      getCategoryById: (categoryId) =>
+        get().categories.find((c) => c.id === categoryId),
+    }),
+    {
+      name: "moji-menu-store",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ categories: state.categories }),
+    },
+  ),
+);

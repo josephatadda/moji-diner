@@ -1,6 +1,6 @@
-import { DinerShell } from "@/components/diner/DinerShell";
 import { BillScreenClient } from "@/components/diner/BillScreenClient";
 import { CartContextProvider } from "@/components/diner/CartContextProvider";
+import { DinerShell } from "@/components/diner/DinerShell";
 import { MOCK_RESTAURANT } from "@/lib/mockData";
 
 interface Props {

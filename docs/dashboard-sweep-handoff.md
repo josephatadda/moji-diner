@@ -10,8 +10,10 @@ The dashboard should use Moji design-system foundations consistently: gray/white
 
 - Branch: `main`
 - The diner flow polish from the previous pass is still present in the working tree.
-- The dashboard sweep was interrupted mid-implementation, so the current changes should be treated as a useful foundation plus partial module work, not a finished dashboard polish pass.
-- The `/dashboard` preview was opened for live review.
+- The dashboard sweep now has a stronger reusable component foundation, but it
+  should still be treated as an in-progress module sweep rather than a final
+  dashboard-wide visual signoff.
+- Preview server: `http://localhost:3000`.
 
 ## Implemented So Far
 
@@ -25,20 +27,40 @@ The dashboard should use Moji design-system foundations consistently: gray/white
 
 ### Dashboard foundation
 
-- Added `store/dashboard-settings.ts` with mocked local restaurant settings:
+- Added/continued `store/dashboard-settings.ts` with mocked local restaurant settings:
   - Feature toggles for menu, orders, tables, payments, loyalty, analytics, staff, notifications, and integrations.
   - Restaurant profile settings.
   - Tax/service-charge settings.
-- Added reusable dashboard UI helpers:
+- Added reusable dashboard UI primitives:
+- `components/dashboard/ui/DashboardButton.tsx`
+  - includes `size="sm"` for compact row actions and dense card controls.
+  - `components/dashboard/ui/DashboardField.tsx`
+    (`DashboardInput`, `DashboardTextarea`, `DashboardSelect`)
+  - `components/dashboard/ui/DashboardFilterBar.tsx`
+  - `components/dashboard/ui/DashboardFileUpload.tsx`
+- `components/dashboard/ui/DashboardModal.tsx`
+  - owns aligned headers, optional descriptions, scrollable body content, and
+    fixed footer actions.
   - `components/dashboard/ui/DashboardPageHeader.tsx`
+- `components/dashboard/ui/DashboardTable.tsx`
+  - desktop uses the shared data-table pattern.
+  - mobile renders expandable cards with summary metadata, details, and actions
+    instead of forcing a horizontal table.
+  - `components/dashboard/ui/DashboardStatusBadge.tsx`
+  - `components/dashboard/ui/DashboardEmptyState.tsx`
   - `components/dashboard/ui/DashboardSetupPrompt.tsx`
   - `components/dashboard/ui/DashboardConfirmDialog.tsx`
   - `components/dashboard/ui/dashboard-toast.tsx`
-- Updated `lib/design-tokens.ts` with more consistent form/input tokens:
+- Added `components/dashboard/ui/index.ts` as the dashboard UI barrel export.
+- Updated `components/dashboard/ui/dashboard-tokens.ts` with more consistent
+  form/input/table tokens:
   - `ds.input.select`
   - `ds.form.*`
+  - `ds.table.*`
   - label weight changed toward `font-medium`
   - form action/footer patterns added.
+- Page header policy: top-level dashboard surfaces should not show back buttons.
+  Navigation belongs in sidebar/top actions, not mixed into page titles.
 
 ### Orders module
 
@@ -57,7 +79,15 @@ The dashboard should use Moji design-system foundations consistently: gray/white
 - Category delete now blocks with a toast when the category still has items.
 - Reset all availability now uses `DashboardConfirmDialog`.
 - Category form and menu item form started moving to tokenized labels, inputs, and action footers.
-- Menu item sheet now uses a sticky action footer, which is closer to the desired modal/action behavior.
+- Category and menu item forms now use `DashboardModal` rather than side-sheet
+  styling.
+- Menu item modal uses a fixed standard modal height with scrollable content and
+  fixed footer actions.
+- Menu management toolbar now uses `DashboardPageHeader`, `DashboardButton`, and
+  `DashboardEmptyState`.
+- Live preview now supports a desktop phone-frame mode and a mobile full-screen
+  preview mode, so the mobile preview tab uses the full viewport instead of a
+  cramped mock phone.
 
 ### Feature-aware dashboard routes
 
@@ -85,10 +115,32 @@ The dashboard sidebar now displays disabled optional modules with an `Off` badge
 
 ### Other module improvements started
 
-- Tables page keeps locally added tables in component state.
-- Tables copy/download actions now provide feedback instead of silently doing nothing.
+- Tables page now has local CRUD:
+  - Add table
+  - Edit table
+  - Delete table with confirmation
+  - Status/capacity/table-number editing
+  - QR modal
+  - Copy link feedback
+  - Mock download feedback
+- Tables now uses `DashboardPageHeader`, `DashboardTable`,
+  `DashboardStatusBadge`, `DashboardModal`, `DashboardField`, and
+  `DashboardButton`.
+- Tables mobile view now uses the sanctioned expandable-card behavior from
+  `DashboardTable`; desktop remains the shared table pattern.
 - Transactions export action now gives mocked feedback.
+- Transactions uses `DashboardFilterBar` and `DashboardStatusBadge`; the
+  redundant page-title back arrow was removed.
+- Loyalty Customers now uses `DashboardPageHeader`, `DashboardFilterBar`,
+  `DashboardTable`, `DashboardStatusBadge`, and `DashboardEmptyState`.
+- Loyalty Rewards and Loyalty Settings no longer use ad hoc header back arrows.
 - Staff page now keeps local staff state, supports mocked add/deactivate/reactivate, and provides feedback.
+- Staff now uses `DashboardPageHeader`, `DashboardTable`, `DashboardStatusBadge`,
+  and `DashboardConfirmDialog` for the active staff list and deactivation flow.
+- Settings now routes its local helper components through shared dashboard
+  tokens for cards, toggles, buttons, field labels, and input classes.
+- Analytics now uses `DashboardPageHeader` and `DashboardButton` with mocked
+  export feedback.
 
 ## Important Decisions
 
@@ -102,56 +154,47 @@ The dashboard sidebar now displays disabled optional modules with an `Off` badge
 
 ## Known Incomplete Work
 
-The dashboard sweep is not finished. The next agent should continue from these items:
+The dashboard sweep is not finished. Continue from these items:
 
-1. Finish tokenizing dashboard forms and dialogs.
-   - Ensure all form labels use `ds.input.label`.
-   - Ensure labels are associated with controls via `htmlFor`/`id`.
-   - Ensure all buttons have explicit `type`.
-   - Ensure modal actions use shared action/footer patterns.
-
-2. Complete Biome cleanup.
-   - A focused `npx biome check --write ...` was run and fixed formatting/imports, but remaining diagnostics include accessibility items.
-   - Known remaining issue categories:
-     - Missing `type="button"` on buttons.
-     - Static overlay divs with click handlers in `app/dashboard/layout.tsx`.
-     - Labels without associated controls in forms.
-
-3. Continue module-by-module dashboard polish.
+1. Continue final visual review.
    - Orders: visually review manual order modal and queue layout.
-   - Menu: finish form hierarchy and make create/edit actions show toasts.
-   - Settings: continue replacing remaining `zinc-*` one-offs with gray/token classes.
-   - Tables: improve QR modal and download behavior if needed.
-   - Transactions: finish export feedback and row polish.
-   - Loyalty: make reward create/edit mutate local state instead of closing with comments.
-   - Analytics: add feedback for export and button types.
-   - Staff: add proper confirmation for deactivate if desired.
+   - Menu: visually review category/item cards and live preview alignment.
+   - Settings: visual QA still recommended, but the worst local primitives now
+     map through shared tokens.
+   - Loyalty: finish deeper overview/detail polish if the product direction
+     changes, but search/table/header consistency has been addressed.
 
-4. Connect settings to diner-facing surfaces more intentionally.
+2. Finish input definitions across Settings and older module pages.
+   - `DashboardField/Input/Textarea/Select` are available.
+   - Settings still contains small local `Field`/`ToggleSwitch` wrappers, but
+     they now consume shared dashboard tokens/components instead of independent
+     visual styles.
+
+3. Connect settings to diner-facing surfaces more intentionally.
    - The store exists, but only dashboard flows currently read most of it.
    - Future work should decide which local settings should affect diner menu/bill immediately.
 
-5. Add/refresh documentation after the dashboard sweep is complete.
-   - This handoff is a mid-sweep continuation document, not final dashboard design-system documentation.
+4. Improve real file/QR export behavior.
+   - Copy feedback is implemented.
+   - QR PNG/PDF export remains mocked.
 
 ## Verification Status
 
-- `npx tsc --noEmit` passed after the dashboard settings/token/form changes.
-- A later focused Biome run fixed many formatting/import-order items but still reported accessibility diagnostics.
-- A final check should be run by the next agent after completing the accessibility cleanup:
-  - `npx tsc --noEmit`
-  - `npx biome check app/dashboard components/dashboard store/dashboard-settings.ts lib/design-tokens.ts`
+- `npx tsc --noEmit` passed.
+- `npx biome check app/dashboard components/dashboard components/diner store lib/moji-design-system 'app/[restaurantSlug]/t'` passed.
+- `npm run build` is not a reliable pass/fail gate unless `DATABASE_URL` is
+  provided; previous builds reached page-data collection and then failed at
+  `/sitemap.xml` because `DATABASE_URL` was missing.
 
 ## Suggested Next Step
 
-Start by cleaning the remaining dashboard accessibility diagnostics, because that will stabilize the shared primitives and forms. Then continue the module sweep in this order:
+Continue the module sweep in this order:
 
-1. Orders
-2. Menu
-3. Settings
-4. Tables
-5. Transactions
-6. Loyalty
+1. Settings
+2. Orders
+3. Menu visual QA
+4. Transactions table migration
+5. Loyalty overview/settings/detail
+6. Staff table/edit pass
 7. Analytics
-8. Staff
-9. Overview and shell final pass
+8. Overview and shell final pass

@@ -1,8 +1,14 @@
 "use client";
 
+import { ForkKnife } from "@phosphor-icons/react";
 import { useState } from "react";
-import { DashboardConfirmDialog } from "@/components/dashboard/ui/DashboardConfirmDialog";
-import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
+import {
+  DashboardButton,
+  DashboardConfirmDialog,
+  DashboardEmptyState,
+  DashboardPageHeader,
+  dashboardToast,
+} from "@/components/dashboard/ui";
 import { MOCK_RESTAURANT } from "@/lib/mockData";
 import { useMenuStore } from "@/store/menu";
 import { CategoryCard } from "./CategoryCard";
@@ -51,51 +57,36 @@ export function MenuManagementPage() {
           } lg:flex flex-col flex-1 overflow-y-auto`}
         >
           {/* Toolbar */}
-          <div className="sticky top-0 lg:top-0 z-20 bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Menu</h1>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {categories.length} categories ·{" "}
-                {categories.reduce((s, c) => s + c.items.length, 0)} items
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setResetOpen(true)}
-                className="px-3 py-2 text-xs font-semibold text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
-              >
-                Reset All ↺
-              </button>
-              <button
-                type="button"
-                onClick={() => setAddCategoryOpen(true)}
-                className="px-4 py-2 text-xs font-bold bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-all"
-              >
-                + Category
-              </button>
-            </div>
+          <div className="sticky top-0 z-20 border-b border-gray-100 bg-white px-4 pt-4">
+            <DashboardPageHeader
+              title="Menu"
+              description={`${categories.length} categories · ${categories.reduce((s, c) => s + c.items.length, 0)} items`}
+              actions={
+                <>
+                  <DashboardButton
+                    variant="ghost"
+                    onClick={() => setResetOpen(true)}
+                  >
+                    Reset all
+                  </DashboardButton>
+                  <DashboardButton onClick={() => setAddCategoryOpen(true)}>
+                    + Category
+                  </DashboardButton>
+                </>
+              }
+            />
           </div>
 
           {/* Categories */}
           <div className="px-4 py-4 space-y-4 pb-8">
             {categories.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <span className="text-5xl mb-4">🍽</span>
-                <h3 className="text-lg font-bold text-gray-900">
-                  Your menu is empty
-                </h3>
-                <p className="text-sm text-gray-400 mt-1 mb-6">
-                  Start by adding your first category — e.g. "Starters"
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setAddCategoryOpen(true)}
-                  className="px-6 py-3 bg-gray-900 text-white font-bold text-sm rounded-xl hover:bg-gray-700 transition-all"
-                >
-                  + Add your first category
-                </button>
-              </div>
+              <DashboardEmptyState
+                icon={ForkKnife}
+                title="Your menu is empty"
+                description="Start by adding your first category."
+                actionLabel="Add category"
+                onAction={() => setAddCategoryOpen(true)}
+              />
             ) : (
               categories.map((category) => (
                 <CategoryCard key={category.id} category={category} />
@@ -108,16 +99,17 @@ export function MenuManagementPage() {
         <div
           className={`${
             previewMode ? "flex" : "hidden"
-          } lg:flex flex-col lg:w-72 xl:w-80 flex-none border-l border-gray-100 bg-gray-50 overflow-hidden`}
+          } lg:flex flex-col flex-1 lg:w-72 lg:flex-none xl:w-80 border-l border-gray-100 bg-gray-50 overflow-hidden`}
         >
-          <div className="px-4 py-4 border-b border-gray-100 bg-white">
+          <div className="hidden border-b border-gray-100 bg-white px-4 py-4 lg:block">
             <p className="font-semibold text-gray-900 text-sm">Live Preview</p>
             <p className="text-xs text-gray-400 mt-0.5">Diner view at 375px</p>
           </div>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-hidden lg:overflow-y-auto lg:p-4">
             <MenuPreview
               categories={categories}
               restaurantName={MOCK_RESTAURANT.name}
+              mode={previewMode ? "fullscreen" : "phone"}
             />
           </div>
         </div>

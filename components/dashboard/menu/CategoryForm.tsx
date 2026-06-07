@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ds } from "@/components/dashboard/ui/dashboard-tokens";
-import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import {
+  DashboardButton,
+  DashboardField,
+  DashboardInput,
+  DashboardModal,
+  ds,
+} from "@/components/dashboard/ui";
 import type { MenuCategory } from "@/lib/mockData";
 import { useMenuStore } from "@/store/menu";
 
@@ -54,56 +59,42 @@ export function CategoryForm({
   };
 
   return (
-    <ResponsiveDialog
+    <DashboardModal
       open={open}
       onOpenChange={(o) => !o && onClose()}
       title={existingCategory ? "Edit category" : "Add category"}
+      footer={
+        <div className="flex justify-end gap-2">
+          <DashboardButton variant="ghost" onClick={onClose}>
+            Cancel
+          </DashboardButton>
+          <DashboardButton onClick={handleSave} disabled={!name.trim()}>
+            {existingCategory ? "Save changes" : "Add category"}
+          </DashboardButton>
+        </div>
+      }
     >
       <div className={ds.form.stack}>
-        <div className={ds.form.field}>
-          <label htmlFor="category-name" className={ds.input.label}>
-            Category name <span className="text-red-500">*</span>
-          </label>
-          <input
+        <DashboardField id="category-name" label="Category name">
+          <DashboardInput
             id="category-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Starters, Mains, Drinks"
-            // biome-ignore lint/a11y/noAutofocus: intentional focus on first field when dialog opens
             autoFocus
             onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            className={ds.input.base}
           />
-        </div>
+        </DashboardField>
 
-        <div className={ds.form.field}>
-          <label htmlFor="category-description" className={ds.input.label}>
-            Description{" "}
-            <span className="text-gray-400 font-normal">(optional)</span>
-          </label>
-          <input
+        <DashboardField id="category-description" label="Description" optional>
+          <DashboardInput
             id="category-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Short description shown to diners"
-            className={ds.input.base}
           />
-        </div>
-
-        <div className={ds.form.actions}>
-          <button type="button" onClick={onClose} className={ds.btn.ghost}>
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!name.trim()}
-            className={ds.btn.primary}
-          >
-            {existingCategory ? "Save changes" : "Add category"}
-          </button>
-        </div>
+        </DashboardField>
       </div>
-    </ResponsiveDialog>
+    </DashboardModal>
   );
 }

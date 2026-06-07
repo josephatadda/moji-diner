@@ -1,11 +1,19 @@
 "use client";
 
-import { ArrowDown, ArrowLeft, MagnifyingGlass } from "@phosphor-icons/react";
-import Link from "next/link";
+import { ArrowDown } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
-import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
-import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
-import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
+import {
+  DashboardButton,
+  DashboardEmptyState,
+  DashboardFilterBar,
+  DashboardPageHeader,
+  DashboardSetupPrompt,
+  DashboardStatusBadge,
+  DashboardTable,
+  dashboardToast,
+  ds,
+  t,
+} from "@/components/dashboard/ui";
 import {
   formatPrice,
   MOCK_TRANSACTIONS,
@@ -21,13 +29,13 @@ const METHOD_LABEL: Record<PaymentMethod, string> = {
 };
 
 function StatusBadge({ status }: { status: "success" | "failed" | "pending" }) {
-  const map = {
-    success: `${ds.badge.base} ${ds.badge.green}`,
-    failed: `${ds.badge.base} ${ds.badge.red}`,
-    pending: `${ds.badge.base} ${ds.badge.orange}`,
-  };
   const label = { success: "Paid", failed: "Failed", pending: "Pending" };
-  return <span className={map[status]}>{label[status]}</span>;
+  const tone = { success: "green", failed: "red", pending: "orange" } as const;
+  return (
+    <DashboardStatusBadge tone={tone[status]}>
+      {label[status]}
+    </DashboardStatusBadge>
+  );
 }
 
 function MethodBadge({ method }: { method: PaymentMethod }) {
@@ -124,28 +132,21 @@ export default function TransactionsPage() {
 
   return (
     <div className={`${ds.page} space-y-6`}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" className={ds.btn.icon}>
-            <ArrowLeft size={16} />
-          </Link>
-          <div>
-            <h1 className={t.h1}>Transactions</h1>
-            <p className={`${t.body} mt-1`}>All payment activity for today</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() =>
-            dashboardToast("CSV export is mocked in this preview", "info")
-          }
-          className={`${ds.btn.ghost} shrink-0`}
-        >
-          <ArrowDown size={15} />
-          Export CSV
-        </button>
-      </div>
+      <DashboardPageHeader
+        title="Transactions"
+        description="All payment activity for today."
+        actions={
+          <DashboardButton
+            variant="ghost"
+            onClick={() =>
+              dashboardToast("CSV export is mocked in this preview", "info")
+            }
+          >
+            <ArrowDown size={15} />
+            Export CSV
+          </DashboardButton>
+        }
+      />
 
       {/* Summary metric cards */}
       <div className="grid grid-cols-3 gap-3">
@@ -170,123 +171,89 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <MagnifyingGlass
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={15}
-          />
-          <input
-            type="search"
-            placeholder="Search by name or reference..."
-            className={ds.input.withIcon}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-          {(["All", "Card", "Transfer", "USSD"] as const).map((f) => (
-            <button
-              type="button"
-              key={f}
-              onClick={() => setActiveMethod(f)}
-              className={activeMethod === f ? ds.btn.tabActive : ds.btn.tab}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      </div>
+      <DashboardFilterBar
+        searchValue={searchQuery}
+        searchPlaceholder="Search by name or reference..."
+        onSearchChange={setSearchQuery}
+        filters={["All", "Card", "Transfer", "USSD"] as const}
+        activeFilter={activeMethod}
+        onFilterChange={setActiveMethod}
+      />
 
-      {/* Transactions table */}
-      <div className={`${ds.card.base} overflow-hidden`}>
-        {/* Table header */}
-        <div className="hidden sm:grid grid-cols-12 gap-4 px-5 py-3 border-b border-gray-100 bg-gray-50/60">
-          <div className={`col-span-3 ${ds.table.th} !p-0`}>Customer</div>
-          <div className={`col-span-2 ${ds.table.th} !p-0`}>Reference</div>
-          <div className={`col-span-1 ${ds.table.th} !p-0 text-center`}>
-            Table
-          </div>
-          <div className={`col-span-2 ${ds.table.th} !p-0`}>Method</div>
-          <div className={`col-span-2 ${ds.table.th} !p-0`}>Status</div>
-          <div className={`col-span-2 ${ds.table.th} !p-0 text-right`}>
-            Amount
-          </div>
-        </div>
-
-        <div className={ds.card.divider}>
-          {filteredTxns.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 text-sm">
-              No transactions found.
-            </div>
-          ) : (
-            filteredTxns.map((txn) => {
-              const ageMin = Math.floor(
-                (Date.now() - txn.createdAt.getTime()) / 60000,
-              );
-              const timeLabel =
-                ageMin < 60
-                  ? `${ageMin}m ago`
-                  : `${Math.floor(ageMin / 60)}h ago`;
-
-              return (
-                <div
-                  key={txn.id}
-                  className="flex flex-col sm:grid sm:grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-5 py-4 items-start sm:items-center hover:bg-gray-50/50 transition-colors"
+      <div className={ds.card.base}>
+        <DashboardTable
+          rows={filteredTxns}
+          getRowKey={(txn) => txn.id}
+          className="rounded-none border-0"
+          empty={
+            <DashboardEmptyState
+              icon={ArrowDown}
+              title="No transactions found"
+              description="Try a different search or payment method."
+            />
+          }
+          columns={[
+            {
+              key: "customer",
+              header: "Customer",
+              render: (txn) => {
+                const ageMin = Math.floor(
+                  (Date.now() - txn.createdAt.getTime()) / 60000,
+                );
+                const timeLabel =
+                  ageMin < 60
+                    ? `${ageMin}m ago`
+                    : `${Math.floor(ageMin / 60)}h ago`;
+                return (
+                  <div>
+                    <p className={t.bodyStrong}>{txn.dinerName}</p>
+                    <p className={t.meta}>{timeLabel}</p>
+                  </div>
+                );
+              },
+            },
+            {
+              key: "reference",
+              header: "Reference",
+              render: (txn) => <span className={t.mono}>{txn.reference}</span>,
+            },
+            {
+              key: "table",
+              header: "Table",
+              headerClassName: "text-center",
+              className: "text-center",
+              render: (txn) => (
+                <span className={t.number}>{txn.tableNumber}</span>
+              ),
+            },
+            {
+              key: "method",
+              header: "Method",
+              render: (txn) => <MethodBadge method={txn.method} />,
+            },
+            {
+              key: "status",
+              header: "Status",
+              render: (txn) => <StatusBadge status={txn.status} />,
+            },
+            {
+              key: "amount",
+              header: "Amount",
+              headerClassName: "text-right",
+              className: "text-right",
+              render: (txn) => (
+                <span
+                  className={`${t.number} ${
+                    txn.status === "failed" ? "text-red-500" : ""
+                  }`}
                 >
-                  {/* Customer */}
-                  <div className="col-span-3">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {txn.dinerName}
-                    </p>
-                    <p className={`${t.meta} mt-0.5`}>{timeLabel}</p>
-                  </div>
-
-                  {/* Reference */}
-                  <div className="col-span-2">
-                    <span className={t.mono}>{txn.reference}</span>
-                  </div>
-
-                  {/* Table */}
-                  <div className="col-span-1 sm:text-center">
-                    <span className="text-sm text-gray-600 sm:hidden font-medium text-gray-400 mr-1">
-                      Table
-                    </span>
-                    <span className="text-sm font-medium text-gray-900 [font-variant-numeric:tabular-nums]">
-                      {txn.tableNumber}
-                    </span>
-                  </div>
-
-                  {/* Method */}
-                  <div className="col-span-2">
-                    <MethodBadge method={txn.method} />
-                  </div>
-
-                  {/* Status */}
-                  <div className="col-span-2">
-                    <StatusBadge status={txn.status} />
-                  </div>
-
-                  {/* Amount */}
-                  <div className="col-span-2 sm:text-right">
-                    <p
-                      className={`text-sm font-bold [font-variant-numeric:tabular-nums] ${
-                        txn.status === "failed"
-                          ? "text-red-500"
-                          : "text-gray-900"
-                      }`}
-                    >
-                      {txn.status === "failed" ? "−" : "+"}₦
-                      {txn.amount.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Footer */}
+                  {txn.status === "failed" ? "−" : "+"}₦
+                  {txn.amount.toLocaleString()}
+                </span>
+              ),
+            },
+          ]}
+        />
         <div className="px-5 py-3 border-t border-gray-50 flex items-center justify-between">
           <p className={t.meta}>{filteredTxns.length} transactions</p>
           <p className="text-xs font-semibold text-gray-900">

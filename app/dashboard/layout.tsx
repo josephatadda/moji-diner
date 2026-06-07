@@ -146,40 +146,55 @@ function RestaurantSwitcher() {
             className="fixed inset-0 z-10 cursor-default"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-20 overflow-hidden">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 border-b border-gray-50">
-              Switch restaurant
-            </p>
-            {MOCK_RESTAURANTS.map((r) => (
-              <button
-                type="button"
-                key={r.id}
-                onClick={() => {
-                  setActive(r);
-                  setOpen(false);
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left"
-              >
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shrink-0">
-                  <span className="text-white text-[11px] font-bold">
-                    {r.name[0]}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate leading-none">
-                    {r.name}
-                  </p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{r.city}</p>
-                </div>
-                {r.id === active.id && (
-                  <Check
-                    size={13}
-                    className="text-orange-500 shrink-0"
-                    weight="bold"
-                  />
-                )}
-              </button>
-            ))}
+          <div className="absolute left-0 top-full z-20 mt-2 w-[260px] overflow-hidden rounded-2xl border border-gray-100 bg-white p-2 shadow-xl shadow-gray-950/10">
+            <div className="px-2 pb-2 pt-1">
+              <p className="text-sm font-semibold text-gray-900">
+                Switch restaurant
+              </p>
+              <p className="mt-0.5 text-xs text-gray-400">
+                Choose the workspace to manage.
+              </p>
+            </div>
+            <div className="space-y-1">
+              {MOCK_RESTAURANTS.map((r) => {
+                const selected = r.id === active.id;
+                return (
+                  <button
+                    type="button"
+                    key={r.id}
+                    onClick={() => {
+                      setActive(r);
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-xl border px-2.5 py-2.5 text-left transition-colors",
+                      selected
+                        ? "border-orange-100 bg-orange-50/70"
+                        : "border-transparent hover:bg-gray-50",
+                    )}
+                  >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500">
+                      <span className="text-xs font-bold text-white">
+                        {r.name[0]}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold leading-none text-gray-900">
+                        {r.name}
+                      </p>
+                      <p className="mt-1 truncate text-[11px] text-gray-400">
+                        {r.city} · Free Plan
+                      </p>
+                    </div>
+                    {selected && (
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white text-orange-500">
+                        <Check size={13} weight="bold" />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </>
       )}

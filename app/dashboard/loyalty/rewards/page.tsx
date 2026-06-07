@@ -1,11 +1,18 @@
 "use client";
 
-import { CaretLeft, PencilSimple, Trash, Trophy } from "@phosphor-icons/react";
-import Link from "next/link";
+import { PencilSimple, Trash, Trophy } from "@phosphor-icons/react";
 import { useState } from "react";
-import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
-import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
-import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import {
+  DashboardButton,
+  DashboardField,
+  DashboardInput,
+  DashboardModal,
+  DashboardPageHeader,
+  DashboardSelect,
+  DashboardSetupPrompt,
+  dashboardToast,
+  ds,
+} from "@/components/dashboard/ui";
 import { MOCK_REWARDS } from "@/lib/mockData";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 
@@ -28,14 +35,47 @@ export default function RewardsPage() {
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const form = new FormData(e.currentTarget as HTMLFormElement);
+    setRewards((current) => [
+      ...current,
+      {
+        id: `reward-${Date.now()}`,
+        restaurantId: "rest-001",
+        name: String(form.get("name") || "New reward"),
+        pointsRequired: Number(form.get("points")) || 100,
+        rewardType: String(form.get("type") || "free_item") as
+          | "free_item"
+          | "discount_percent",
+        rewardValue: Number(form.get("value")) || 0,
+        isAvailable: true,
+      },
+    ]);
     setIsCreatingReward(false);
-    // Real implementation would add to rewards list
+    dashboardToast("Reward created");
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editingReward) return;
+    const form = new FormData(e.currentTarget as HTMLFormElement);
+    setRewards((current) =>
+      current.map((reward) =>
+        reward.id === editingReward.id
+          ? {
+              ...reward,
+              name: String(form.get("name") || reward.name),
+              pointsRequired:
+                Number(form.get("points")) || reward.pointsRequired,
+              rewardType: String(form.get("type") || reward.rewardType) as
+                | "free_item"
+                | "discount_percent",
+              rewardValue: Number(form.get("value")) || reward.rewardValue,
+            }
+          : reward,
+      ),
+    );
     setEditingReward(null);
-    // Real implementation would update reward in list
+    dashboardToast("Reward updated");
   };
 
   const active = rewards.filter((r) => r.isAvailable);
@@ -54,27 +94,15 @@ export default function RewardsPage() {
 
   return (
     <div className={ds.page}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard/loyalty" className={ds.btn.icon}>
-            <CaretLeft size={16} />
-          </Link>
-          <div>
-            <h1 className={t.h1}>Loyalty Rewards</h1>
-            <p className={`${t.body} mt-1`}>
-              Configure what customers can redeem their points for
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => setIsCreatingReward(true)}
-          className={`${ds.btn.primary} self-start sm:self-auto`}
-        >
-          + Create Reward
-        </button>
-      </div>
+      <DashboardPageHeader
+        title="Loyalty Rewards"
+        description="Configure what customers can redeem their points for."
+        actions={
+          <DashboardButton onClick={() => setIsCreatingReward(true)}>
+            + Create reward
+          </DashboardButton>
+        }
+      />
 
       {/* Active Rewards */}
       <div className="mb-6">
@@ -167,146 +195,116 @@ export default function RewardsPage() {
       )}
 
       {/* Create Reward Modal */}
-      <ResponsiveDialog
+      <DashboardModal
         open={isCreatingReward}
         onOpenChange={setIsCreatingReward}
-        title="Create Reward"
+        title="Create reward"
         description="Add a new reward for your customers to redeem."
       >
-        <form onSubmit={handleCreateSubmit} className="space-y-4 px-1 py-2">
-          <div className={ds.form.field}>
-            <label htmlFor="create-reward-name" className={ds.input.label}>
-              Reward name
-            </label>
-            <input
+        <form onSubmit={handleCreateSubmit} className="space-y-4">
+          <DashboardField id="create-reward-name" label="Reward name">
+            <DashboardInput
               id="create-reward-name"
               required
+              name="name"
               type="text"
               placeholder="e.g. Free Drink"
-              className={ds.input.base}
             />
-          </div>
-          <div className={ds.form.field}>
-            <label htmlFor="create-reward-points" className={ds.input.label}>
-              Points required
-            </label>
-            <input
+          </DashboardField>
+          <DashboardField id="create-reward-points" label="Points required">
+            <DashboardInput
               id="create-reward-points"
               required
+              name="points"
               type="number"
               placeholder="e.g. 100"
-              className={ds.input.base}
             />
-          </div>
-          <div className={ds.form.field}>
-            <label htmlFor="create-reward-type" className={ds.input.label}>
-              Reward type
-            </label>
-            <select id="create-reward-type" className={ds.input.select}>
+          </DashboardField>
+          <DashboardField id="create-reward-type" label="Reward type">
+            <DashboardSelect id="create-reward-type" name="type">
               <option value="free_item">Free Item</option>
-              <option value="discount">Discount</option>
-            </select>
-          </div>
-          <div className={ds.form.field}>
-            <label htmlFor="create-reward-value" className={ds.input.label}>
-              Value (₦ or %)
-            </label>
-            <input
+              <option value="discount_percent">Discount</option>
+            </DashboardSelect>
+          </DashboardField>
+          <DashboardField id="create-reward-value" label="Value (₦ or %)">
+            <DashboardInput
               id="create-reward-value"
               required
+              name="value"
               type="number"
               placeholder="e.g. 1500"
-              className={ds.input.base}
             />
-          </div>
+          </DashboardField>
           <div className={ds.form.actions}>
-            <button
-              type="button"
+            <DashboardButton
+              variant="ghost"
               onClick={() => setIsCreatingReward(false)}
-              className={ds.btn.ghost}
             >
               Cancel
-            </button>
-            <button type="submit" className={ds.btn.primary}>
-              Create Reward
-            </button>
+            </DashboardButton>
+            <DashboardButton type="submit">Create reward</DashboardButton>
           </div>
         </form>
-      </ResponsiveDialog>
+      </DashboardModal>
 
       {/* Edit Reward Modal */}
-      <ResponsiveDialog
+      <DashboardModal
         open={!!editingReward}
         onOpenChange={(open) => !open && setEditingReward(null)}
-        title="Edit Reward"
+        title="Edit reward"
         description="Update the details for this reward."
       >
         {editingReward && (
-          <form onSubmit={handleEditSubmit} className="space-y-4 px-1 py-2">
-            <div className={ds.form.field}>
-              <label htmlFor="edit-reward-name" className={ds.input.label}>
-                Reward name
-              </label>
-              <input
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <DashboardField id="edit-reward-name" label="Reward name">
+              <DashboardInput
                 id="edit-reward-name"
                 required
+                name="name"
                 type="text"
                 defaultValue={editingReward.name}
-                className={ds.input.base}
               />
-            </div>
-            <div className={ds.form.field}>
-              <label htmlFor="edit-reward-points" className={ds.input.label}>
-                Points required
-              </label>
-              <input
+            </DashboardField>
+            <DashboardField id="edit-reward-points" label="Points required">
+              <DashboardInput
                 id="edit-reward-points"
                 required
+                name="points"
                 type="number"
                 defaultValue={editingReward.pointsRequired}
-                className={ds.input.base}
               />
-            </div>
-            <div className={ds.form.field}>
-              <label htmlFor="edit-reward-type" className={ds.input.label}>
-                Reward type
-              </label>
-              <select
+            </DashboardField>
+            <DashboardField id="edit-reward-type" label="Reward type">
+              <DashboardSelect
                 id="edit-reward-type"
+                name="type"
                 defaultValue={editingReward.rewardType}
-                className={ds.input.select}
               >
                 <option value="free_item">Free Item</option>
-                <option value="discount">Discount</option>
-              </select>
-            </div>
-            <div className={ds.form.field}>
-              <label htmlFor="edit-reward-value" className={ds.input.label}>
-                Value (₦ or %)
-              </label>
-              <input
+                <option value="discount_percent">Discount</option>
+              </DashboardSelect>
+            </DashboardField>
+            <DashboardField id="edit-reward-value" label="Value (₦ or %)">
+              <DashboardInput
                 id="edit-reward-value"
                 required
+                name="value"
                 type="number"
                 defaultValue={editingReward.rewardValue}
-                className={ds.input.base}
               />
-            </div>
+            </DashboardField>
             <div className={ds.form.actions}>
-              <button
-                type="button"
+              <DashboardButton
+                variant="ghost"
                 onClick={() => setEditingReward(null)}
-                className={ds.btn.ghost}
               >
                 Cancel
-              </button>
-              <button type="submit" className={ds.btn.primary}>
-                Save Changes
-              </button>
+              </DashboardButton>
+              <DashboardButton type="submit">Save changes</DashboardButton>
             </div>
           </form>
         )}
-      </ResponsiveDialog>
+      </DashboardModal>
     </div>
   );
 }

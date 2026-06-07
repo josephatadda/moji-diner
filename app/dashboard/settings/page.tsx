@@ -21,8 +21,14 @@ import {
   WhatsappLogo,
 } from "@phosphor-icons/react";
 import { useState } from "react";
-import { DashboardPageHeader } from "@/components/dashboard/ui/DashboardPageHeader";
-import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
+import {
+  DashboardButton,
+  DashboardPageHeader,
+  dashboardToast,
+  ds,
+  Toggle,
+  t,
+} from "@/components/dashboard/ui";
 import { cn } from "@/lib/utils";
 import {
   type DashboardFeature,
@@ -50,18 +56,7 @@ function ToggleSwitch({
   checked: boolean;
   onChange: () => void;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onChange}
-      className={cn(
-        "w-11 h-6 rounded-full flex items-center px-1 transition-colors duration-200",
-        checked ? "bg-zinc-900 justify-end" : "bg-gray-200 justify-start",
-      )}
-    >
-      <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
-    </button>
-  );
+  return <Toggle checked={checked} onChange={onChange} />;
 }
 
 function SaveButton({
@@ -79,19 +74,13 @@ function SaveButton({
     dashboardToast("Settings saved");
   };
   return (
-    <button
-      type="button"
+    <DashboardButton
       onClick={handleSave}
-      className={cn(
-        "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.97]",
-        saved
-          ? "bg-green-500 text-white"
-          : "bg-zinc-900 hover:bg-zinc-700 text-white",
-      )}
+      className={cn(saved && "bg-green-600 hover:bg-green-600")}
     >
       {saved && <CheckCircle size={15} weight="bold" />}
       {saved ? "Saved" : label}
-    </button>
+    </DashboardButton>
   );
 }
 
@@ -103,11 +92,11 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-50">
-        <p className="text-sm font-semibold text-zinc-900">{title}</p>
+    <div className={ds.card.base}>
+      <div className={ds.card.header}>
+        <p className={t.h4}>{title}</p>
       </div>
-      <div className="p-5 space-y-4">{children}</div>
+      <div className={`${ds.card.body} space-y-4`}>{children}</div>
     </div>
   );
 }
@@ -122,21 +111,13 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      {/* biome-ignore lint/a11y/noLabelWithoutControl: children is the labelled control (implicit association) */}
-      <label className="block">
-        <span className="block text-xs font-medium text-gray-500 mb-1.5">
-          {label}
-        </span>
-        {children}
-      </label>
-      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
+    <div className={ds.form.field}>
+      <p className={ds.input.label}>{label}</p>
+      {children}
+      {hint && <p className={ds.input.hint}>{hint}</p>}
     </div>
   );
 }
-
-const inputCls =
-  "w-full px-3 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all";
 
 export default function SettingsPage() {
   const features = useDashboardSettingsStore((state) => state.features);
@@ -208,8 +189,8 @@ export default function SettingsPage() {
                 className={cn(
                   "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors text-left",
                   tab === id
-                    ? "bg-zinc-900 text-white"
-                    : "text-gray-500 hover:text-zinc-900 hover:bg-white border border-transparent hover:border-gray-100",
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-500 hover:text-gray-900 hover:bg-white border border-transparent hover:border-gray-100",
                 )}
               >
                 <Icon size={16} weight={tab === id ? "fill" : "regular"} />
@@ -319,7 +300,7 @@ export default function SettingsPage() {
                           name: event.target.value,
                         }))
                       }
-                      className={inputCls}
+                      className={ds.input.base}
                     />
                   </Field>
                   <Field label="URL slug" hint="moji.app/your-slug">
@@ -337,7 +318,7 @@ export default function SettingsPage() {
                             slug: event.target.value,
                           }))
                         }
-                        className={`${inputCls} pl-9`}
+                        className={cn(ds.input.base, "pl-9")}
                       />
                     </div>
                   </Field>
@@ -356,7 +337,7 @@ export default function SettingsPage() {
                             phone: event.target.value,
                           }))
                         }
-                        className={`${inputCls} pl-9`}
+                        className={cn(ds.input.base, "pl-9")}
                       />
                     </div>
                   </Field>
@@ -370,7 +351,7 @@ export default function SettingsPage() {
                           city: event.target.value,
                         }))
                       }
-                      className={inputCls}
+                      className={ds.input.base}
                     />
                   </Field>
                 </div>
@@ -384,7 +365,7 @@ export default function SettingsPage() {
                         description: event.target.value,
                       }))
                     }
-                    className={`${inputCls} resize-none`}
+                    className={ds.input.textarea}
                   />
                 </Field>
               </SectionCard>
@@ -399,7 +380,7 @@ export default function SettingsPage() {
                     <input
                       type="text"
                       placeholder="@yourhandle"
-                      className={`${inputCls} pl-9`}
+                      className={cn(ds.input.base, "pl-9")}
                     />
                   </div>
                 </Field>
@@ -412,7 +393,7 @@ export default function SettingsPage() {
                     <input
                       type="text"
                       placeholder="@yourhandle"
-                      className={`${inputCls} pl-9`}
+                      className={cn(ds.input.base, "pl-9")}
                     />
                   </div>
                 </Field>
@@ -421,7 +402,7 @@ export default function SettingsPage() {
               <SectionCard title="Ordering">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900">
+                    <p className="text-sm font-semibold text-gray-900">
                       Accepting orders
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
@@ -440,7 +421,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900">
+                    <p className="text-sm font-semibold text-gray-900">
                       Loyalty programme
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
@@ -492,7 +473,7 @@ export default function SettingsPage() {
                                 [day]: { ...h[day], from: e.target.value },
                               }))
                             }
-                            className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                            className={cn(ds.input.base, "flex-1")}
                           />
                           <span className="text-xs text-gray-400 shrink-0">
                             to
@@ -506,7 +487,7 @@ export default function SettingsPage() {
                                 [day]: { ...h[day], to: e.target.value },
                               }))
                             }
-                            className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                            className={cn(ds.input.base, "flex-1")}
                           />
                         </div>
                       ) : (
@@ -536,7 +517,7 @@ export default function SettingsPage() {
                   <input
                     type="text"
                     placeholder="pk_live_••••••••••••••••"
-                    className={inputCls}
+                    className={ds.input.base}
                   />
                 </Field>
                 <Field label="Secret key">
@@ -548,7 +529,7 @@ export default function SettingsPage() {
                     <input
                       type={secretVisible ? "text" : "password"}
                       placeholder="sk_live_••••••••••••••••"
-                      className={`${inputCls} pl-9 pr-10 font-mono`}
+                      className={cn(ds.input.base, "pl-9 pr-10 font-mono")}
                     />
                     <button
                       type="button"
@@ -607,7 +588,7 @@ export default function SettingsPage() {
               <SectionCard title="VAT">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900">
+                    <p className="text-sm font-semibold text-gray-900">
                       Charge VAT
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
@@ -632,7 +613,7 @@ export default function SettingsPage() {
                         step={0.5}
                         value={vatRate}
                         onChange={(e) => setVatRate(e.target.value)}
-                        className={`${inputCls} pr-8`}
+                        className={cn(ds.input.base, "pr-8")}
                       />
                       <Percent
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -646,7 +627,7 @@ export default function SettingsPage() {
               <SectionCard title="Service charge">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900">
+                    <p className="text-sm font-semibold text-gray-900">
                       Add service charge
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
@@ -668,7 +649,7 @@ export default function SettingsPage() {
                         step={0.5}
                         value={serviceRate}
                         onChange={(e) => setServiceRate(e.target.value)}
-                        className={`${inputCls} pr-8`}
+                        className={cn(ds.input.base, "pr-8")}
                       />
                       <Percent
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -735,7 +716,7 @@ export default function SettingsPage() {
                       <Icon size={17} />
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-zinc-900">
+                      <p className="text-sm font-semibold text-gray-900">
                         {label}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
@@ -763,7 +744,7 @@ export default function SettingsPage() {
                   <input
                     type="text"
                     placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    className={`${inputCls} font-mono`}
+                    className={cn(ds.input.base, "font-mono")}
                   />
                 </Field>
                 <Field label="Auth token">
@@ -775,7 +756,7 @@ export default function SettingsPage() {
                     <input
                       type="password"
                       placeholder="••••••••••••••••••••••••••••••••"
-                      className={`${inputCls} pl-9 font-mono`}
+                      className={cn(ds.input.base, "pl-9 font-mono")}
                     />
                   </div>
                 </Field>
@@ -791,7 +772,7 @@ export default function SettingsPage() {
                     <input
                       type="text"
                       placeholder="+14155238886"
-                      className={`${inputCls} pl-9 font-mono`}
+                      className={cn(ds.input.base, "pl-9 font-mono")}
                     />
                   </div>
                 </Field>
@@ -850,7 +831,7 @@ export default function SettingsPage() {
                   <input
                     type="password"
                     placeholder="••••••••"
-                    className={`${inputCls} pl-9`}
+                    className={cn(ds.input.base, "pl-9")}
                   />
                 </div>
               </Field>
@@ -863,7 +844,7 @@ export default function SettingsPage() {
                   <input
                     type="password"
                     placeholder="••••••••"
-                    className={`${inputCls} pl-9`}
+                    className={cn(ds.input.base, "pl-9")}
                   />
                 </div>
               </Field>
@@ -876,7 +857,7 @@ export default function SettingsPage() {
                   <input
                     type="password"
                     placeholder="••••••••"
-                    className={`${inputCls} pl-9`}
+                    className={cn(ds.input.base, "pl-9")}
                   />
                 </div>
               </Field>

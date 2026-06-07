@@ -42,6 +42,18 @@ in the system, not one-offs:
 
 - `components/dashboard/ui/MetricCard.tsx` — one stat card (replaces 4 copies).
 - `components/dashboard/ui/Toggle.tsx` — one switch.
+- `components/dashboard/ui/DashboardButton.tsx` — one dashboard button API.
+- `components/dashboard/ui/DashboardModal.tsx` — centered dialog primitive with
+  structured header, scrollable body, and fixed footer region.
+- `components/dashboard/ui/DashboardField.tsx` — field wrapper and input,
+  textarea, select controls.
+- `components/dashboard/ui/DashboardFilterBar.tsx` — shared search + segmented
+  filter + action toolbar.
+- `components/dashboard/ui/DashboardTable.tsx` — shared desktop data-table shell.
+- `components/dashboard/ui/DashboardStatusBadge.tsx` — status/tone badge.
+- `components/dashboard/ui/DashboardEmptyState.tsx` — empty/setup content state.
+- `components/dashboard/ui/DashboardFileUpload.tsx` — dashboard upload/drop area.
+- `components/dashboard/ui/index.ts` — dashboard UI barrel export.
 
 ## Visual polish (module phases)
 
@@ -75,14 +87,14 @@ version of the same screen.
 | 0 | Adapter relocation + foundation reconciliation; shared `MetricCard`/`Toggle`; register dashboard surface | ✅ done |
 | 1 | Shell & navigation (`layout.tsx`, `dashboard/ui/*`) + tablet treatment | ✅ done |
 | 2 | Overview | pending |
-| 3 | Orders (kanban + manual order) | pending |
-| 4 | Menu (cards, forms, item sheet, live preview) | pending |
-| 5 | Settings (worst offender — local primitives, 13 zinc) | pending |
-| 6 | Tables (grid + QR modal) | pending |
-| 7 | Transactions (table, filters, export) | pending |
-| 8 | Loyalty (overview, customers, rewards, settings) | pending |
-| 9 | Analytics (charts + metric cards) | pending |
-| 10 | Staff | pending |
+| 3 | Orders (kanban + manual order) | in progress |
+| 4 | Menu (cards, forms, item sheet, live preview) | in progress |
+| 5 | Settings (worst offender — local primitives, 13 zinc) | in progress |
+| 6 | Tables (grid + QR modal) | in progress |
+| 7 | Transactions (table, filters, export) | in progress |
+| 8 | Loyalty (overview, customers, rewards, settings) | in progress |
+| 9 | Analytics (charts + metric cards) | in progress |
+| 10 | Staff | in progress |
 | 11 | Cross-cutting QA + responsive sweep | pending |
 
 ## Phase notes
@@ -105,6 +117,35 @@ version of the same screen.
   at `md` would cramp `sm:`/`lg:` content grids. Verified clean at 768px.
 - **Flow fix:** the mobile drawer stayed open after a nav tap. Now closes on
   any route change via a `pathname` effect (nav click, back, programmatic).
+
+### Current sweep notes — dashboard primitives and consistency pass
+- Added shared button, modal, field/input/select/textarea, filter bar, table,
+  file upload, empty state, and status badge primitives.
+- `DashboardButton size="sm"` is the sanctioned compact action size for dense
+  rows/cards; avoid one-off `h-*` and `px-*` button classes in modules.
+- `DashboardModal` owns the aligned header/content/footer structure. Modal
+  headers with no description align vertically centered with the close action;
+  headers with descriptions align from the top.
+- `DashboardTable` owns responsive table behavior: desktop stays a data table;
+  mobile becomes expandable cards with summary metadata, details, and actions.
+- `MenuPreview` owns responsive preview behavior: phone frame on desktop side
+  panels, full-screen preview mode on mobile preview tabs.
+- Top-level dashboard headers should not use page-title back buttons. Back
+  affordances were removed from Transactions and loyalty subpages during the
+  consistency pass.
+- Transactions now uses the shared filter bar and status badge.
+- Loyalty Customers now uses the shared header, filter bar, table, badges, and
+  empty state.
+- Tables now has add/edit/delete local CRUD, QR modal, copy feedback, mock
+  download feedback, and shared table/modal/input/button/status components.
+- Menu management toolbar, category form, and item form now route through shared
+  dashboard primitives. The item modal has fixed modal height with a scrollable
+  body and fixed footer.
+- Settings helper components now map through shared dashboard tokens/components,
+  but a full settings information-architecture review is still recommended.
+- Staff now uses the shared table/status/confirm primitives for active staff and
+  deactivation.
+- Analytics now uses the shared page header/button pattern and export feedback.
 
 ## Per-module loop
 

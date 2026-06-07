@@ -16,7 +16,7 @@ export function DashboardPageHeader({
 }: DashboardPageHeaderProps) {
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div>
+      <div className="min-w-0">
         {eyebrow && (
           <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-orange-600">
             {eyebrow}

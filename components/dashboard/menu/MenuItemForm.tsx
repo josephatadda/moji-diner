@@ -1,14 +1,17 @@
 "use client";
 
-import { Image as ImageIcon, Warning } from "@phosphor-icons/react";
+import { Warning } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
-import { ds } from "@/components/dashboard/ui/dashboard-tokens";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  DashboardButton,
+  DashboardField,
+  DashboardFileUpload,
+  DashboardInput,
+  DashboardModal,
+  DashboardTextarea,
+  ds,
+  Toggle,
+} from "@/components/dashboard/ui";
 import type { Allergen, MenuItem, Tag } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { useMenuStore } from "@/store/menu";
@@ -117,201 +120,161 @@ export function MenuItemForm({
   };
 
   return (
-    <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent
-        side="right"
-        className="w-full sm:w-[480px] overflow-y-auto p-0"
-      >
-        <SheetHeader className="px-5 pt-5 pb-3 border-b border-gray-100">
-          <SheetTitle className="text-lg font-bold text-gray-900">
-            {existingItem ? "Edit Item" : "Add Menu Item"}
-          </SheetTitle>
-        </SheetHeader>
+    <DashboardModal
+      open={open}
+      onOpenChange={(nextOpen) => !nextOpen && onClose()}
+      title={existingItem ? "Edit item" : "Add menu item"}
+      description="Manage the diner-facing name, pricing, availability, and labels."
+      maxWidth="lg"
+      height="standard"
+      footer={
+        <div className="grid grid-cols-2 gap-2">
+          <DashboardButton variant="ghost" fullWidth onClick={onClose}>
+            Cancel
+          </DashboardButton>
+          <DashboardButton
+            fullWidth
+            onClick={handleSave}
+            disabled={!name.trim() || !price}
+          >
+            {existingItem ? "Save changes" : "Add item"}
+          </DashboardButton>
+        </div>
+      }
+    >
+      <div className="space-y-5">
+        {/* Photo placeholder */}
+        <DashboardFileUpload
+          label="Upload photo"
+          description="JPEG or PNG, max 5MB"
+        />
 
-        <div className="px-5 py-4 space-y-5 pb-8">
-          {/* Photo placeholder */}
-          <div className="w-full h-36 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-100 transition-colors text-gray-400">
-            <span className="text-3xl">
-              <ImageIcon />
-            </span>
-            <p className="text-sm font-medium text-gray-500">Upload photo</p>
-            <p className="text-xs text-gray-400">JPEG or PNG, max 5MB</p>
-          </div>
+        {/* Name */}
+        <DashboardField id="menu-item-name" label="Item name">
+          <DashboardInput
+            id="menu-item-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Jollof Rice + Chicken"
+          />
+        </DashboardField>
 
-          {/* Name */}
-          <div className={ds.form.field}>
-            <label htmlFor="menu-item-name" className={ds.input.label}>
-              Item name <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="menu-item-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Jollof Rice + Chicken"
-              className={ds.input.base}
+        {/* Description */}
+        <DashboardField
+          id="menu-item-description"
+          label="Description"
+          optional
+          hint={`${description.length}/200`}
+        >
+          <DashboardTextarea
+            id="menu-item-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value.slice(0, 200))}
+            placeholder="Describe the dish…"
+            rows={3}
+          />
+        </DashboardField>
+
+        {/* Price + Prep time */}
+        <div className="flex gap-3">
+          <DashboardField id="menu-item-price" label="Price ₦">
+            <DashboardInput
+              id="menu-item-price"
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="0"
+              min="0"
             />
-          </div>
-
-          {/* Description */}
-          <div className={ds.form.field}>
-            <label htmlFor="menu-item-description" className={ds.input.label}>
-              Description{" "}
-              <span className="text-gray-400 font-normal">
-                (optional, max 200 chars)
-              </span>
-            </label>
-            <textarea
-              id="menu-item-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value.slice(0, 200))}
-              placeholder="Describe the dish…"
-              rows={3}
-              className={ds.input.textarea}
-            />
-            <p className="text-xs text-gray-400 text-right mt-1">
-              {description.length}/200
-            </p>
-          </div>
-
-          {/* Price + Prep time */}
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <label htmlFor="menu-item-price" className={ds.input.label}>
-                Price ₦ <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="menu-item-price"
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="0"
-                min="0"
-                className={ds.input.base}
-              />
-            </div>
-            <div className="w-32">
-              <label htmlFor="menu-item-prep" className={ds.input.label}>
-                Prep time (min)
-              </label>
-              <input
+          </DashboardField>
+          <div className="w-32 flex-none">
+            <DashboardField id="menu-item-prep" label="Prep time">
+              <DashboardInput
                 id="menu-item-prep"
                 type="number"
                 value={prepTime}
                 onChange={(e) => setPrepTime(e.target.value)}
                 placeholder="15"
                 min="1"
-                className={ds.input.base}
               />
-            </div>
-          </div>
-
-          {/* Toggles */}
-          <div className="space-y-3">
-            {[
-              {
-                label: "Available",
-                sub: "Diners can order this item",
-                value: isAvailable,
-                set: setIsAvailable,
-              },
-              {
-                label: "Featured",
-                sub: "Show at the top of the menu",
-                value: isFeatured,
-                set: setIsFeatured,
-              },
-            ].map(({ label, sub, value, set }) => (
-              <div
-                key={label}
-                className="flex items-center justify-between py-2"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{label}</p>
-                  <p className="text-xs text-gray-400">{sub}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => set(!value)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
-                    value ? "bg-green-500" : "bg-gray-200",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
-                      value ? "translate-x-6" : "translate-x-1",
-                    )}
-                  />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Tags */}
-          <div>
-            <p className={ds.input.label}>Tags</p>
-            <div className="flex flex-wrap gap-2">
-              {ALL_TAGS.map((tag) => (
-                <button
-                  type="button"
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
-                    selectedTags.includes(tag)
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300",
-                  )}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Allergens */}
-          <div>
-            <p className={ds.input.label}>Allergens</p>
-            <div className="flex flex-wrap gap-2">
-              {ALL_ALLERGENS.map((a) => (
-                <button
-                  type="button"
-                  key={a}
-                  onClick={() => toggleAllergen(a)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
-                    selectedAllergens.includes(a)
-                      ? "bg-red-600 text-white border-red-600"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300",
-                  )}
-                >
-                  <Warning className="inline-block mr-1" /> {a}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className={ds.form.stickyActions}>
-            <button
-              type="button"
-              onClick={onClose}
-              className={ds.btn.ghostFull}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={!name.trim() || !price}
-              className={ds.btn.primaryFull}
-            >
-              {existingItem ? "Save changes" : "Add item"}
-            </button>
+            </DashboardField>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+
+        {/* Toggles */}
+        <div className="space-y-3">
+          {[
+            {
+              label: "Available",
+              sub: "Diners can order this item",
+              value: isAvailable,
+              set: setIsAvailable,
+            },
+            {
+              label: "Featured",
+              sub: "Show at the top of the menu",
+              value: isFeatured,
+              set: setIsFeatured,
+            },
+          ].map(({ label, sub, value, set }) => (
+            <div key={label} className="flex items-center justify-between py-2">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">{label}</p>
+                <p className="text-xs text-gray-400">{sub}</p>
+              </div>
+              <Toggle
+                checked={value}
+                onChange={() => set(!value)}
+                ariaLabel={label}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Tags */}
+        <div>
+          <p className={ds.input.label}>Tags</p>
+          <div className="flex flex-wrap gap-2">
+            {ALL_TAGS.map((tag) => (
+              <button
+                type="button"
+                key={tag}
+                onClick={() => toggleTag(tag)}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
+                  selectedTags.includes(tag)
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-300",
+                )}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Allergens */}
+        <div>
+          <p className={ds.input.label}>Allergens</p>
+          <div className="flex flex-wrap gap-2">
+            {ALL_ALLERGENS.map((a) => (
+              <button
+                type="button"
+                key={a}
+                onClick={() => toggleAllergen(a)}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
+                  selectedAllergens.includes(a)
+                    ? "bg-red-600 text-white border-red-600"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-300",
+                )}
+              >
+                <Warning className="inline-block mr-1" /> {a}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </DashboardModal>
   );
 }

@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { MenuCategory } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
+import { useDashboardSettingsStore } from "@/store/dashboard-settings";
+import { useMenuStore } from "@/store/menu";
 import { MenuItemCard } from "./MenuItemCard";
 import { DINER } from "./ui/diner-tokens";
 
@@ -31,9 +33,25 @@ export function MenuPage({
   rating,
   estimatedWaitMins,
 }: MenuPageProps) {
-  const [activeCategory, setActiveCategory] = useState(categories[0]?.id ?? "");
+  const syncedCategories = useMenuStore((state) => state.categories);
+  const restaurantProfile = useDashboardSettingsStore((state) => state.profile);
+  const visibleCategories = syncedCategories.length
+    ? syncedCategories
+    : categories;
+  const displayRestaurantName = restaurantProfile.name || restaurantName;
+  const displayRestaurantDescription =
+    restaurantProfile.description || restaurantDescription;
+  const [activeCategory, setActiveCategory] = useState(
+    visibleCategories[0]?.id ?? "",
+  );
   const tabsRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  useEffect(() => {
+    if (!visibleCategories.some((category) => category.id === activeCategory)) {
+      setActiveCategory(visibleCategories[0]?.id ?? "");
+    }
+  }, [activeCategory, visibleCategories]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -69,7 +87,10 @@ export function MenuPage({
     });
   };
 
-  const totalItems = categories.reduce((sum, c) => sum + c.items.length, 0);
+  const totalItems = visibleCategories.reduce(
+    (sum, c) => sum + c.items.length,
+    0,
+  );
 
   return (
     <div>
@@ -79,7 +100,7 @@ export function MenuPage({
           {coverImageUrl ? (
             <Image
               src={coverImageUrl}
-              alt={`${restaurantName ?? "Restaurant"} cover`}
+              alt={`${displayRestaurantName ?? "Restaurant"} cover`}
               fill
               unoptimized
               sizes="480px"
@@ -95,7 +116,7 @@ export function MenuPage({
             {logoUrl ? (
               <Image
                 src={logoUrl}
-                alt={`${restaurantName ?? "Restaurant"} logo`}
+                alt={`${displayRestaurantName ?? "Restaurant"} logo`}
                 fill
                 unoptimized
                 sizes="64px"
@@ -108,11 +129,13 @@ export function MenuPage({
             )}
           </div>
 
-          <h1 className={cn(DINER.displayTitle, "mb-1.5")}>{restaurantName}</h1>
+          <h1 className={cn(DINER.displayTitle, "mb-1.5")}>
+            {displayRestaurantName}
+          </h1>
 
-          {restaurantDescription && (
+          {displayRestaurantDescription && (
             <p className={cn(DINER.body, "leading-relaxed mb-3 pr-4")}>
-              {restaurantDescription}
+              {displayRestaurantDescription}
             </p>
           )}
 
@@ -142,7 +165,7 @@ export function MenuPage({
         ref={tabsRef}
         className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-y border-gray-100 flex gap-1.5 overflow-x-auto px-4 py-2.5 scrollbar-none"
       >
-        {categories.map((category) => {
+        {visibleCategories.map((category) => {
           const isActive = activeCategory === category.id;
           return (
             <button
@@ -164,7 +187,7 @@ export function MenuPage({
 
       {/* Category sections */}
       <div className="px-4 pt-5 space-y-8">
-        {categories.map((category) => (
+        {visibleCategories.map((category) => (
           <section
             key={category.id}
             id={`section-${category.id}`}
@@ -203,7 +226,7 @@ export function MenuPage({
 
       <div className="px-4 py-8 text-center">
         <p className={DINER.caption}>
-          {totalItems} items across {categories.length} categories
+          {totalItems} items across {visibleCategories.length} categories
         </p>
         <p className={cn(DINER.caption, "mt-1")}>Powered by Moji</p>
       </div>

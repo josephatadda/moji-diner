@@ -2,10 +2,21 @@
 
 import { Plus, Users } from "@phosphor-icons/react";
 import { useState } from "react";
-import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
-import { dashboardToast } from "@/components/dashboard/ui/dashboard-toast";
-import { ds, t } from "@/components/dashboard/ui/dashboard-tokens";
-import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import {
+  DashboardButton,
+  DashboardConfirmDialog,
+  DashboardField,
+  DashboardInput,
+  DashboardModal,
+  DashboardPageHeader,
+  DashboardSelect,
+  DashboardSetupPrompt,
+  DashboardStatusBadge,
+  DashboardTable,
+  dashboardToast,
+  ds,
+  t,
+} from "@/components/dashboard/ui";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 
 const MOCK_STAFF = [
@@ -40,6 +51,9 @@ export default function StaffPage() {
   );
   const [staff, setStaff] = useState(MOCK_STAFF);
   const [isAddingStaff, setIsAddingStaff] = useState(false);
+  const [deactivatingStaffId, setDeactivatingStaffId] = useState<string | null>(
+    null,
+  );
 
   const active = staff.filter((s) => s.isActive);
   const inactive = staff.filter((s) => !s.isActive);
@@ -74,21 +88,16 @@ export default function StaffPage() {
 
   return (
     <div className={ds.page}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className={t.h1}>Staff</h1>
-          <p className={`${t.body} mt-1`}>Manage team access and PIN codes</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setIsAddingStaff(true)}
-          className={`${ds.btn.primary} self-start sm:self-auto flex items-center gap-2`}
-        >
-          <Plus size={16} weight="bold" />
-          Add Staff Member
-        </button>
-      </div>
+      <DashboardPageHeader
+        title="Staff"
+        description="Manage team access, roles, and PIN codes."
+        actions={
+          <DashboardButton onClick={() => setIsAddingStaff(true)}>
+            <Plus size={16} weight="bold" />
+            Add staff member
+          </DashboardButton>
+        }
+      />
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3 mb-6">
@@ -106,75 +115,74 @@ export default function StaffPage() {
         </div>
       </div>
 
-      {/* Active staff */}
-      <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden mb-4">
-        <div className="hidden sm:grid grid-cols-12 gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          <div className="col-span-4">Name</div>
-          <div className="col-span-3">Role</div>
-          <div className="col-span-3">PIN</div>
-          <div className="col-span-2 text-right">Actions</div>
-        </div>
-        <div className="divide-y divide-gray-100">
-          {active.map((member) => {
-            const badge = ROLE_BADGE[member.role];
-            return (
-              <div
-                key={member.id}
-                className="flex flex-col sm:grid sm:grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-start sm:items-center hover:bg-gray-50 transition-colors"
-              >
-                <div className="col-span-4 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm flex-none">
-                    {member.name.charAt(0)}
-                  </div>
-                  <p className="font-semibold text-gray-900 text-sm">
-                    {member.name}
-                  </p>
-                </div>
-                <div className="col-span-3">
-                  <span
-                    className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.bg} ${badge.text}`}
-                  >
-                    {badge.label}
-                  </span>
-                </div>
-                <div className="col-span-3 text-sm text-gray-400 font-mono">
-                  ● ● ● ●
-                </div>
-                <div className="col-span-2 flex justify-start sm:justify-end gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      dashboardToast(
-                        "PIN editing is mocked in this preview",
-                        "info",
-                      )
-                    }
-                    className={ds.btn.tab}
-                  >
-                    Edit PIN
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStaff((current) =>
-                        current.map((staffMember) =>
-                          staffMember.id === member.id
-                            ? { ...staffMember, isActive: false }
-                            : staffMember,
-                        ),
-                      );
-                      dashboardToast("Staff member deactivated");
-                    }}
-                    className="px-3 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 text-xs font-semibold rounded-lg transition-colors"
-                  >
-                    Deactivate
-                  </button>
-                </div>
+      <DashboardTable
+        className="mb-4"
+        rows={active}
+        getRowKey={(member) => member.id}
+        columns={[
+          {
+            key: "name",
+            header: "Name",
+            render: (member) => (
+              <div className="flex items-center gap-3">
+                <div className={ds.avatar.md}>{member.name.charAt(0)}</div>
+                <p className={t.bodyStrong}>{member.name}</p>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            ),
+          },
+          {
+            key: "role",
+            header: "Role",
+            render: (member) => (
+              <DashboardStatusBadge
+                tone={
+                  member.role === "manager"
+                    ? "purple"
+                    : member.role === "kitchen"
+                      ? "orange"
+                      : "blue"
+                }
+              >
+                {ROLE_BADGE[member.role].label}
+              </DashboardStatusBadge>
+            ),
+          },
+          {
+            key: "pin",
+            header: "PIN",
+            render: () => <span className={t.mono}>● ● ● ●</span>,
+          },
+          {
+            key: "actions",
+            header: "Actions",
+            headerClassName: "text-right",
+            className: "text-right",
+            render: (member) => (
+              <div className="flex justify-end gap-2">
+                <DashboardButton
+                  variant="ghost"
+                  className="h-8 px-3 text-xs"
+                  onClick={() =>
+                    dashboardToast(
+                      "PIN editing is mocked in this preview",
+                      "info",
+                    )
+                  }
+                >
+                  Edit PIN
+                </DashboardButton>
+                <DashboardButton
+                  variant="ghost"
+                  className="h-8 px-3 text-xs text-red-500 hover:text-red-600"
+                  onClick={() => setDeactivatingStaffId(member.id)}
+                >
+                  Deactivate
+                </DashboardButton>
+              </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Inactive staff */}
       {inactive.length > 0 && (
@@ -205,8 +213,8 @@ export default function StaffPage() {
                       </span>
                     </div>
                   </div>
-                  <button
-                    type="button"
+                  <DashboardButton
+                    variant="ghost"
                     onClick={() => {
                       setStaff((current) =>
                         current.map((staffMember) =>
@@ -217,10 +225,9 @@ export default function StaffPage() {
                       );
                       dashboardToast("Staff member reactivated");
                     }}
-                    className={ds.btn.tab}
                   >
                     Reactivate
-                  </button>
+                  </DashboardButton>
                 </div>
               );
             })}
@@ -239,64 +246,70 @@ export default function StaffPage() {
       </div>
 
       {/* Add Staff Modal */}
-      <ResponsiveDialog
+      <DashboardModal
         open={isAddingStaff}
         onOpenChange={setIsAddingStaff}
-        title="Add Staff Member"
+        title="Add staff member"
         description="Create a new staff profile with a login PIN."
       >
-        <form onSubmit={handleAddStaffSubmit} className="space-y-4 px-1 py-2">
-          <div className={ds.form.field}>
-            <label htmlFor="staff-name" className={ds.input.label}>
-              Full name
-            </label>
-            <input
+        <form onSubmit={handleAddStaffSubmit} className="space-y-4">
+          <DashboardField id="staff-name" label="Full name">
+            <DashboardInput
               id="staff-name"
               required
               name="name"
               type="text"
               placeholder="e.g. John Doe"
-              className={ds.input.base}
             />
-          </div>
-          <div className={ds.form.field}>
-            <label htmlFor="staff-role" className={ds.input.label}>
-              Role
-            </label>
-            <select id="staff-role" name="role" className={ds.input.select}>
+          </DashboardField>
+          <DashboardField id="staff-role" label="Role">
+            <DashboardSelect id="staff-role" name="role">
               <option value="staff">Staff</option>
               <option value="manager">Manager</option>
               <option value="kitchen">Kitchen</option>
-            </select>
-          </div>
-          <div className={ds.form.field}>
-            <label htmlFor="staff-pin" className={ds.input.label}>
-              4-digit PIN
-            </label>
-            <input
+            </DashboardSelect>
+          </DashboardField>
+          <DashboardField id="staff-pin" label="4-digit PIN">
+            <DashboardInput
               id="staff-pin"
               required
               name="pin"
               type="text"
               maxLength={4}
               placeholder="e.g. 1234"
-              className={ds.input.base}
             />
-          </div>
+          </DashboardField>
           <div className={ds.form.actions}>
-            <button
-              type="button"
+            <DashboardButton
+              variant="ghost"
               onClick={() => setIsAddingStaff(false)}
-              className={ds.btn.ghost}
             >
               Cancel
-            </button>
-            <button type="submit" className={ds.btn.primary}>
-              Save Staff
-            </button>
+            </DashboardButton>
+            <DashboardButton type="submit">Save staff</DashboardButton>
           </div>
         </form>
-      </ResponsiveDialog>
+      </DashboardModal>
+
+      <DashboardConfirmDialog
+        open={!!deactivatingStaffId}
+        onOpenChange={(open) => !open && setDeactivatingStaffId(null)}
+        title="Deactivate staff member?"
+        description="This person will no longer be able to access the dashboard with their PIN."
+        confirmLabel="Deactivate"
+        destructive
+        onConfirm={() => {
+          setStaff((current) =>
+            current.map((staffMember) =>
+              staffMember.id === deactivatingStaffId
+                ? { ...staffMember, isActive: false }
+                : staffMember,
+            ),
+          );
+          setDeactivatingStaffId(null);
+          dashboardToast("Staff member deactivated");
+        }}
+      />
     </div>
   );
 }

@@ -1,30 +1,14 @@
 "use client";
 
-import {
-  Calendar,
-  CaretLeft,
-  PlusCircle,
-  WhatsappLogo,
-} from "@phosphor-icons/react";
+import { Calendar, PlusCircle, WhatsappLogo } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { DashboardPageHeader } from "@/components/dashboard/ui";
 import {
   formatPrice,
   MOCK_LOYALTY_PROFILES,
   MOCK_ORDERS,
 } from "@/lib/mockData";
-import { cn } from "@/lib/utils";
-
-const TIER_BADGE: Record<string, string> = {
-  Gold: "bg-yellow-100 text-yellow-700",
-  Silver: "bg-gray-100 text-gray-600",
-  Bronze: "bg-orange-100 text-orange-700",
-};
-const TIER_ICON: Record<string, string> = {
-  Gold: "🥇",
-  Silver: "🥈",
-  Bronze: "🥉",
-};
 
 export default function CustomerProfilePage() {
   const params = useParams();
@@ -53,31 +37,11 @@ export default function CustomerProfilePage() {
 
   return (
     <div className="px-4 py-6 lg:px-8 lg:py-8 max-w-[1200px] mx-auto w-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/dashboard/loyalty/customers"
-          className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-        >
-          <CaretLeft size={18} weight="bold" />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{profile.phone}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold",
-                TIER_BADGE[profile.tier],
-              )}
-            >
-              {TIER_ICON[profile.tier]} {profile.tier} Member
-            </span>
-            <span className="text-xs text-gray-400">
-              First visit: Jan 12, 2026
-            </span>
-          </div>
-        </div>
-      </div>
+      <DashboardPageHeader
+        title={profile.phone}
+        description={`First visit: Jan 12, 2026 · ${profile.tier} member`}
+        eyebrow="Customer profile"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left: Stats + Actions */}

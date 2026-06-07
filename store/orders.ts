@@ -21,13 +21,12 @@ export const useOrdersStore = create<OrdersState>()((set, get) => ({
 
   setOrders: (orders) => set({ orders }),
 
-  addOrder: (order) =>
-    set((state) => ({ orders: [order, ...state.orders] })),
+  addOrder: (order) => set((state) => ({ orders: [order, ...state.orders] })),
 
   updateOrderStatus: (orderId, status) =>
     set((state) => ({
       orders: state.orders.map((o) =>
-        o.id === orderId ? { ...o, status, updatedAt: new Date() } : o
+        o.id === orderId ? { ...o, status, updatedAt: new Date() } : o,
       ),
     })),
 
@@ -35,5 +34,6 @@ export const useOrdersStore = create<OrdersState>()((set, get) => ({
 
   getOrderById: (orderId) => get().orders.find((o) => o.id === orderId),
 
-  getOrdersByStatus: (status) => get().orders.filter((o) => o.status === status),
+  getOrdersByStatus: (status) =>
+    get().orders.filter((o) => o.status === status),
 }));

@@ -1,8 +1,8 @@
 "use client";
 
-import { CaretLeft, Info, Trophy } from "@phosphor-icons/react";
-import Link from "next/link";
+import { Info, Trophy } from "@phosphor-icons/react";
 import { useState } from "react";
+import { DashboardPageHeader } from "@/components/dashboard/ui";
 import { DashboardSetupPrompt } from "@/components/dashboard/ui/DashboardSetupPrompt";
 import { cn } from "@/lib/utils";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
@@ -29,21 +29,10 @@ export default function LoyaltySettingsPage() {
 
   return (
     <div className="px-4 py-6 lg:px-8 lg:py-8 max-w-[1200px] mx-auto w-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/dashboard/loyalty"
-          className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-        >
-          <CaretLeft size={18} weight="bold" />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Loyalty Settings</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Configure earning rates and tier thresholds
-          </p>
-        </div>
-      </div>
+      <DashboardPageHeader
+        title="Loyalty Settings"
+        description="Configure earning rates and tier thresholds."
+      />
 
       <div className="max-w-xl space-y-4">
         {/* Enable toggle */}

@@ -1,7 +1,7 @@
 "use client";
 
-import { ds } from "@/components/dashboard/ui/dashboard-tokens";
-import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { DashboardButton } from "./DashboardButton";
+import { DashboardModal } from "./DashboardModal";
 
 type DashboardConfirmDialogProps = {
   open: boolean;
@@ -25,31 +25,31 @@ export function DashboardConfirmDialog({
   onConfirm,
 }: DashboardConfirmDialogProps) {
   return (
-    <ResponsiveDialog
+    <DashboardModal
       open={open}
       onOpenChange={onOpenChange}
       title={title}
       description={description}
+      footer={
+        <div className="flex justify-end gap-2">
+          <DashboardButton variant="ghost" onClick={() => onOpenChange(false)}>
+            {cancelLabel}
+          </DashboardButton>
+          <DashboardButton
+            variant={destructive ? "danger" : "primary"}
+            onClick={() => {
+              onConfirm();
+              onOpenChange(false);
+            }}
+          >
+            {confirmLabel}
+          </DashboardButton>
+        </div>
+      }
     >
-      <div className="flex justify-end gap-2 px-1 pt-2">
-        <button
-          type="button"
-          className={ds.btn.ghost}
-          onClick={() => onOpenChange(false)}
-        >
-          {cancelLabel}
-        </button>
-        <button
-          type="button"
-          className={destructive ? ds.btn.danger : ds.btn.primary}
-          onClick={() => {
-            onConfirm();
-            onOpenChange(false);
-          }}
-        >
-          {confirmLabel}
-        </button>
+      <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 text-sm text-gray-600">
+        {description}
       </div>
-    </ResponsiveDialog>
+    </DashboardModal>
   );
 }
