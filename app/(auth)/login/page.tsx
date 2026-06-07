@@ -1,74 +1,104 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { ArrowRight, LockKeyhole } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  AuthCard,
+  AuthLink,
+  AuthNotice,
+  PasswordField,
+} from "@/components/auth/AuthCard";
+import {
+  DashboardButton,
+  DashboardField,
+  DashboardInput,
+} from "@/components/dashboard/ui";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+
+    if (!email.includes("@")) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
     setLoading(true);
-    // Mock auth — replace with Supabase signInWithPassword
-    await new Promise((r) => setTimeout(r, 800));
+    await new Promise((resolve) => setTimeout(resolve, 650));
     setLoading(false);
     router.push("/dashboard");
   };
 
   return (
-    <>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Sign in</h1>
-      <p className="text-sm text-gray-400 mb-8">
-        New to Moji?{" "}
-        <Link href="/signup" className="text-orange-500 font-semibold hover:text-orange-600">
-          Create an account
-        </Link>
-      </p>
-
+    <AuthCard
+      title="Sign in"
+      description="Access your restaurant dashboard, manage modules, and keep your diner experience in sync."
+      footer={
+        <p className="text-center text-sm text-gray-500">
+          New to Moji? <AuthLink href="/signup">Create an account</AuthLink>
+        </p>
+      }
+    >
       <form onSubmit={handleLogin} className="space-y-4">
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
-          <input
+        {error ? (
+          <AuthNotice tone="error" title="Could not sign in">
+            {error}
+          </AuthNotice>
+        ) : (
+          <AuthNotice title="Demo access">
+            Use any valid email and an 8+ character password to enter the mock
+            dashboard.
+          </AuthNotice>
+        )}
+
+        <DashboardField id="email" label="Email address">
+          <DashboardInput
+            id="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="owner@restaurant.com"
+            autoComplete="email"
             required
-            placeholder="you@restaurant.com"
-            className="w-full h-12 px-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400 transition-colors"
           />
-        </div>
+        </DashboardField>
 
-        <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <label className="text-sm font-semibold text-gray-700">Password</label>
-            <Link href="#" className="text-xs text-orange-500 hover:text-orange-600">Forgot password?</Link>
-          </div>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="••••••••"
-            className="w-full h-12 px-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400 transition-colors"
-          />
-        </div>
+        <PasswordField
+          id="password"
+          label="Password"
+          labelAction={
+            <AuthLink href="/reset-password">Forgot password?</AuthLink>
+          }
+          value={password}
+          onChange={setPassword}
+          placeholder="Min 8 characters"
+        />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full h-12 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-700 active:scale-[0.97] transition-all ease-out disabled:opacity-60 disabled:cursor-not-allowed mt-2"
-        >
-          {loading ? "Signing in…" : "Sign In"}
-        </button>
+        <DashboardButton type="submit" fullWidth disabled={loading}>
+          {loading ? (
+            "Signing in..."
+          ) : (
+            <>
+              <LockKeyhole size={16} />
+              Sign in
+              <ArrowRight size={16} />
+            </>
+          )}
+        </DashboardButton>
       </form>
-
-      <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl">
-        <p className="text-xs text-blue-600 font-medium">Demo: use any email/password to sign in</p>
-      </div>
-    </>
+    </AuthCard>
   );
 }

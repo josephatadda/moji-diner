@@ -1,95 +1,161 @@
 "use client";
 
+import { ArrowRight, MailCheck, Store } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  AuthCard,
+  AuthLink,
+  AuthNotice,
+  PasswordField,
+} from "@/components/auth/AuthCard";
+import {
+  DashboardButton,
+  DashboardField,
+  DashboardInput,
+} from "@/components/dashboard/ui";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
+  const [restaurantName, setRestaurantName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSignup = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+
+    if (!restaurantName.trim()) {
+      setError("Add your restaurant name to continue.");
+      return;
+    }
+
+    if (!email.includes("@")) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
     setLoading(true);
-    // Mock signup — replace with Supabase signUp
-    await new Promise((r) => setTimeout(r, 800));
+    await new Promise((resolve) => setTimeout(resolve, 700));
     setLoading(false);
     setSent(true);
   };
 
   if (sent) {
     return (
-      <div className="text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-3xl">📬</span>
+      <AuthCard
+        eyebrow="Verify account"
+        title="Check your email"
+        description="We sent a verification link so you can finish setting up your restaurant workspace."
+        footer={
+          <p className="text-center text-sm text-gray-500">
+            Already verified? <AuthLink href="/login">Sign in</AuthLink>
+          </p>
+        }
+      >
+        <div className="space-y-5 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-green-100 bg-green-50 text-green-600">
+            <MailCheck size={28} />
+          </div>
+          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-left">
+            <p className="text-xs font-medium text-gray-400">
+              Verification sent to
+            </p>
+            <p className="mt-1 text-sm font-semibold text-gray-900">{email}</p>
+          </div>
+          <DashboardButton
+            type="button"
+            fullWidth
+            onClick={() => setSent(false)}
+            variant="ghost"
+          >
+            Edit email address
+          </DashboardButton>
         </div>
-        <h2 className="text-xl font-bold text-gray-900">Check your email</h2>
-        <p className="text-sm text-gray-500 mt-2">
-          We've sent a verification link to <strong>{email}</strong>. Click it to activate your account.
-        </p>
-        <Link
-          href="/login"
-          className="mt-6 inline-block text-sm font-semibold text-orange-500 hover:text-orange-600"
-        >
-          Back to sign in →
-        </Link>
-      </div>
+      </AuthCard>
     );
   }
 
   return (
-    <>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Create your account</h1>
-      <p className="text-sm text-gray-400 mb-8">
-        Already registered?{" "}
-        <Link href="/login" className="text-orange-500 font-semibold hover:text-orange-600">
-          Sign in
-        </Link>
-      </p>
-
+    <AuthCard
+      title="Create your workspace"
+      description="Set up your owner account first. Restaurant details, modules, and payments can be configured after verification."
+      footer={
+        <p className="text-center text-sm text-gray-500">
+          Already registered? <AuthLink href="/login">Sign in</AuthLink>
+        </p>
+      }
+    >
       <form onSubmit={handleSignup} className="space-y-4">
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
-          <input
+        {error ? (
+          <AuthNotice tone="error" title="Check the form">
+            {error}
+          </AuthNotice>
+        ) : null}
+
+        <DashboardField id="restaurantName" label="Restaurant name">
+          <DashboardInput
+            id="restaurantName"
+            value={restaurantName}
+            onChange={(event) => setRestaurantName(event.target.value)}
+            placeholder="Mama Put Kitchen"
+            autoComplete="organization"
+            required
+          />
+        </DashboardField>
+
+        <DashboardField id="email" label="Owner email">
+          <DashboardInput
+            id="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="owner@restaurant.com"
+            autoComplete="email"
             required
-            placeholder="you@restaurant.com"
-            className="w-full h-12 px-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400 transition-colors"
           />
-        </div>
+        </DashboardField>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-            placeholder="Min 8 characters"
-            className="w-full h-12 px-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400 transition-colors"
-          />
-        </div>
+        <PasswordField
+          id="password"
+          label="Password"
+          value={password}
+          onChange={setPassword}
+          placeholder="Min 8 characters"
+          hint="Use at least 8 characters."
+        />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full h-12 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-700 active:scale-[0.97] transition-all ease-out disabled:opacity-60 disabled:cursor-not-allowed mt-2"
-        >
-          {loading ? "Creating account…" : "Create Account"}
-        </button>
+        <DashboardButton type="submit" fullWidth disabled={loading}>
+          {loading ? (
+            "Creating workspace..."
+          ) : (
+            <>
+              <Store size={16} />
+              Create workspace
+              <ArrowRight size={16} />
+            </>
+          )}
+        </DashboardButton>
       </form>
 
-      <p className="text-xs text-gray-400 text-center mt-4">
-        By creating an account you agree to our{" "}
-        <a href="#" className="underline">Terms</a> and{" "}
-        <a href="#" className="underline">Privacy Policy</a>
+      <p className="mt-4 text-center text-xs leading-5 text-gray-400">
+        By creating an account, you agree to Moji&apos;s{" "}
+        <Link href="#" className="underline underline-offset-2">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="#" className="underline underline-offset-2">
+          Privacy Policy
+        </Link>
+        .
       </p>
-    </>
+    </AuthCard>
   );
 }
