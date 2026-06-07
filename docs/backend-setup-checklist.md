@@ -19,7 +19,7 @@ is set, the app keeps running on mock data — so nothing here blocks the fronte
   - GitHub → Settings → Developer settings → OAuth Apps → New OAuth App.
   - Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
   - (Google optional: `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`, callback `.../callback/google`.)
-  - Note: I can make providers optional in code so you only configure the one(s) you want — say the word.
+  - ✅ Providers are now optional in code — configure only the one(s) you want; the rest are skipped. Auth is also lazy, so a missing secret never breaks unrelated pages.
 
 ## 🟡 Needed soon, per phase (not blocking yet)
 

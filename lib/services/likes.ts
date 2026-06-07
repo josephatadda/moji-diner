@@ -41,9 +41,7 @@ export async function toggleLike(input: {
   }
 
   const [, updated] = await db.batch([
-    db
-      .insert(like)
-      .values({ userId: input.userId, presetId: input.presetId }),
+    db.insert(like).values({ userId: input.userId, presetId: input.presetId }),
     db
       .update(preset)
       .set({ likesCount: sql`${preset.likesCount} + 1` })
@@ -79,7 +77,10 @@ export async function listLikedByUser(input: {
     .innerJoin(preset, eq(like.presetId, preset.id))
     .where(
       cursorDate
-        ? and(eq(like.userId, input.userId), sql`${like.createdAt} < ${cursorDate}`)
+        ? and(
+            eq(like.userId, input.userId),
+            sql`${like.createdAt} < ${cursorDate}`,
+          )
         : eq(like.userId, input.userId),
     )
     .orderBy(desc(like.createdAt))
@@ -90,7 +91,9 @@ export async function listLikedByUser(input: {
   const last = page[page.length - 1];
   const nextCursor = hasMore && last ? last.likedAt.toISOString() : null;
 
-  const items: PresetSummary[] = page.map(({ likedAt: _likedAt, ...rest }) => rest);
+  const items: PresetSummary[] = page.map(
+    ({ likedAt: _likedAt, ...rest }) => rest,
+  );
   return { items, nextCursor };
 }
 

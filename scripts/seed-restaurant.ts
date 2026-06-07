@@ -26,6 +26,7 @@ import {
   staff,
   user,
 } from "@/lib/db/schema";
+import { nairaToKobo } from "@/lib/domain/money";
 import {
   MOCK_LOYALTY_PROFILES,
   MOCK_MENU,
@@ -150,7 +151,7 @@ async function seedRestaurant() {
           restaurantId,
           name: item.name,
           description: item.description,
-          price: item.price,
+          price: nairaToKobo(item.price),
           isAvailable: item.isAvailable,
           isFeatured: item.isFeatured,
           tags: item.tags,
@@ -177,7 +178,7 @@ async function seedRestaurant() {
             group.options.map((o) => ({
               groupId: mg.id,
               name: o.name,
-              priceDelta: o.priceDelta,
+              priceDelta: nairaToKobo(o.priceDelta),
             })),
           );
         }
@@ -195,9 +196,9 @@ async function seedRestaurant() {
         tableId: tableIdByNumber.get(order.tableNumber) ?? null,
         tableNumber: order.tableNumber,
         status: order.status,
-        subtotal: order.subtotal,
-        vatAmount: order.vatAmount,
-        grandTotal: order.grandTotal,
+        subtotal: nairaToKobo(order.subtotal),
+        vatAmount: nairaToKobo(order.vatAmount),
+        grandTotal: nairaToKobo(order.grandTotal),
         source: order.source,
         dinerPhone: order.dinerPhone,
         estimatedReadyMins: order.estimatedReadyMins,
@@ -210,11 +211,11 @@ async function seedRestaurant() {
         order.items.map((oi) => ({
           orderId: row.id,
           itemName: oi.itemName,
-          itemPrice: oi.itemPrice,
+          itemPrice: nairaToKobo(oi.itemPrice),
           quantity: oi.quantity,
           selectedModifiers: oi.selectedModifiers,
           specialNote: oi.specialNote,
-          lineTotal: oi.lineTotal,
+          lineTotal: nairaToKobo(oi.lineTotal),
         })),
       );
     }
@@ -226,7 +227,7 @@ async function seedRestaurant() {
       MOCK_TRANSACTIONS.map((txn) => ({
         restaurantId,
         orderId: anyOrderId as string,
-        amount: txn.amount,
+        amount: nairaToKobo(txn.amount),
         method: txn.method,
         status: txnStatusMap[txn.status],
         reference: txn.reference,
@@ -246,7 +247,7 @@ async function seedRestaurant() {
         phone: p.phone,
         totalPoints: p.totalPoints,
         totalVisits: p.totalVisits,
-        totalSpent: p.totalSpent,
+        totalSpent: nairaToKobo(p.totalSpent),
         tier: p.tier,
       })),
     );
@@ -258,7 +259,11 @@ async function seedRestaurant() {
         name: r.name,
         pointsRequired: r.pointsRequired,
         rewardType: r.rewardType,
-        rewardValue: r.rewardValue,
+        // free_item value is money (kobo); discount_percent value is a percent.
+        rewardValue:
+          r.rewardType === "free_item"
+            ? nairaToKobo(r.rewardValue)
+            : r.rewardValue,
         isAvailable: r.isAvailable,
       })),
     );

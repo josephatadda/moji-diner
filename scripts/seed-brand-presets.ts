@@ -23,7 +23,9 @@ const JSON_PATH = resolve(process.cwd(), "design/brand-presets.json");
 // inserted. For a clean rebuild, delete `source='brand'` rows first.
 const presetConfigSchema = z.object({
   style: z.enum(PRESET_STYLES as readonly [string, ...string[]]),
-  baseColor: z.enum(SUPPORTED_BASE_COLORS as unknown as readonly [string, ...string[]]),
+  baseColor: z.enum(
+    SUPPORTED_BASE_COLORS as unknown as readonly [string, ...string[]],
+  ),
   theme: z.enum(SUPPORTED_THEMES as unknown as readonly [string, ...string[]]),
   font: z.enum(PRESET_FONTS as readonly [string, ...string[]]),
   fontHeading: z.enum(PRESET_FONT_HEADINGS as readonly [string, ...string[]]),

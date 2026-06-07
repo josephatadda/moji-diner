@@ -1,17 +1,21 @@
+import { notFound } from "next/navigation";
 import { CartContextProvider } from "@/components/diner/CartContextProvider";
 import { DinerShell } from "@/components/diner/DinerShell";
 import { MenuPage } from "@/components/diner/MenuPage";
-import { MOCK_RESTAURANT } from "@/lib/mockData";
+import { getMenuBySlug } from "@/lib/services/menu";
+import { getRestaurantBySlug } from "@/lib/services/restaurants";
 
 interface Props {
   params: Promise<{ restaurantSlug: string; tableNumber: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { tableNumber } = await params;
+  const { restaurantSlug, tableNumber } = await params;
+  const restaurant = await getRestaurantBySlug(restaurantSlug);
+  if (!restaurant) return { title: "Restaurant not found" };
   return {
-    title: `${MOCK_RESTAURANT.name} — Table ${tableNumber}`,
-    description: `Browse the menu and order from ${MOCK_RESTAURANT.name}`,
+    title: `${restaurant.name} — Table ${tableNumber}`,
+    description: `Browse the menu and order from ${restaurant.name}`,
   };
 }
 
@@ -19,23 +23,28 @@ export default async function DinerMenuPage({ params }: Props) {
   const { restaurantSlug, tableNumber } = await params;
   const tableNum = Number(tableNumber);
 
+  const restaurant = await getRestaurantBySlug(restaurantSlug);
+  if (!restaurant) notFound();
+
+  const categories = await getMenuBySlug(restaurantSlug);
+
   return (
     <CartContextProvider
-      restaurantId={MOCK_RESTAURANT.id}
+      restaurantId={restaurant.id}
       slug={restaurantSlug}
       tableNumber={tableNum}
     >
       <DinerShell
-        restaurantName={MOCK_RESTAURANT.name}
+        restaurantName={restaurant.name}
         restaurantSlug={restaurantSlug}
         tableNumber={tableNum}
       >
         <MenuPage
-          categories={[]}
+          categories={categories}
           restaurantSlug={restaurantSlug}
           tableNumber={tableNum}
-          restaurantName={MOCK_RESTAURANT.name}
-          restaurantDescription={MOCK_RESTAURANT.description}
+          restaurantName={restaurant.name}
+          restaurantDescription={restaurant.description}
           rating="4.8"
           estimatedWaitMins="15-20"
         />

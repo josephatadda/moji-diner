@@ -23,7 +23,9 @@ type FetchPresetsResult = {
   nextCursor: string | null;
 };
 
-async function enrichPresets(items: PresetSummary[]): Promise<PresetWithColors[]> {
+async function enrichPresets(
+  items: PresetSummary[],
+): Promise<PresetWithColors[]> {
   return Promise.all(
     items.map(async (p) => ({
       ...p,
