@@ -72,14 +72,11 @@ export function LoginModal() {
               Save presets you love.
             </p>
             <p className="text-sm text-muted-foreground">
-              Sign in to like presets, build a personal library, and submit
-              your own codes.
+              Sign in to like presets, build a personal library, and submit your
+              own codes.
             </p>
           </div>
-          <ul
-            role="list"
-            className="flex flex-col gap-2 text-xs text-muted-foreground"
-          >
+          <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
             <li className="flex items-center gap-2">
               <span className="size-1 rounded-full bg-foreground/40" />
               Like and save to revisit later

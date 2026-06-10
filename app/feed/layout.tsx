@@ -1,10 +1,9 @@
+import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import { FeedAside } from "@/components/feed-aside";
 import { Header } from "@/components/header";
 import { PresetSidebar } from "@/components/preset-sidebar";
 import { listPresetsWithColors } from "@/lib/services/presets";
-
-import { Analytics } from "@vercel/analytics/next";
 
 export default async function FeedLayout({
   children,

@@ -9,9 +9,9 @@ export const DINER = {
   // Cards
   card: "bg-white rounded-xl border border-gray-100",
   cardInteractive:
-    "bg-white rounded-xl border border-gray-100 transition-colors hover:border-gray-200",
+    "bg-white rounded-xl border border-gray-100 transition-all duration-200 ease-[var(--ease-out-strong)] hover:border-gray-200",
   itemCard:
-    "bg-white rounded-2xl border border-gray-100 transition-colors hover:border-gray-200",
+    "bg-white rounded-2xl border border-gray-100 transition-all duration-200 ease-[var(--ease-out-strong)] hover:border-gray-200",
   cardMuted: "bg-gray-50 rounded-xl border border-gray-100",
   cardPadding: "p-4",
   summaryCard: "bg-gray-50 rounded-xl border border-gray-100 p-4",
@@ -41,8 +41,8 @@ export const DINER = {
   priceTabular: "font-bold text-gray-900 tabular-nums",
 
   // Interactive
-  pressable: "active:scale-[0.97] transition-all duration-150 ease-out",
-  ctaPress: "active:scale-[0.98] transition-all duration-150 ease-out",
+  pressable: "active:scale-[0.97] transition-transform duration-150 ease-[var(--ease-out-strong)]",
+  ctaPress: "active:scale-[0.98] transition-transform duration-150 ease-[var(--ease-out-strong)]",
   primaryCta:
     "h-12 rounded-full bg-gray-900 px-5 text-white font-bold text-[15px] hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:hover:bg-gray-200 disabled:cursor-not-allowed",
   secondaryCta:

@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { loginModalAtom } from "@/lib/atoms/login-modal";
-import { submitModalOpenAtom } from "@/lib/atoms/submit-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { loginModalAtom } from "@/lib/atoms/login-modal";
+import { submitModalOpenAtom } from "@/lib/atoms/submit-modal";
 import { authClient } from "@/lib/auth-client";
 
 export function HeaderUser() {

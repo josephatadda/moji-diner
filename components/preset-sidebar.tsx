@@ -16,13 +16,13 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { authClient } from "@/lib/auth-client";
 import {
   PRESET_SORTS,
   PRESET_SOURCES,
   type PresetSort,
   type PresetView,
 } from "@/lib/domain/source-labels";
-import { authClient } from "@/lib/auth-client";
 import { feedFilterParsers, serializeFeedFilters } from "@/lib/feed-filters";
 import type { PresetWithColors } from "@/lib/services/presets";
 

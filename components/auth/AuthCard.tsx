@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, Eye, EyeOff, Info, XCircle } from "lucide-react";
+import { CheckCircle, Eye, EyeOff, Info, XCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
 import { useState } from "react";
@@ -12,7 +12,6 @@ import { ds } from "@/components/dashboard/ui/dashboard-tokens";
 import { cn } from "@/lib/utils";
 
 type AuthCardProps = {
-  eyebrow?: string;
   title: string;
   description: string;
   children: React.ReactNode;
@@ -20,28 +19,24 @@ type AuthCardProps = {
 };
 
 export function AuthCard({
-  eyebrow = "Dashboard access",
   title,
   description,
   children,
   footer,
 }: AuthCardProps) {
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
-      <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-widest text-orange-500">
-          {eyebrow}
-        </p>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-900">
+    <div className="w-full">
+      <div className="mb-8">
+        <h1 className="text-3xl font-serif font-normal tracking-tight text-gray-900 sm:text-4xl">
           {title}
         </h1>
-        <p className="mt-2 text-sm leading-6 text-gray-500">{description}</p>
+        <p className="mt-2 text-sm leading-relaxed text-gray-500">{description}</p>
       </div>
       {children}
       {footer ? (
-        <div className="mt-6 border-t border-gray-100 pt-5">{footer}</div>
+        <div className="mt-8">{footer}</div>
       ) : null}
-    </section>
+    </div>
   );
 }
 
@@ -127,7 +122,7 @@ export function PasswordField({
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
           required
-          className="pr-10"
+          className="pr-10 h-11 rounded-xl"
         />
         <button
           type="button"
@@ -184,9 +179,34 @@ export function PinInput({ value, onChange, error }: PinInputProps) {
         required
         className={cn(
           ds.input.base,
-          "h-12 text-center font-mono text-lg tracking-[0.45em]",
+          "h-12 text-center font-mono text-lg tracking-[0.45em] rounded-xl",
         )}
       />
     </DashboardField>
+  );
+}
+
+type AuthPromoCardProps = {
+  href: string;
+  title: string;
+  subtitle: string;
+};
+
+export function AuthPromoCard({ href, title, subtitle }: AuthPromoCardProps) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between rounded-2xl border border-gray-100 bg-gray-50/50 p-4 transition-all hover:bg-gray-50 hover:border-gray-200"
+    >
+      <div className="space-y-0.5">
+        <p className="text-xs font-medium text-gray-400">{title}</p>
+        <p className="text-sm font-semibold text-gray-900 group-hover:text-orange-500 transition-colors">
+          {subtitle}
+        </p>
+      </div>
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-400 group-hover:text-gray-900 group-hover:border-gray-200 transition-all group-hover:translate-x-1">
+        <ArrowRight size={16} />
+      </div>
+    </Link>
   );
 }

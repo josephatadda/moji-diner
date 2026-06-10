@@ -1,12 +1,12 @@
 "use client";
 
-import { ArrowRight, BadgeCheck, ShieldCheck } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   AuthCard,
-  AuthLink,
   AuthNotice,
+  AuthPromoCard,
   PinInput,
 } from "@/components/auth/AuthCard";
 import {
@@ -64,13 +64,14 @@ export default function StaffLoginPage() {
 
   return (
     <AuthCard
-      eyebrow="Staff access"
-      title="Open the order queue"
-      description="Staff can sign in with a restaurant workspace and PIN to manage active orders."
+      title="Staff Log in"
+      description="Sign in with your restaurant workspace and PIN to manage the active order queue."
       footer={
-        <p className="text-center text-sm text-gray-500">
-          Owner account? <AuthLink href="/login">Sign in here</AuthLink>
-        </p>
+        <AuthPromoCard
+          href="/login"
+          title="Owner account?"
+          subtitle="Sign in to your owner dashboard"
+        />
       }
     >
       <form onSubmit={handleLogin} className="space-y-4">
@@ -97,6 +98,7 @@ export default function StaffLoginPage() {
             placeholder="mama-put-kitchen"
             autoComplete="organization"
             required
+            className="h-11 rounded-xl"
           />
         </DashboardField>
 
@@ -113,15 +115,7 @@ export default function StaffLoginPage() {
         <PinInput value={pin} onChange={setPin} />
 
         <DashboardButton type="submit" fullWidth disabled={loading}>
-          {loading ? (
-            "Checking PIN..."
-          ) : (
-            <>
-              <ShieldCheck size={16} />
-              Continue to orders
-              <ArrowRight size={16} />
-            </>
-          )}
+          {loading ? "Checking PIN..." : "Continue"}
         </DashboardButton>
       </form>
     </AuthCard>

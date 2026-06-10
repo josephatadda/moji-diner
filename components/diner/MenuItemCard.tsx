@@ -45,10 +45,10 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
     <>
       <div
         className={cn(
-          "flex gap-3 rounded-2xl border p-3 transition-colors",
+          "group flex gap-3 p-3",
           item.isAvailable
-            ? "bg-white border-gray-100 hover:border-gray-200"
-            : "bg-gray-50 border-gray-100 opacity-60",
+            ? DINER.itemCard
+            : "bg-gray-50 border border-gray-100 opacity-60 rounded-2xl",
         )}
       >
         {/* Thumbnail */}
@@ -68,7 +68,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
               fill
               unoptimized
               sizes="96px"
-              className="object-cover"
+              className="object-cover transition-transform duration-[400ms] ease-[var(--ease-out-strong)] group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gray-50 text-gray-400">

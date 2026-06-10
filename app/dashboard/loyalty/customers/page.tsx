@@ -70,6 +70,7 @@ export default function CustomerListPage() {
         filters={FILTERS}
         activeFilter={filter}
         onFilterChange={setFilter}
+        allLabel="All Members"
       />
 
       <div className="mt-5">

@@ -1,12 +1,12 @@
 "use client";
 
-import { ArrowRight, CheckCircle, KeyRound, Mail } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import {
   AuthCard,
-  AuthLink,
   AuthNotice,
+  AuthPromoCard,
   PasswordField,
 } from "@/components/auth/AuthCard";
 import {
@@ -72,13 +72,14 @@ function ResetPasswordContent() {
   if (hasToken) {
     return (
       <AuthCard
-        eyebrow="Reset password"
-        title="Choose a new password"
+        title="New password"
         description="Enter a new password for your Moji owner account."
         footer={
-          <p className="text-center text-sm text-gray-500">
-            Remembered it? <AuthLink href="/login">Sign in</AuthLink>
-          </p>
+          <AuthPromoCard
+            href="/login"
+            title="Remembered it?"
+            subtitle="Sign in to your account"
+          />
         }
       >
         <form onSubmit={handleReset} className="space-y-4">
@@ -105,15 +106,7 @@ function ResetPasswordContent() {
           />
 
           <DashboardButton type="submit" fullWidth disabled={loading}>
-            {loading ? (
-              "Updating password..."
-            ) : (
-              <>
-                <KeyRound size={16} />
-                Update password
-                <ArrowRight size={16} />
-              </>
-            )}
+            {loading ? "Updating password..." : "Update password"}
           </DashboardButton>
         </form>
       </AuthCard>
@@ -122,27 +115,29 @@ function ResetPasswordContent() {
 
   return (
     <AuthCard
-      eyebrow="Account recovery"
-      title={sent ? "Reset link sent" : "Reset your password"}
+      title={sent ? "Link sent" : "Recovery"}
       description={
         sent
           ? "Use the link in your inbox to choose a new password."
           : "Enter your owner email and we will send a secure reset link."
       }
       footer={
-        <p className="text-center text-sm text-gray-500">
-          Back to <AuthLink href="/login">sign in</AuthLink>
-        </p>
+        <AuthPromoCard
+          href="/login"
+          title="Back to login?"
+          subtitle="Sign in to your account"
+        />
       }
     >
       {sent ? (
-        <div className="space-y-5 text-center">
+        <div className="space-y-5">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-green-100 bg-green-50 text-green-600">
             <CheckCircle size={28} />
           </div>
           <AuthNotice tone="success" title="Check your inbox">
-            A mocked reset link has been sent to {email}. In production this
-            would come from the authentication provider.
+            A mocked reset link has been sent to {email}. For testing purposes,
+            you can manually navigate to `/reset-password?token=mock` to test
+            the reset page.
           </AuthNotice>
           <DashboardButton
             type="button"
@@ -170,18 +165,12 @@ function ResetPasswordContent() {
               placeholder="owner@restaurant.com"
               autoComplete="email"
               required
+              className="h-11 rounded-xl"
             />
           </DashboardField>
 
           <DashboardButton type="submit" fullWidth disabled={loading}>
-            {loading ? (
-              "Sending link..."
-            ) : (
-              <>
-                <Mail size={16} />
-                Send reset link
-              </>
-            )}
+            {loading ? "Sending link..." : "Send reset link"}
           </DashboardButton>
         </form>
       )}

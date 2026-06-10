@@ -1,5 +1,6 @@
 "use client";
 
+import { CaretDown } from "@phosphor-icons/react";
 import * as React from "react";
 import { ds } from "@/components/dashboard/ui/dashboard-tokens";
 import { cn } from "@/lib/utils";
@@ -64,8 +65,23 @@ export const DashboardTextarea = React.forwardRef<
 export const DashboardSelect = React.forwardRef<
   HTMLSelectElement,
   React.SelectHTMLAttributes<HTMLSelectElement>
->(function DashboardSelect({ className, ...props }, ref) {
+>(function DashboardSelect({ className, children, ...props }, ref) {
   return (
-    <select ref={ref} className={cn(ds.input.select, className)} {...props} />
+    <div className="relative w-full">
+      <select
+        ref={ref}
+        className={cn(
+          ds.input.select,
+          "appearance-none pr-10 pl-3 cursor-pointer",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400">
+        <CaretDown size={14} weight="bold" />
+      </div>
+    </div>
   );
 });

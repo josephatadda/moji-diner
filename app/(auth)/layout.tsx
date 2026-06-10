@@ -1,73 +1,97 @@
-export const metadata = { title: "Welcome to Moji" };
+"use client";
+
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto grid min-h-screen w-full max-w-6xl grid-cols-1 lg:grid-cols-[0.95fr_1.05fr]">
-        <aside className="hidden border-r border-gray-100 bg-white px-10 py-10 lg:flex lg:flex-col">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-sm font-bold text-white">
-              M
+  const pathname = usePathname() || "";
+
+  // Detect verification page
+  const isVerifyPage = pathname.includes("verify-email");
+
+  // 1. Uber-style centered framed card for Verification page
+  if (isVerifyPage) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6 gap-4">
+        <div className="w-full max-w-[480px] bg-white border border-gray-100 rounded-3xl flex flex-col justify-between p-8 sm:p-12 min-h-[460px] flex-none">
+          {/* Top Logo */}
+          <div className="flex items-center gap-2 mb-6 flex-none">
+            <div className="relative flex items-center justify-center w-6 h-6">
+              <div className="absolute top-0 left-2 w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+              <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500"></div>
+              <div className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+              <div className="absolute bottom-0 left-2 w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+              <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+              <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-gray-900">Moji</p>
-              <p className="text-xs text-gray-400">Restaurant control panel</p>
-            </div>
+            <p className="text-sm font-black tracking-tight text-gray-900">moji</p>
           </div>
 
-          <div className="mt-auto space-y-8">
-            <div>
-              <p className="text-4xl font-bold tracking-tight text-gray-900">
-                Run the floor, menu, and payments from one place.
-              </p>
-              <p className="mt-4 max-w-md text-sm leading-6 text-gray-500">
-                Start with menu management, then enable orders, tables, loyalty,
-                analytics, staff, and payments when your restaurant is ready.
-              </p>
-            </div>
-
-            <div className="grid gap-3">
-              {[
-                ["Menu-first setup", "Publish and update diner-facing items."],
-                ["Optional modules", "Switch features on as operations grow."],
-                [
-                  "Local dashboard preview",
-                  "Review changes before diners see them.",
-                ],
-              ].map(([title, body]) => (
-                <div
-                  key={title}
-                  className="rounded-2xl border border-gray-100 bg-gray-50 p-4"
-                >
-                  <p className="text-sm font-semibold text-gray-900">{title}</p>
-                  <p className="mt-1 text-xs leading-5 text-gray-500">{body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        <main className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6">
-          <div className="w-full max-w-[440px]">
-            <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-sm font-bold text-white">
-                M
-              </div>
-              <div>
-                <p className="text-sm font-bold text-gray-900">Moji</p>
-                <p className="text-xs text-gray-400">
-                  Restaurant control panel
-                </p>
-              </div>
-            </div>
+          {/* Verification Code Form */}
+          <main className="flex-grow flex flex-col justify-center">
             {children}
-          </div>
-        </main>
+          </main>
+        </div>
+
+        {/* Footer outside the card */}
+        <footer className="text-center text-[11px] text-gray-400 flex justify-center gap-6 py-2 flex-none">
+          <span>&copy; {new Date().getFullYear()} Moji Inc.</span>
+          <Link href="#" className="hover:text-gray-600 transition-colors">Terms of Use</Link>
+          <Link href="#" className="hover:text-gray-600 transition-colors">Privacy Policy</Link>
+        </footer>
       </div>
+    );
+  }
+
+  // 2. Intercom-style split layout floating inside a framed card
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 lg:p-8 gap-4">
+      <div className="w-full max-w-[1200px] bg-white border border-gray-100 rounded-3xl overflow-hidden flex items-stretch min-h-[75vh] lg:min-h-[80vh] flex-none">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2">
+          {/* Left Side: Form Panel */}
+          <aside className="flex flex-col justify-between py-12 px-8 sm:px-12 xl:px-16 min-h-full">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex items-center justify-center w-6 h-6">
+                <div className="absolute top-0 left-2 w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                <div className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                <div className="absolute bottom-0 left-2 w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
+              </div>
+              <p className="text-sm font-black tracking-tight text-gray-900">moji</p>
+            </div>
+
+            {/* Form */}
+            <main className="my-auto py-8">
+              <div className="max-w-[380px] mx-auto w-full">
+                {children}
+              </div>
+            </main>
+          </aside>
+
+          {/* Right Side: Image Showcase Panel */}
+          <section 
+            className="hidden lg:block relative bg-cover bg-center"
+            style={{ backgroundImage: "url('/restaurant_art.png')" }}
+          >
+            {/* Subtle overlay to keep contrast */}
+            <div className="absolute inset-0 bg-black/10"></div>
+          </section>
+        </div>
+      </div>
+
+      {/* Footer outside the card */}
+      <footer className="text-center text-[11px] text-gray-400 flex justify-center gap-6 py-2 flex-none">
+        <span>&copy; {new Date().getFullYear()} Moji Inc.</span>
+        <Link href="#" className="hover:text-gray-600 transition-colors">Terms of Use</Link>
+        <Link href="#" className="hover:text-gray-600 transition-colors">Privacy Policy</Link>
+      </footer>
     </div>
   );
 }

@@ -25,6 +25,8 @@ export function OrderCard({ order }: { order: Order }) {
         return "Mark Ready";
       case "ready":
         return "Mark Served";
+      case "served":
+        return "Mark as Paid";
       default:
         return "";
     }
@@ -38,6 +40,8 @@ export function OrderCard({ order }: { order: Order }) {
         return "ready";
       case "ready":
         return "served";
+      case "served":
+        return "paid";
       default:
         return null;
     }
@@ -141,7 +145,7 @@ export function OrderCard({ order }: { order: Order }) {
                 `Order moved to ${statusLabel[nextStatus].toLowerCase()}`,
               );
             }}
-            className="w-full py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-700 active:scale-[0.97] transition-all ease-out"
+            className="w-full py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-700 active:scale-[0.97] transition-all ease-out cursor-pointer"
           >
             {getNextStatusText(order.status)}
           </button>

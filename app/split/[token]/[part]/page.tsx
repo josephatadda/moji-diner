@@ -13,10 +13,10 @@ export default async function SplitPage({ params }: Props) {
   const partNum = Number(part);
 
   // These would come from DB in prod; mocked here
-  const totalParts   = 4;
-  const amount       = 3200;
+  const totalParts = 4;
+  const amount = 3200;
   const restaurantName = "Mama Put Kitchen";
-  const tableNumber  = 5;
+  const tableNumber = 5;
 
   return (
     <SplitPartPage

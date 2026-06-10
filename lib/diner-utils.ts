@@ -1,5 +1,5 @@
-import type { CartItem, OrderBatch } from "@/store/cart";
 import type { ModifierOption } from "@/lib/mockData";
+import type { CartItem, OrderBatch } from "@/store/cart";
 
 export function groupSessionItems(batches: OrderBatch[]): CartItem[] {
   const allItems = batches.flatMap((b) => b.items);

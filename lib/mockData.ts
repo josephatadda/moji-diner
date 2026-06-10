@@ -1,7 +1,14 @@
 // Mock data for Moji (ScanServe) frontend prototype
 // Replace with real Supabase queries when backend is wired up
 
-export type Tag = "Spicy" | "Vegetarian" | "Vegan" | "Gluten-Free" | "Bestseller" | "New" | "Chef's Special";
+export type Tag =
+  | "Spicy"
+  | "Vegetarian"
+  | "Vegan"
+  | "Gluten-Free"
+  | "Bestseller"
+  | "New"
+  | "Chef's Special";
 export type Allergen = "Nuts" | "Dairy" | "Gluten" | "Eggs" | "Fish";
 
 export interface ModifierOption {
@@ -69,7 +76,12 @@ export interface RestaurantTable {
   status: "available" | "occupied" | "awaiting_payment";
 }
 
-export type OrderStatus = "pending" | "in_kitchen" | "ready" | "served" | "paid";
+export type OrderStatus =
+  | "pending"
+  | "in_kitchen"
+  | "ready"
+  | "served"
+  | "paid";
 
 export interface OrderItem {
   id: string;
@@ -113,7 +125,8 @@ export const MOCK_RESTAURANT: Restaurant = {
   id: "rest-001",
   name: "Mama Put Kitchen",
   slug: "mama-put-kitchen",
-  description: "Authentic Nigerian street food — fresh, flavourful, unforgettable.",
+  description:
+    "Authentic Nigerian street food — fresh, flavourful, unforgettable.",
   logoUrl: undefined,
   coverImageUrl: undefined,
   isAcceptingOrders: true,
@@ -130,7 +143,8 @@ export const MOCK_RESTAURANTS: Restaurant[] = [
     id: "rest-001",
     name: "Mama Put Kitchen",
     slug: "mama-put-kitchen",
-    description: "Authentic Nigerian street food — fresh, flavourful, unforgettable.",
+    description:
+      "Authentic Nigerian street food — fresh, flavourful, unforgettable.",
     isAcceptingOrders: true,
     currency: "NGN",
     vatEnabled: true,
@@ -162,12 +176,54 @@ export const MOCK_USER = {
 
 // ─── Tables ───────────────────────────────────────────────────────────────────
 export const MOCK_TABLES: RestaurantTable[] = [
-  { id: "tbl-01", restaurantId: "rest-001", tableNumber: 1, label: "Table 1", capacity: 4, status: "occupied" },
-  { id: "tbl-02", restaurantId: "rest-001", tableNumber: 2, label: "Table 2", capacity: 2, status: "available" },
-  { id: "tbl-03", restaurantId: "rest-001", tableNumber: 3, label: "Table 3", capacity: 6, status: "awaiting_payment" },
-  { id: "tbl-04", restaurantId: "rest-001", tableNumber: 4, label: "Table 4", capacity: 4, status: "available" },
-  { id: "tbl-05", restaurantId: "rest-001", tableNumber: 5, label: "Table 5", capacity: 8, status: "occupied" },
-  { id: "tbl-06", restaurantId: "rest-001", tableNumber: 6, label: "VIP Booth", capacity: 10, status: "available" },
+  {
+    id: "tbl-01",
+    restaurantId: "rest-001",
+    tableNumber: 1,
+    label: "Table 1",
+    capacity: 4,
+    status: "occupied",
+  },
+  {
+    id: "tbl-02",
+    restaurantId: "rest-001",
+    tableNumber: 2,
+    label: "Table 2",
+    capacity: 2,
+    status: "available",
+  },
+  {
+    id: "tbl-03",
+    restaurantId: "rest-001",
+    tableNumber: 3,
+    label: "Table 3",
+    capacity: 6,
+    status: "awaiting_payment",
+  },
+  {
+    id: "tbl-04",
+    restaurantId: "rest-001",
+    tableNumber: 4,
+    label: "Table 4",
+    capacity: 4,
+    status: "available",
+  },
+  {
+    id: "tbl-05",
+    restaurantId: "rest-001",
+    tableNumber: 5,
+    label: "Table 5",
+    capacity: 8,
+    status: "occupied",
+  },
+  {
+    id: "tbl-06",
+    restaurantId: "rest-001",
+    tableNumber: 6,
+    label: "VIP Booth",
+    capacity: 10,
+    status: "available",
+  },
 ];
 
 // ─── Menu ─────────────────────────────────────────────────────────────────────
@@ -183,7 +239,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-001",
         categoryId: "cat-001",
         name: "Peppered Snail",
-        description: "Juicy garden snails stir-fried with scotch bonnet, bell peppers and onions.",
+        description:
+          "Juicy garden snails stir-fried with scotch bonnet, bell peppers and onions.",
         price: 3500,
         isAvailable: true,
         isFeatured: true,
@@ -210,7 +267,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-002",
         categoryId: "cat-001",
         name: "Suya Skewers (x3)",
-        description: "Grilled beef skewers coated in house-blend suya spice. Served with fresh sliced onion and tomatoes.",
+        description:
+          "Grilled beef skewers coated in house-blend suya spice. Served with fresh sliced onion and tomatoes.",
         price: 2800,
         isAvailable: true,
         isFeatured: false,
@@ -224,7 +282,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-003",
         categoryId: "cat-001",
         name: "Moin Moin (2 wraps)",
-        description: "Steamed bean pudding made with blended black-eyed peas, peppers and palm oil.",
+        description:
+          "Steamed bean pudding made with blended black-eyed peas, peppers and palm oil.",
         price: 1500,
         isAvailable: false,
         isFeatured: false,
@@ -247,7 +306,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-004",
         categoryId: "cat-002",
         name: "Jollof Rice + Chicken",
-        description: "Party-style smoky jollof rice served with a full grilled chicken leg-quarter and coleslaw.",
+        description:
+          "Party-style smoky jollof rice served with a full grilled chicken leg-quarter and coleslaw.",
         price: 5500,
         isAvailable: true,
         isFeatured: true,
@@ -286,7 +346,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-005",
         categoryId: "cat-002",
         name: "Egusi Soup + Eba",
-        description: "Rich melon seed soup with chunks of beef, stockfish and uziza leaves. Served with eba.",
+        description:
+          "Rich melon seed soup with chunks of beef, stockfish and uziza leaves. Served with eba.",
         price: 4800,
         isAvailable: true,
         isFeatured: false,
@@ -314,7 +375,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-006",
         categoryId: "cat-002",
         name: "Grilled Catfish",
-        description: "Whole catfish marinated in a blend of spices, grilled to perfection. Served with yam or plantain.",
+        description:
+          "Whole catfish marinated in a blend of spices, grilled to perfection. Served with yam or plantain.",
         price: 8500,
         isAvailable: true,
         isFeatured: false,
@@ -328,7 +390,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-007",
         categoryId: "cat-002",
         name: "Vegetable Fried Rice",
-        description: "Long-grain rice stir-fried with seasonal vegetables, eggs and soy sauce.",
+        description:
+          "Long-grain rice stir-fried with seasonal vegetables, eggs and soy sauce.",
         price: 3500,
         isAvailable: true,
         isFeatured: false,
@@ -351,7 +414,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-008",
         categoryId: "cat-003",
         name: "Chapman",
-        description: "Nigerian classic cocktail made with Fanta, Sprite, Ribena, cucumber and a dash of grenadine.",
+        description:
+          "Nigerian classic cocktail made with Fanta, Sprite, Ribena, cucumber and a dash of grenadine.",
         price: 1800,
         isAvailable: true,
         isFeatured: false,
@@ -365,7 +429,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-009",
         categoryId: "cat-003",
         name: "Zobo Juice (500ml)",
-        description: "House-made hibiscus drink with ginger, pineapple and cloves. Served chilled.",
+        description:
+          "House-made hibiscus drink with ginger, pineapple and cloves. Served chilled.",
         price: 1200,
         isAvailable: true,
         isFeatured: false,
@@ -416,7 +481,8 @@ export const MOCK_MENU: MenuCategory[] = [
         id: "item-011",
         categoryId: "cat-004",
         name: "Puff Puff (x6)",
-        description: "Golden deep-fried dough balls, lightly dusted with sugar. A Nigerian favourite.",
+        description:
+          "Golden deep-fried dough balls, lightly dusted with sugar. A Nigerian favourite.",
         price: 1000,
         isAvailable: true,
         isFeatured: false,
@@ -636,7 +702,6 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
     createdAt: new Date(Date.now() - 1000 * 60 * 120),
   },
 ];
-
 
 // ─── Loyalty ──────────────────────────────────────────────────────────────────
 export interface LoyaltyReward {

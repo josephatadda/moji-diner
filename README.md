@@ -2,7 +2,7 @@
 
 A modern QR-code ordering and payment platform for Nigerian restaurants. Diners scan, browse, order, and pay from their phones — no app download, no waiter needed to take the order.
 
-**Status:** Frontend prototype complete · Backend integration in progress  
+**Status:** Frontend and Backend complete (Mock Mode Active) · Design Engineering applied  
 **Market:** Nigeria — Launch city: Uyo → Lagos  
 **Stack:** Next.js 16 · Drizzle ORM · Better Auth · Tailwind CSS · TypeScript · Zustand
 

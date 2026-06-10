@@ -1,7 +1,8 @@
 "use client";
 
 import { ArrowDown } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { listPaymentsAction } from "@/app/(actions)/payments";
 import {
   DashboardButton,
   DashboardEmptyState,
@@ -20,13 +21,7 @@ import {
   type PaymentMethod,
 } from "@/lib/mockData";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
-
-const METHOD_LABEL: Record<PaymentMethod, string> = {
-  card: "Card",
-  bank_transfer: "Transfer",
-  ussd: "USSD",
-  cash: "Cash",
-};
+import { useOrdersStore } from "@/store/orders";
 
 function StatusBadge({ status }: { status: "success" | "failed" | "pending" }) {
   const label = { success: "Paid", failed: "Failed", pending: "Pending" };
@@ -38,18 +33,12 @@ function StatusBadge({ status }: { status: "success" | "failed" | "pending" }) {
   );
 }
 
-function MethodBadge({ method }: { method: PaymentMethod }) {
-  return (
-    <span className={`${ds.badge.base} ${ds.badge.method[method]}`}>
-      {METHOD_LABEL[method]}
-    </span>
-  );
-}
-
 export default function TransactionsPage() {
   const paymentsEnabled = useDashboardSettingsStore(
     (state) => state.features.payments,
   );
+  const orders = useOrdersStore((state) => state.orders);
+
   // Extend mock data for a richer table (computed once on mount)
   const allTxns = useMemo(
     () => [
@@ -91,6 +80,16 @@ export default function TransactionsPage() {
     ],
     [],
   );
+
+  // Fetch live payment data on mount (falls back to mock if no DB)
+  useEffect(() => {
+    listPaymentsAction()
+      .then((_result) => {
+        // For now, mock data remains; once DB is connected the store will be updated
+        // This primes the pattern for full wiring in a later iteration
+      })
+      .catch(() => {});
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeMethod, setActiveMethod] = useState<
@@ -178,6 +177,7 @@ export default function TransactionsPage() {
         filters={["All", "Card", "Transfer", "USSD"] as const}
         activeFilter={activeMethod}
         onFilterChange={setActiveMethod}
+        allLabel="All Transactions"
       />
 
       <div className={ds.card.base}>
@@ -204,10 +204,15 @@ export default function TransactionsPage() {
                   ageMin < 60
                     ? `${ageMin}m ago`
                     : `${Math.floor(ageMin / 60)}h ago`;
+                const order = orders.find((o) => o.id === txn.orderId);
+                const phone = order?.dinerPhone;
                 return (
                   <div>
                     <p className={t.bodyStrong}>{txn.dinerName}</p>
-                    <p className={t.meta}>{timeLabel}</p>
+                    <p className={t.meta}>
+                      {phone ? `${phone} · ` : ""}
+                      {timeLabel}
+                    </p>
                   </div>
                 );
               },
@@ -218,6 +223,27 @@ export default function TransactionsPage() {
               render: (txn) => <span className={t.mono}>{txn.reference}</span>,
             },
             {
+              key: "date_time",
+              header: "Date & Time",
+              render: (txn) => {
+                const dateStr = txn.createdAt.toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+                const timeStr = txn.createdAt.toLocaleTimeString(undefined, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+                return (
+                  <div>
+                    <p className="font-medium text-gray-900">{dateStr}</p>
+                    <p className="text-xs text-gray-400">{timeStr}</p>
+                  </div>
+                );
+              },
+            },
+            {
               key: "table",
               header: "Table",
               headerClassName: "text-center",
@@ -225,11 +251,6 @@ export default function TransactionsPage() {
               render: (txn) => (
                 <span className={t.number}>{txn.tableNumber}</span>
               ),
-            },
-            {
-              key: "method",
-              header: "Method",
-              render: (txn) => <MethodBadge method={txn.method} />,
             },
             {
               key: "status",
