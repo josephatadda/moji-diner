@@ -29,8 +29,8 @@ export default function OnboardingLayout({
     },
     {
       id: 2,
-      name: "Dining Tables",
-      description: "Tables count & QR layout",
+      name: "Menu QR & PDF",
+      description: "PDF template & menu QR",
       active: isStep2,
       completed: false,
       path: "/onboarding/step-2",
