@@ -4,7 +4,7 @@ Moji's diner typography uses expressive serif type only where it adds warmth wit
 
 ## Font Roles
 
-- Instrument Serif: display and expressive heading moments, using medium or semibold weight depending on hierarchy.
+- Georgia: display and expressive heading moments, using medium or semibold weight depending on hierarchy.
 - Geist Sans: body copy, labels, controls, inputs, buttons, badges, prices, totals, and operational UI.
 - Geist Mono: short references, transaction codes, PINs, and technical snippets only.
 
@@ -14,15 +14,15 @@ Use `Group/Size` or `Group/Role`.
 
 ### Display
 
-- `Display/2XL`: 36px / 112%, Instrument Serif, medium. Rare diner brand or celebration moments.
-- `Display/XL`: 32px / 115%, Instrument Serif, medium. Roomy empty-state or overview titles.
-- `Display/L`: 28px / 120%, Instrument Serif, medium. Success, receipt, or large sheet titles.
+- `Display/2XL`: 36px / 112%, Georgia, medium. Rare diner brand or celebration moments.
+- `Display/XL`: 32px / 115%, Georgia, medium. Roomy empty-state or overview titles.
+- `Display/L`: 28px / 120%, Georgia, medium. Success, receipt, or large sheet titles.
 
 ### Heading
 
-- `Heading/L`: 24px / 125%, Instrument Serif, semibold. Item detail sheet and confirmation titles.
-- `Heading/M`: 22px / 127%, Instrument Serif, medium. Page headers and major sections.
-- `Heading/S`: 18px / 130%, Instrument Serif, medium. Lower-emphasis section headings inside diner flows.
+- `Heading/L`: 24px / 125%, Georgia, semibold. Item detail sheet and confirmation titles.
+- `Heading/M`: 22px / 127%, Georgia, medium. Page headers and major sections.
+- `Heading/S`: 18px / 130%, Georgia, medium. Lower-emphasis section headings inside diner flows.
 - `Heading/XS`: 15px / 130%, Geist Sans, semibold. Item names and compact card titles.
 
 `Heading/XS` stays sans because repeated cards need tighter alignment and faster scanning.

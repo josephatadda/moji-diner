@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,10 +18,31 @@ const geistMono = Geist_Mono({
   weight: ["400", "500"],
 });
 
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
+const georgiaDisplay = localFont({
+  src: [
+    {
+      path: "../public/fonts/georgia/georgia.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/georgia/georgiab.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/georgia/georgiai.ttf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/georgia/georgiaz.ttf",
+      weight: "700",
+      style: "italic",
+    },
+  ],
   variable: "--font-display",
-  weight: ["400"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -47,7 +69,7 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${georgiaDisplay.variable}`}
     >
       <body className="antialiased bg-background text-foreground font-sans">
         <ThemeProvider

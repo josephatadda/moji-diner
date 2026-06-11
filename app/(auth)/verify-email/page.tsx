@@ -3,7 +3,7 @@
 import { RefreshCw } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { AuthCard, AuthNotice } from "@/components/auth/AuthCard";
+import { AuthCard, AuthLink, AuthNotice } from "@/components/auth/AuthCard";
 import {
   DashboardButton,
   DashboardField,
@@ -67,6 +67,7 @@ function VerifyEmailContent() {
 
   return (
     <AuthCard
+      compact
       title="Verify your account"
       description={`Enter the 6-digit code sent to ${email} to activate your restaurant workspace.`}
     >
@@ -98,7 +99,7 @@ function VerifyEmailContent() {
             inputMode="numeric"
             pattern="[0-9]*"
             required
-            className="text-center font-mono text-xl tracking-[0.25em] h-12 rounded-xl"
+            className="h-12 rounded-xl text-center font-mono text-xl tracking-[0.25em]"
           />
         </DashboardField>
 
@@ -117,15 +118,14 @@ function VerifyEmailContent() {
         </div>
 
         <div className="text-center">
-          <button
-            type="button"
+          <AuthLink
             onClick={handleResend}
             disabled={loading}
-            className="text-xs text-gray-400 hover:text-gray-950 transition-colors inline-flex items-center gap-1.5 font-medium underline underline-offset-4"
+            className="gap-1.5 text-xs text-gray-400 hover:text-gray-950"
           >
             <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
             <span>Resend verification code</span>
-          </button>
+          </AuthLink>
         </div>
       </form>
     </AuthCard>

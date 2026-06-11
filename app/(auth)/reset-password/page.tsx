@@ -82,7 +82,7 @@ function ResetPasswordContent() {
           />
         }
       >
-        <form onSubmit={handleReset} className="space-y-4">
+        <form onSubmit={handleReset} className="space-y-5">
           {error ? (
             <AuthNotice tone="error" title="Could not update password">
               {error}
@@ -149,7 +149,7 @@ function ResetPasswordContent() {
           </DashboardButton>
         </div>
       ) : (
-        <form onSubmit={handleRequest} className="space-y-4">
+        <form onSubmit={handleRequest} className="space-y-5">
           {error ? (
             <AuthNotice tone="error" title="Check the email">
               {error}

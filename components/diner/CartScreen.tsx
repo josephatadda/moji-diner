@@ -75,8 +75,7 @@ export function CartScreen({
       (sum, b) =>
         sum +
         b.items.reduce(
-          (s, i) =>
-            s + (i.lineTotal ?? (i.itemPrice ?? 0) * (i.quantity ?? 1) ?? 0),
+          (s, i) => s + (i.lineTotal ?? (i.itemPrice ?? 0) * (i.quantity ?? 1)),
           0,
         ),
       0,
@@ -103,8 +102,7 @@ export function CartScreen({
             const groupedItems = groupSessionItems([batch]);
             const batchTotal = batch.items.reduce(
               (sum, i) =>
-                sum +
-                (i.lineTotal ?? (i.itemPrice ?? 0) * (i.quantity ?? 1) ?? 0),
+                sum + (i.lineTotal ?? (i.itemPrice ?? 0) * (i.quantity ?? 1)),
               0,
             );
             const batchItemCount = batch.items.reduce(

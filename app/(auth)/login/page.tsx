@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   AuthCard,
+  AuthDivider,
   AuthLink,
   AuthNotice,
+  AuthSwitchActions,
   PasswordField,
 } from "@/components/auth/AuthCard";
 import {
@@ -49,7 +50,7 @@ export default function LoginPage() {
     <div className="space-y-6">
       <AuthCard
         title="Log in"
-        description="Access your restaurant dashboard, manage tables, and keep operations in sync."
+        description="Access your restaurant dashboard, update your menu, and keep operations in sync."
       >
         <form onSubmit={handleLogin} className="space-y-6">
           {error && (
@@ -90,14 +91,7 @@ export default function LoginPage() {
             {loading ? "Logging in..." : "Log in"}
           </DashboardButton>
 
-          {/* Divider */}
-          <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-gray-100"></div>
-            <span className="flex-shrink mx-4 text-[10px] uppercase font-bold tracking-wider text-gray-400">
-              or
-            </span>
-            <div className="flex-grow border-t border-gray-100"></div>
-          </div>
+          <AuthDivider />
 
           {/* Google Button - Using standard DashboardButton */}
           <DashboardButton variant="ghost" fullWidth>
@@ -130,25 +124,14 @@ export default function LoginPage() {
         </form>
       </AuthCard>
 
-      <div className="text-center space-y-2">
-        <p className="text-xs text-gray-400">
-          New to Moji?{" "}
-          <Link
-            href="/signup"
-            className="text-orange-500 font-semibold hover:text-orange-600 transition-colors"
-          >
-            Create an account
-          </Link>
-        </p>
-        <div>
-          <Link
-            href="/staff-login"
-            className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2"
-          >
-            Are you restaurant staff? Log in here
-          </Link>
-        </div>
-      </div>
+      <AuthSwitchActions
+        cardHref="/signup"
+        cardTitle="New to Moji?"
+        cardSubtitle="Create restaurant account"
+        linkHref="/staff-login"
+        linkLabel="Restaurant staff login"
+        linkPrefix="Are you staff?"
+      />
     </div>
   );
 }

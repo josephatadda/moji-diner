@@ -36,6 +36,8 @@ export function ItemCard(props: ItemCardProps) {
   const mods = hasModifiers(item.selectedModifiers)
     ? formatModifiers(item.selectedModifiers)
     : null;
+  const lineTotal =
+    item.lineTotal ?? (item.itemPrice ?? 0) * (item.quantity ?? 1);
 
   if (variant === "order") {
     return (
@@ -65,12 +67,7 @@ export function ItemCard(props: ItemCardProps) {
           )}
         </div>
         <span className={cn(DINER.price, "ml-3 flex-none")}>
-          ₦
-          {(
-            item.lineTotal ??
-            (item.itemPrice ?? 0) * (item.quantity ?? 1) ??
-            0
-          ).toLocaleString()}
+          ₦{lineTotal.toLocaleString()}
         </span>
       </div>
     );
@@ -113,12 +110,7 @@ export function ItemCard(props: ItemCardProps) {
             {item.quantity}× {item.itemName}
           </p>
           <p className={cn(DINER.price, "mt-0.5")}>
-            ₦
-            {(
-              item.lineTotal ??
-              (item.itemPrice ?? 0) * (item.quantity ?? 1) ??
-              0
-            ).toLocaleString()}
+            ₦{lineTotal.toLocaleString()}
           </p>
         </div>
       </button>
@@ -149,14 +141,7 @@ export function ItemCard(props: ItemCardProps) {
             "{item.specialNote}"
           </p>
         )}
-        <p className={cn(DINER.price, "mt-1")}>
-          ₦
-          {(
-            item.lineTotal ??
-            (item.itemPrice ?? 0) * (item.quantity ?? 1) ??
-            0
-          ).toLocaleString()}
-        </p>
+        <p className={cn(DINER.price, "mt-1")}>₦{lineTotal.toLocaleString()}</p>
       </div>
       <div className="flex items-center gap-1.5 flex-none">
         <button

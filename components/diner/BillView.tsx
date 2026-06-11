@@ -92,8 +92,7 @@ export function BillView({
   const displayItems = groupSessionItems(sessionBatches);
   const subtotal = displayItems.reduce(
     (sum, item) =>
-      sum +
-      (item.lineTotal ?? (item.itemPrice ?? 0) * (item.quantity ?? 1) ?? 0),
+      sum + (item.lineTotal ?? (item.itemPrice ?? 0) * (item.quantity ?? 1)),
     0,
   );
   const tipPct = tipOption === -1 ? parseFloat(customTip) || 0 : tipOption;

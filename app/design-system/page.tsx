@@ -158,7 +158,7 @@ function TypographySpecimen() {
                       <span
                         className={cn(
                           "text-sm",
-                          style.fontFamily === "Instrument Serif" &&
+                          style.fontFamily === "Georgia" &&
                             "[font-family:var(--font-display)]",
                         )}
                       >
@@ -1004,7 +1004,7 @@ export default function DesignSystemPage() {
               {[
                 "Diner first",
                 "Border-first elevation",
-                "Instrument Serif headings",
+                "Georgia headings",
                 "Geist controls",
                 "Reusable sheets",
                 "Inputs documented",
@@ -1030,7 +1030,7 @@ export default function DesignSystemPage() {
             id="typography"
             eyebrow="02"
             title="Typography"
-            description="Semantic text styles grouped like a design tool. Display and heading styles use Instrument Serif; body, labels, controls, prices, and operations stay Geist Sans."
+            description="Semantic text styles grouped like a design tool. Display and heading styles use Georgia; body, labels, controls, prices, and operations stay Geist Sans."
           >
             <TypographySpecimen />
           </Section>

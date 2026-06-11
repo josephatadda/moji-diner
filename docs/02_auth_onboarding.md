@@ -1,7 +1,7 @@
 # 02 — Authentication & Restaurant Onboarding
 
 **Module:** 1 | **Depends on:** `01_data_models.md`  
-**Responsive:** See `00b_responsive_design_spec.md` — Auth pages use the centered card pattern. Onboarding wizard is single-column on mobile, 440px centered card on desktop.
+**Responsive:** See `00b_responsive_design_spec.md` — Auth pages use the centered card pattern. Onboarding wizard is single-column on mobile and a framed split setup panel on desktop.
 
 ---
 
@@ -63,45 +63,32 @@
   Fields:
     - Restaurant name (required)
       → Auto-generates slug preview: "mama-put-uyo"
-      → Checks slug uniqueness on blur
+      → Checks slug uniqueness while editing
     - City (required, default: Uyo)
     - Phone number (required, Nigerian format: +234XXXXXXXXXX)
-    - Instagram handle (optional, strip @ on input)
-    - Logo upload (optional, < 2MB, JPEG/PNG)
+    - Instagram handle (optional)
+    - Logo upload placeholder
+    - Primary cuisine / restaurant type
   [Next →]
         │
         ▼
-[/onboarding/step-2 — Payment Setup]
-  Fields:
-    - Paystack Public Key (pk_live_... or pk_test_...)
-    - Paystack Secret Key (sk_live_... or sk_test_...)
-  Actions:
-    - [Test Connection] button
-      → Calls POST /api/onboarding/test-paystack
-      → Success: green checkmark + "Keys verified ✓"
-      → Failure: red warning + "Could not verify keys. Check and try again."
-  Note shown: "Your secret key is encrypted and never shown again."
-  [Next →]  (disabled until connection verified)
-        │
-        ▼
-[/onboarding/step-3 — Set Up Tables]
-  Fields:
-    - "How many tables does your restaurant have?" [1–50 stepper]
+[/onboarding/step-2 — Menu Launch]
   Preview:
-    - Shows QR code preview for Table 1
-    - "You can rename tables and add more later"
+    - Shows public menu QR/link preview
+    - Lets owner choose a starting PDF menu template
+    - Payment integration and table setup are not required in this flow
   [Complete Setup →]
         │
         ▼
 [POST /api/onboarding/complete]
   Creates:
     - restaurants record
-    - restaurant_settings record (with Paystack keys)
-    - restaurant_tables records (table_number 1..N)
+    - restaurant_settings record
+    - default internal table payload required by current schema
         │
         ▼
 [Redirect to /dashboard]
-[Success toast: "You're live! Download your QR codes to get started."]
+[Success toast: "Restaurant set up successfully. Welcome to Moji."]
 ```
 
 ### 1.4 Staff PIN Login
@@ -178,15 +165,13 @@ app/
 │   │   └── page.tsx
 │   ├── step-2/
 │   │   └── page.tsx
-│   └── step-3/
-│       └── page.tsx
 │
 ├── api/
 │   ├── auth/
 │   │   └── staff-login/
 │   │       └── route.ts
 │   └── onboarding/
-│       ├── test-paystack/
+│       ├── check-slug/
 │       │   └── route.ts
 │       └── complete/
 │           └── route.ts
@@ -230,42 +215,21 @@ app/
 // 4. Track failed attempts in Redis or in-memory (5 attempts = 15min lockout)
 ```
 
-### POST `/api/onboarding/test-paystack`
-
-```typescript
-// Request
-{
-  public_key: string,
-  secret_key: string
-}
-
-// Response (success)
-{
-  data: { verified: true, business_name: string }
-}
-
-// Response (error)
-{ error: "Invalid Paystack keys", code: "INVALID_KEYS" }
-
-// Logic
-// Call Paystack GET /bank (lightweight endpoint) with secret key
-// Verify 200 response + business matches
-```
-
 ### POST `/api/onboarding/complete`
 
 ```typescript
 // Request (authenticated — owner JWT required)
 {
-  name: string,
-  slug: string,
-  city: string,
-  phone: string,
-  instagram_handle?: string,
-  logo_url?: string,
-  table_count: number,        // 1–50
-  paystack_public_key: string,
-  paystack_secret_key: string // will be encrypted before storage
+  profile: {
+    name: string,
+    slug: string,
+    phone: string,
+    cuisines: string[]
+  },
+  tables: {
+    tableCount: 1,            // internal default for current schema
+    templates: ["standard"]
+  }
 }
 
 // Response
@@ -279,16 +243,27 @@ app/
 
 // Logic
 // 1. Verify slug uniqueness
-// 2. Encrypt paystack_secret_key with AES-256 (use env ENCRYPTION_KEY)
-// 3. INSERT into restaurants
-// 4. INSERT into restaurant_settings (with encrypted key)
-// 5. INSERT into restaurant_tables (table_number 1..table_count)
-// 6. Return restaurant_id + slug
+// 2. INSERT into restaurants
+// 3. INSERT default restaurant settings
+// 4. Satisfy current default table schema internally
+// 5. Return restaurant_id + slug
 ```
 
 ---
 
 ## 4. Component Specs
+
+### Shared Auth & Setup Primitives
+
+- `MojiLogo` owns the auth/onboarding logo mark, size, and spacing.
+- `AuthCard`, `AuthNotice`, `AuthLink`, `AuthDivider`, `PasswordField`, and
+  `PinInput` are the approved auth surface primitives.
+- `SetupStepHeader`, `AuthSelectionCard`, and `SetupActionFooter` are the
+  approved onboarding/setup primitives.
+- Onboarding uses a fixed-height framed container: sidebar/header stay fixed,
+  step content scrolls, and the setup action footer remains visible.
+- Georgia is for expressive setup/auth titles only; labels, controls, helper
+  text, notices, and links remain Geist Sans.
 
 ### `<SlugInput />`
 
@@ -377,9 +352,8 @@ export const config = {
 - [ ] Signup → email verification → onboarding completes in under 10 minutes
 - [ ] Slug auto-generated from restaurant name (lowercase, hyphens, unique)
 - [ ] Slug uniqueness checked live with debounce on input
-- [ ] Paystack test connection verifies both keys before allowing progression to step 3
-- [ ] Secret key never returned to client after initial save
-- [ ] Tables auto-created with sequential numbers 1..N on setup completion
+- [ ] Payment integration is not requested during current onboarding
+- [ ] Table setup is not requested during current onboarding
 - [ ] Staff PIN login works without email/password (4-digit numeric only)
 - [ ] Staff login rate-limited: 5 failed attempts = 15 minute lockout
 - [ ] Owner redirected to dashboard with empty-state onboarding prompts on first login

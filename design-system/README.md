@@ -9,7 +9,7 @@ The live review surface is available at `/design-system`.
 - Extract standards from real Moji UI before inventing future-module rules.
 - Keep the diner experience mobile-first, touch-friendly, compact, and calm.
 - Use a border-first visual structure: cards rely on borders, surface contrast, radius, and spacing before shadows.
-- Use Instrument Serif for diner display and heading moments only.
+- Use Georgia for diner display and heading moments only.
 - Use Geist Sans for body copy, labels, inputs, controls, prices, totals, and operational text.
 - Route live diner UI through `DINER` and shared diner tokens rather than scattering raw Tailwind values.
 - Document new visual decisions before migrating product UI to them.

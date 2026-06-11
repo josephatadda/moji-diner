@@ -33,7 +33,7 @@ in the system, not one-offs:
 - **Neutral scale:** GRAY (foundation `gray.50–950`). No `zinc`.
 - **Controls/cards:** `rounded-xl` (radius-12) / `rounded-2xl` (radius-16). Diner
   keeps `rounded-full` pills.
-- **Type:** Geist Sans only. Instrument Serif stays scoped to diner display.
+- **Type:** Geist Sans only. Georgia stays scoped to diner display.
 - **Elevation:** border-first; shadows only on floating layers.
 - **Layout:** content max width 1200px (`layout/dashboard-content-max`).
 - **Primary action:** `gray-900`, never orange. Orange is brand accent only.
@@ -95,7 +95,7 @@ version of the same screen.
 | 8 | Loyalty (overview, customers, rewards, settings) | in progress |
 | 9 | Analytics (charts + metric cards) | in progress |
 | 10 | Staff | in progress |
-| 11 | Cross-cutting QA + responsive sweep | pending |
+| 11 | Cross-cutting QA + responsive sweep | in progress |
 
 ## Phase notes
 
@@ -146,6 +146,20 @@ version of the same screen.
 - Staff now uses the shared table/status/confirm primitives for active staff and
   deactivation.
 - Analytics now uses the shared page header/button pattern and export feedback.
+
+### QA stabilization notes — Jun 11, 2026
+
+- Local dependency install restored the dashboard menu PDF export dependency
+  (`jspdf`) that was declared in package files but missing from `node_modules`.
+- Route smoke checks confirmed no missing-module/build overlay across auth,
+  onboarding, dashboard core routes, and the diner menu.
+- TypeScript now passes after narrowing the diner total fallback expressions.
+- Remaining QA caveats are environment-related: `DATABASE_URL` is absent for
+  production build gating and `BETTER_AUTH_SECRET` is absent for server-action
+  backed dashboard data during local preview.
+- The PDF export modal opens and templates render; actual download save cannot be
+  verified in the Codex in-app browser because that browser surface does not
+  support downloads.
 
 ## Per-module loop
 

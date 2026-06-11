@@ -74,7 +74,7 @@ export default function StaffLoginPage() {
         />
       }
     >
-      <form onSubmit={handleLogin} className="space-y-4">
+      <form onSubmit={handleLogin} className="space-y-5">
         {error ? (
           <AuthNotice tone="error" title="Could not verify PIN">
             {error}
@@ -103,8 +103,10 @@ export default function StaffLoginPage() {
         </DashboardField>
 
         {restaurantName ? (
-          <div className="flex items-center gap-3 rounded-xl border border-green-100 bg-green-50 p-3 text-green-700">
-            <BadgeCheck size={18} />
+          <div className="flex items-center gap-3 rounded-2xl border border-green-100 bg-green-50 p-3.5 text-green-700">
+            <div className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-green-100">
+              <BadgeCheck size={18} />
+            </div>
             <div>
               <p className="text-sm font-semibold">{restaurantName}</p>
               <p className="text-xs">Workspace found</p>

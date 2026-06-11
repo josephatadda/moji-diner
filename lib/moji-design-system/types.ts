@@ -34,7 +34,7 @@ export type DesignToken = {
 
 export type TypographyToken = {
   name: string;
-  fontFamily: "Geist Sans" | "Instrument Serif";
+  fontFamily: "Geist Sans" | "Georgia";
   fontRole: "display" | "body" | "utility";
   sizePx: number;
   lineHeightPx: number;

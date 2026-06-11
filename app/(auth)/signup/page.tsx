@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   AuthCard,
+  AuthDivider,
+  AuthLink,
   AuthNotice,
   PasswordField,
 } from "@/components/auth/AuthCard";
@@ -56,7 +57,7 @@ export default function SignupPage() {
     <div className="space-y-6">
       <AuthCard
         title="Register"
-        description="Set up your owner account first. Restaurant details and dining tables will be configured next."
+        description="Set up your owner account first. Restaurant details and menu launch settings come next."
       >
         <form onSubmit={handleSignup} className="space-y-6">
           {error && (
@@ -105,14 +106,7 @@ export default function SignupPage() {
             {loading ? "Creating workspace..." : "Register"}
           </DashboardButton>
 
-          {/* Divider */}
-          <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-gray-100"></div>
-            <span className="flex-shrink mx-4 text-[10px] uppercase font-bold tracking-wider text-gray-400">
-              or
-            </span>
-            <div className="flex-grow border-t border-gray-100"></div>
-          </div>
+          <AuthDivider />
 
           {/* Google Button */}
           <DashboardButton variant="ghost" fullWidth>
@@ -148,12 +142,9 @@ export default function SignupPage() {
       <div className="text-center">
         <p className="text-xs text-gray-400">
           Already registered?{" "}
-          <Link
-            href="/login"
-            className="text-orange-500 font-semibold hover:text-orange-600 transition-colors"
-          >
+          <AuthLink href="/login" className="text-xs">
             Sign in
-          </Link>
+          </AuthLink>
         </p>
       </div>
     </div>

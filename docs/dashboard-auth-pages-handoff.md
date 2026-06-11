@@ -15,7 +15,7 @@ instead of one-off form styles.
   - Includes forgot-password link and demo access notice.
 - `/signup`
   - Owner workspace creation with restaurant name, owner email, and password.
-  - Shows verification holding state after mocked signup.
+  - Redirects to mocked account verification after signup.
 - `/verify-email`
   - Verification holding page with resend feedback.
 - `/reset-password`
@@ -25,15 +25,25 @@ instead of one-off form styles.
   - Staff workspace + 4-digit PIN flow.
   - Mock PIN is `1234`.
   - Success redirects to `/dashboard/orders`.
+- `/onboarding/step-1`
+  - Restaurant details, slug preview, city, phone, optional Instagram, logo placeholder, and cuisine selection.
+- `/onboarding/step-2`
+  - Menu launch review with public menu QR preview and PDF template selection.
+  - Completes the mocked setup and redirects to `/dashboard`.
 
 ## Components Added
 
 - `components/auth/AuthCard.tsx`
+  - `MojiLogo`
   - `AuthCard`
   - `AuthNotice`
+  - `AuthLink`
+  - `AuthDivider`
   - `PasswordField`
   - `PinInput`
-  - `AuthLink`
+  - `AuthSelectionCard`
+  - `SetupStepHeader`
+  - `SetupActionFooter`
 
 These auth components intentionally consume dashboard primitives and tokens:
 
@@ -49,11 +59,25 @@ dashboard while avoiding duplicated button/input/modal styles.
 
 - Auth pages use a centered-card pattern on mobile and a split editorial/control
   panel on desktop.
-- The dashboard keeps Geist Sans; no diner serif styling is used here.
+- Georgia is registered as Moji's display serif and used only for expressive
+  auth/onboarding headings. Forms, labels, buttons, and operational text remain
+  Geist Sans.
+- The auth/onboarding logo is owned by `MojiLogo`; do not recreate the mark or
+  resize it per page.
+- Text links are owned by `AuthLink`; account-switch, resend, forgot-password,
+  and staff-login links should share the same treatment.
+- Login and signup should remain sibling screens with the same content width,
+  divider, field rhythm, CTA height, and bottom-link placement.
+- Onboarding uses a fixed-height framed setup container. Sidebar and header stay
+  fixed; only the step content scrolls; setup footers stay visible.
+- Setup step internals use `SetupStepHeader`, `AuthSelectionCard`, and
+  `SetupActionFooter` instead of one-off section/card/action styling.
 - Orange is used as accent/link color only. Primary actions stay gray-900.
 - Every mocked action gives inline feedback instead of `alert()`.
 - Password fields include visibility toggles.
 - Staff PIN uses numeric input mode and limits input to four digits.
+- Onboarding no longer asks for payment integration or table setup during this
+  flow. Those can live later in dashboard settings as optional modules.
 
 ## Still Mocked / Future Backend Work
 
@@ -61,8 +85,11 @@ dashboard while avoiding duplicated button/input/modal styles.
 - Email verification and password reset should use provider-generated links.
 - Staff login should validate restaurant slug and PIN against backend staff
   records and rate-limit failed attempts.
-- On successful owner signup, verified users should continue into the onboarding
-  wizard from `docs/02_auth_onboarding.md`.
+- On successful owner signup, verified users continue into the simplified
+  onboarding wizard from `docs/02_auth_onboarding.md`.
+- The onboarding completion route still receives a minimal default table payload
+  because the current backend schema requires it. The UI does not expose table
+  setup in this pass.
 - The current route protection/middleware behavior should be revisited once real
   sessions are in place.
 
@@ -71,5 +98,29 @@ dashboard while avoiding duplicated button/input/modal styles.
 Run before pushing future changes:
 
 - `npx tsc --noEmit`
-- `npx biome check app/'(auth)' components/auth components/dashboard/ui docs/dashboard-auth-pages-handoff.md`
+- `npx biome check app/'(auth)' app/onboarding components/auth components/dashboard/ui docs/dashboard-auth-pages-handoff.md`
 
+## QA Stabilization Update — Jun 11, 2026
+
+- Refreshed local dependencies with `npm install` so the declared `jspdf`
+  package is available to the dashboard menu PDF export runtime.
+- Kept `lib/menu-pdf.ts` on the declared `import { jsPDF } from "jspdf"` path;
+  no fallback dynamic import was needed after dependency installation.
+- Fixed narrow diner TypeScript nullish checks in cart, bill, receipt, item card,
+  order timeline, and cart store totals without changing total calculation
+  behavior.
+- `npx tsc --noEmit` passes.
+- `npx biome check app components lib store docs` completes with existing
+  warnings only: legacy `<img>` usage, a few `any` types, and unused parameters
+  outside this stabilization pass.
+- Browser route smoke passed for auth, onboarding, dashboard menu/orders/
+  settings/tables/transactions/loyalty/staff, and diner menu. Analytics and the
+  diner route compiled successfully after first-load timeouts during the browser
+  sequence.
+- Dashboard menu PDF modal opens without the previous missing-module/build
+  overlay. The Codex in-app browser does not support file downloads, so the
+  actual saved PDF file could not be verified inside that browser surface.
+- `npm run build` was not used as the pass/fail gate because local env is missing
+  `DATABASE_URL`; dashboard server actions also report missing
+  `BETTER_AUTH_SECRET` during local QA. Those are environment blockers, not
+  frontend compile blockers.

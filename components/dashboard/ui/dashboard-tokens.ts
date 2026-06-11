@@ -22,7 +22,7 @@
  *   • Neutral scale: GRAY (foundation primitive scale gray.50–gray.950).
  *   • Controls use rounded-xl (radius scale radius-12 / `radius/card`) — the
  *     operational variant of the shared radius scale. Diner keeps rounded-full.
- *   • Geist Sans only. Instrument Serif stays scoped to diner display moments.
+ *   • Geist Sans only. Georgia stays scoped to diner display moments.
  *   • Border-first elevation: cards separate with border + radius + surface;
  *     shadows only on floating layers (`shadow/floating`, `shadow/modal`).
  *   • Content max width 1200px = foundation `layout/dashboard-content-max`.
@@ -99,7 +99,7 @@ export const c = {
 // │ Font: Geist Sans (sans), Geist Mono (mono) — loaded in app/layout.tsx
 // │ Rule: sentence case everywhere. Tabular nums on all financial/numeric data.
 // │ Derives from: tokens/typography.ts — Heading/XS, Body/*, Label/*, Utility/*
-// │   (Geist Sans roles only). Instrument Serif Display/Heading stays diner-scoped.
+// │   (Geist Sans roles only). Georgia Display/Heading stays diner-scoped.
 // └─────────────────────────────────────────────────────────────────────────────
 
 export const t = {

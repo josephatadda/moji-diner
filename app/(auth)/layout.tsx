@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MojiLogo } from "@/components/auth/AuthCard";
 
 export default function AuthLayout({
   children,
@@ -13,95 +14,59 @@ export default function AuthLayout({
   // Detect verification page
   const isVerifyPage = pathname.includes("verify-email");
 
-  // 1. Uber-style centered framed card for Verification page
+  const footer = (
+    <footer className="flex flex-none justify-center gap-6 py-2 text-center text-[11px] text-gray-400">
+      <span>&copy; {new Date().getFullYear()} Moji Inc.</span>
+      <Link
+        href="#"
+        className="rounded-full font-medium transition-colors hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/15"
+      >
+        Terms of Use
+      </Link>
+      <Link
+        href="#"
+        className="rounded-full font-medium transition-colors hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/15"
+      >
+        Privacy Policy
+      </Link>
+    </footer>
+  );
+
   if (isVerifyPage) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6 gap-4">
-        <div className="w-full max-w-[480px] bg-white border border-gray-100 rounded-3xl flex flex-col justify-between p-8 sm:p-12 min-h-[460px] flex-none">
-          {/* Top Logo */}
-          <div className="flex items-center gap-2 mb-6 flex-none">
-            <div className="relative flex items-center justify-center w-6 h-6">
-              <div className="absolute top-0 left-2 w-1.5 h-1.5 rounded-full bg-orange-500"></div>
-              <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500"></div>
-              <div className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-              <div className="absolute bottom-0 left-2 w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-              <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-              <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-            </div>
-            <p className="text-sm font-black tracking-tight text-gray-900">
-              moji
-            </p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 p-4 sm:p-6">
+        <div className="flex min-h-[460px] w-full max-w-[480px] flex-none flex-col justify-between rounded-3xl border border-gray-100 bg-white p-8 sm:p-11">
+          <div className="mb-6 flex-none">
+            <MojiLogo />
           </div>
-
-          {/* Verification Code Form */}
-          <main className="flex-grow flex flex-col justify-center">
-            {children}
+          <main className="flex flex-grow flex-col justify-center">
+            <div className="mx-auto w-full max-w-[360px]">{children}</div>
           </main>
         </div>
-
-        {/* Footer outside the card */}
-        <footer className="text-center text-[11px] text-gray-400 flex justify-center gap-6 py-2 flex-none">
-          <span>&copy; {new Date().getFullYear()} Moji Inc.</span>
-          <Link href="#" className="hover:text-gray-600 transition-colors">
-            Terms of Use
-          </Link>
-          <Link href="#" className="hover:text-gray-600 transition-colors">
-            Privacy Policy
-          </Link>
-        </footer>
+        {footer}
       </div>
     );
   }
 
-  // 2. Intercom-style split layout floating inside a framed card
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 lg:p-8 gap-4">
-      <div className="w-full max-w-[1200px] bg-white border border-gray-100 rounded-3xl overflow-hidden flex items-stretch min-h-[75vh] lg:min-h-[80vh] flex-none">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 p-4 lg:p-8">
+      <div className="flex min-h-[75vh] w-full max-w-[1180px] flex-none items-stretch overflow-hidden rounded-3xl border border-gray-100 bg-white lg:min-h-[80vh]">
         <div className="w-full grid grid-cols-1 lg:grid-cols-2">
-          {/* Left Side: Form Panel */}
-          <aside className="flex flex-col justify-between py-12 px-8 sm:px-12 xl:px-16 min-h-full">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex items-center justify-center w-6 h-6">
-                <div className="absolute top-0 left-2 w-1.5 h-1.5 rounded-full bg-orange-500"></div>
-                <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                <div className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                <div className="absolute bottom-0 left-2 w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-                <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-              </div>
-              <p className="text-sm font-black tracking-tight text-gray-900">
-                moji
-              </p>
-            </div>
-
-            {/* Form */}
+          <aside className="flex min-h-full flex-col justify-between px-7 py-9 sm:px-10 sm:py-11 xl:px-14">
+            <MojiLogo />
             <main className="my-auto py-8">
-              <div className="max-w-[380px] mx-auto w-full">{children}</div>
+              <div className="mx-auto w-full max-w-[392px]">{children}</div>
             </main>
           </aside>
-
-          {/* Right Side: Image Showcase Panel */}
           <section
-            className="hidden lg:block relative bg-cover bg-center"
+            className="relative hidden bg-cover bg-center lg:block"
             style={{ backgroundImage: "url('/restaurant_art.png')" }}
           >
-            {/* Subtle overlay to keep contrast */}
-            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="absolute inset-0 bg-black/10" />
           </section>
         </div>
       </div>
-
-      {/* Footer outside the card */}
-      <footer className="text-center text-[11px] text-gray-400 flex justify-center gap-6 py-2 flex-none">
-        <span>&copy; {new Date().getFullYear()} Moji Inc.</span>
-        <Link href="#" className="hover:text-gray-600 transition-colors">
-          Terms of Use
-        </Link>
-        <Link href="#" className="hover:text-gray-600 transition-colors">
-          Privacy Policy
-        </Link>
-      </footer>
+      {footer}
     </div>
   );
 }

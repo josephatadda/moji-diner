@@ -7,7 +7,7 @@ const headingSerif =
 export const typographyTokens: TypographyToken[] = [
   {
     name: "Display/2XL",
-    fontFamily: "Instrument Serif",
+    fontFamily: "Georgia",
     fontRole: "display",
     sizePx: 48,
     lineHeightPx: 56,
@@ -21,7 +21,7 @@ export const typographyTokens: TypographyToken[] = [
   },
   {
     name: "Display/XL",
-    fontFamily: "Instrument Serif",
+    fontFamily: "Georgia",
     fontRole: "display",
     sizePx: 40,
     lineHeightPx: 48,
@@ -35,7 +35,7 @@ export const typographyTokens: TypographyToken[] = [
   },
   {
     name: "Display/L",
-    fontFamily: "Instrument Serif",
+    fontFamily: "Georgia",
     fontRole: "display",
     sizePx: 36,
     lineHeightPx: 44,
@@ -49,7 +49,7 @@ export const typographyTokens: TypographyToken[] = [
   },
   {
     name: "Display/M",
-    fontFamily: "Instrument Serif",
+    fontFamily: "Georgia",
     fontRole: "display",
     sizePx: 30,
     lineHeightPx: 38,
@@ -63,7 +63,7 @@ export const typographyTokens: TypographyToken[] = [
   },
   {
     name: "Heading/L",
-    fontFamily: "Instrument Serif",
+    fontFamily: "Georgia",
     fontRole: "display",
     sizePx: 24,
     lineHeightPx: 32,
@@ -77,7 +77,7 @@ export const typographyTokens: TypographyToken[] = [
   },
   {
     name: "Heading/M",
-    fontFamily: "Instrument Serif",
+    fontFamily: "Georgia",
     fontRole: "display",
     sizePx: 22,
     lineHeightPx: 28,
@@ -91,7 +91,7 @@ export const typographyTokens: TypographyToken[] = [
   },
   {
     name: "Heading/S",
-    fontFamily: "Instrument Serif",
+    fontFamily: "Georgia",
     fontRole: "display",
     sizePx: 18,
     lineHeightPx: 26,

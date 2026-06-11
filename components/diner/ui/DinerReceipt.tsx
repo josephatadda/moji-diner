@@ -109,7 +109,7 @@ export function DinerReceipt({
           <DinerInfoRow
             key={item.cartId || `${item.menuItemId || "item"}-${index}`}
             label={`${item.quantity}× ${item.itemName}`}
-            value={`₦${(item.lineTotal ?? (item.itemPrice ?? 0) * (item.quantity ?? 1) ?? 0).toLocaleString()}`}
+            value={`₦${(item.lineTotal ?? (item.itemPrice ?? 0) * (item.quantity ?? 1)).toLocaleString()}`}
           />
         ))}
       </div>
