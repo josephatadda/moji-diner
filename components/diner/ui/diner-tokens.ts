@@ -41,8 +41,10 @@ export const DINER = {
   priceTabular: "font-bold text-gray-900 tabular-nums",
 
   // Interactive
-  pressable: "active:scale-[0.97] transition-transform duration-150 ease-[var(--ease-out-strong)]",
-  ctaPress: "active:scale-[0.98] transition-transform duration-150 ease-[var(--ease-out-strong)]",
+  pressable:
+    "active:scale-[0.97] transition-transform duration-150 ease-[var(--ease-out-strong)]",
+  ctaPress:
+    "active:scale-[0.98] transition-transform duration-150 ease-[var(--ease-out-strong)]",
   primaryCta:
     "h-12 rounded-full bg-gray-900 px-5 text-white font-bold text-[15px] hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:hover:bg-gray-200 disabled:cursor-not-allowed",
   secondaryCta:

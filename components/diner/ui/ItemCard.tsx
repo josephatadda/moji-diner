@@ -65,7 +65,12 @@ export function ItemCard(props: ItemCardProps) {
           )}
         </div>
         <span className={cn(DINER.price, "ml-3 flex-none")}>
-          ₦{item.lineTotal.toLocaleString()}
+          ₦
+          {(
+            item.lineTotal ??
+            (item.itemPrice ?? 0) * (item.quantity ?? 1) ??
+            0
+          ).toLocaleString()}
         </span>
       </div>
     );
@@ -108,7 +113,12 @@ export function ItemCard(props: ItemCardProps) {
             {item.quantity}× {item.itemName}
           </p>
           <p className={cn(DINER.price, "mt-0.5")}>
-            ₦{item.lineTotal.toLocaleString()}
+            ₦
+            {(
+              item.lineTotal ??
+              (item.itemPrice ?? 0) * (item.quantity ?? 1) ??
+              0
+            ).toLocaleString()}
           </p>
         </div>
       </button>
@@ -140,7 +150,12 @@ export function ItemCard(props: ItemCardProps) {
           </p>
         )}
         <p className={cn(DINER.price, "mt-1")}>
-          ₦{item.lineTotal.toLocaleString()}
+          ₦
+          {(
+            item.lineTotal ??
+            (item.itemPrice ?? 0) * (item.quantity ?? 1) ??
+            0
+          ).toLocaleString()}
         </p>
       </div>
       <div className="flex items-center gap-1.5 flex-none">

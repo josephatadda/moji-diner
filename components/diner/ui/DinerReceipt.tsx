@@ -105,11 +105,11 @@ export function DinerReceipt({
 
       <div className="space-y-2 border-t border-dashed border-gray-200 px-5 py-4">
         <DinerInfoRow label="Payment" value={paymentMethod} />
-        {items.map((item) => (
+        {items.map((item, index) => (
           <DinerInfoRow
-            key={item.cartId}
+            key={item.cartId || `${item.menuItemId || "item"}-${index}`}
             label={`${item.quantity}× ${item.itemName}`}
-            value={`₦${item.lineTotal.toLocaleString()}`}
+            value={`₦${(item.lineTotal ?? (item.itemPrice ?? 0) * (item.quantity ?? 1) ?? 0).toLocaleString()}`}
           />
         ))}
       </div>

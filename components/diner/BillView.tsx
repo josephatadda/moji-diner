@@ -90,7 +90,12 @@ export function BillView({
   const [receiptId] = useState(() => `MOJI-${Date.now().toString().slice(-6)}`);
 
   const displayItems = groupSessionItems(sessionBatches);
-  const subtotal = displayItems.reduce((sum, item) => sum + item.lineTotal, 0);
+  const subtotal = displayItems.reduce(
+    (sum, item) =>
+      sum +
+      (item.lineTotal ?? (item.itemPrice ?? 0) * (item.quantity ?? 1) ?? 0),
+    0,
+  );
   const tipPct = tipOption === -1 ? parseFloat(customTip) || 0 : tipOption;
   const {
     vat,
@@ -430,8 +435,12 @@ export function BillView({
 
       <div className="space-y-4 px-4 pb-44">
         <div className={DINER.listGap}>
-          {displayItems.map((item) => (
-            <ItemCard key={item.cartId} variant="order" item={item} />
+          {displayItems.map((item, index) => (
+            <ItemCard
+              key={item.cartId || `${item.menuItemId || "item"}-${index}`}
+              variant="order"
+              item={item}
+            />
           ))}
         </div>
 

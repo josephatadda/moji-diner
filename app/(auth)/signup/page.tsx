@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   AuthCard,
   AuthNotice,
@@ -108,13 +108,20 @@ export default function SignupPage() {
           {/* Divider */}
           <div className="relative flex py-2 items-center">
             <div className="flex-grow border-t border-gray-100"></div>
-            <span className="flex-shrink mx-4 text-[10px] uppercase font-bold tracking-wider text-gray-400">or</span>
+            <span className="flex-shrink mx-4 text-[10px] uppercase font-bold tracking-wider text-gray-400">
+              or
+            </span>
             <div className="flex-grow border-t border-gray-100"></div>
           </div>
 
           {/* Google Button */}
           <DashboardButton variant="ghost" fullWidth>
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" role="img" aria-label="Google">
+            <svg
+              className="mr-2 h-4 w-4"
+              viewBox="0 0 24 24"
+              role="img"
+              aria-label="Google"
+            >
               <title>Google</title>
               <path
                 fill="#EA4335"
@@ -140,7 +147,13 @@ export default function SignupPage() {
 
       <div className="text-center">
         <p className="text-xs text-gray-400">
-          Already registered? <Link href="/login" className="text-orange-500 font-semibold hover:text-orange-600 transition-colors">Sign in</Link>
+          Already registered?{" "}
+          <Link
+            href="/login"
+            className="text-orange-500 font-semibold hover:text-orange-600 transition-colors"
+          >
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

@@ -33,7 +33,7 @@ export default function Step1Page() {
   const [selectedCuisine, setSelectedCuisine] = useState<string>("african");
   const [_slugChecking, setSlugChecking] = useState(false);
   const [slugStatus, setSlugStatus] = useState<
-    "idle" | "checking" | "available" | "empty"
+    "idle" | "checking" | "available" | "empty" | "error"
   >("empty");
   const [error, setError] = useState("");
 

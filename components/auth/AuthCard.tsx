@@ -1,6 +1,13 @@
 "use client";
 
-import { CheckCircle, Eye, EyeOff, Info, XCircle, ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Info,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
 import { useState } from "react";
@@ -30,12 +37,12 @@ export function AuthCard({
         <h1 className="text-3xl font-serif font-normal tracking-tight text-gray-900 sm:text-4xl">
           {title}
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-gray-500">{description}</p>
+        <p className="mt-2 text-sm leading-relaxed text-gray-500">
+          {description}
+        </p>
       </div>
       {children}
-      {footer ? (
-        <div className="mt-8">{footer}</div>
-      ) : null}
+      {footer ? <div className="mt-8">{footer}</div> : null}
     </div>
   );
 }

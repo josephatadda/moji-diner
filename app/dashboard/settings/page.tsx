@@ -4,46 +4,41 @@ import {
   Bell,
   CheckCircle,
   Clock,
-  Copy,
-  CreditCard,
-  Eye,
-  EyeSlash,
   Globe,
-  Info,
   InstagramLogo,
   Key,
   LockKey,
   Percent,
   Phone,
-  Sliders,
+  QrCode,
   Storefront,
   TwitterLogo,
   WhatsappLogo,
 } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import QRCode from "react-qr-code";
 import {
   DashboardButton,
+  DashboardField,
+  DashboardInput,
   DashboardPageHeader,
+  DashboardSelect,
+  DashboardTextarea,
   dashboardToast,
   ds,
   Toggle,
   t,
 } from "@/components/dashboard/ui";
 import { cn } from "@/lib/utils";
-import {
-  type DashboardFeature,
-  FEATURE_LABELS,
-  useDashboardSettingsStore,
-} from "@/store/dashboard-settings";
+import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 
 const TABS = [
-  { id: "features", label: "Features", icon: Sliders },
   { id: "general", label: "General", icon: Storefront },
+  // { id: "features", label: "Modules", icon: Sliders },
   { id: "hours", label: "Hours", icon: Clock },
-  { id: "payments", label: "Payments", icon: CreditCard },
+  { id: "qr", label: "Menu QR & PDF", icon: QrCode },
   { id: "taxes", label: "Tax & VAT", icon: Percent },
   { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "integrations", label: "Integrations", icon: Sliders },
   { id: "security", label: "Security", icon: LockKey },
 ];
 
@@ -102,20 +97,20 @@ function SectionCard({
 }
 
 function Field({
+  id,
   label,
   hint,
   children,
 }: {
+  id: string;
   label: string;
   hint?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className={ds.form.field}>
-      <p className={ds.input.label}>{label}</p>
+    <DashboardField id={id} label={label} hint={hint}>
       {children}
-      {hint && <p className={ds.input.hint}>{hint}</p>}
-    </div>
+    </DashboardField>
   );
 }
 
@@ -130,10 +125,14 @@ export default function SettingsPage() {
   );
   const taxes = useDashboardSettingsStore((state) => state.taxes);
   const updateTaxes = useDashboardSettingsStore((state) => state.updateTaxes);
+  const pdfTemplate = useDashboardSettingsStore((state) => state.pdfTemplate);
+  const setPdfTemplate = useDashboardSettingsStore(
+    (state) => state.setPdfTemplate,
+  );
 
-  const [tab, setTab] = useState("features");
-  const [secretVisible, setSecretVisible] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [tab, setTab] = useState("general");
+  const [_secretVisible, _setSecretVisible] = useState(false);
+  const [_copied, setCopied] = useState(false);
   const [profileDraft, setProfileDraft] = useState(profile);
   const [vatEnabled, setVatEnabled] = useState(taxes.vatEnabled);
   const [vatRate, setVatRate] = useState(String(taxes.vatRate));
@@ -143,6 +142,13 @@ export default function SettingsPage() {
   const [serviceRate, setServiceRate] = useState(
     String(taxes.serviceChargeRate),
   );
+  const [origin, setOrigin] = useState("http://localhost:3000");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
+  }, []);
 
   const [hours, setHours] = useState(
     DAYS.reduce(
@@ -161,7 +167,7 @@ export default function SettingsPage() {
     dailyReport: true,
   });
 
-  const handleCopyWebhook = () => {
+  const _handleCopyWebhook = () => {
     navigator.clipboard.writeText(
       "https://moji.app/api/webhooks/paystack/rest-001",
     );
@@ -202,8 +208,8 @@ export default function SettingsPage() {
 
         {/* Content */}
         <div className="flex-1 min-w-0 max-w-2xl space-y-4">
-          {/* ── FEATURES ── */}
-          {tab === "features" && (
+          {/* ── FEATURES (Commented out for now) ── */}
+          {/* {tab === "features" && (
             <>
               <SectionCard title="Restaurant modules">
                 <p className="text-sm text-gray-500">
@@ -283,15 +289,16 @@ export default function SettingsPage() {
                 </div>
               </SectionCard>
             </>
-          )}
+          )} */}
 
           {/* ── GENERAL ── */}
           {tab === "general" && (
             <>
               <SectionCard title="Restaurant profile">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Restaurant name">
-                    <input
+                  <Field id="restaurant-name" label="Restaurant name">
+                    <DashboardInput
+                      id="restaurant-name"
                       type="text"
                       value={profileDraft.name}
                       onChange={(event) =>
@@ -300,16 +307,20 @@ export default function SettingsPage() {
                           name: event.target.value,
                         }))
                       }
-                      className={ds.input.base}
                     />
                   </Field>
-                  <Field label="URL slug" hint="moji.app/your-slug">
+                  <Field
+                    id="url-slug"
+                    label="URL slug"
+                    hint="moji.app/your-slug"
+                  >
                     <div className="relative">
                       <Globe
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                         size={15}
                       />
-                      <input
+                      <DashboardInput
+                        id="url-slug"
                         type="text"
                         value={profileDraft.slug}
                         onChange={(event) =>
@@ -318,17 +329,18 @@ export default function SettingsPage() {
                             slug: event.target.value,
                           }))
                         }
-                        className={cn(ds.input.base, "pl-9")}
+                        className="pl-9"
                       />
                     </div>
                   </Field>
-                  <Field label="Phone number">
+                  <Field id="phone-number" label="Phone number">
                     <div className="relative">
                       <Phone
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                         size={15}
                       />
-                      <input
+                      <DashboardInput
+                        id="phone-number"
                         type="text"
                         value={profileDraft.phone}
                         onChange={(event) =>
@@ -337,12 +349,22 @@ export default function SettingsPage() {
                             phone: event.target.value,
                           }))
                         }
-                        className={cn(ds.input.base, "pl-9")}
+                        className="pl-9"
                       />
                     </div>
                   </Field>
-                  <Field label="City">
-                    <input
+                  <Field id="email-address" label="Email Address">
+                    <DashboardInput
+                      id="email-address"
+                      type="email"
+                      value={profileDraft.email || ""}
+                      disabled
+                      readOnly
+                    />
+                  </Field>
+                  <Field id="city" label="City">
+                    <DashboardInput
+                      id="city"
                       type="text"
                       value={profileDraft.city}
                       onChange={(event) =>
@@ -351,12 +373,44 @@ export default function SettingsPage() {
                           city: event.target.value,
                         }))
                       }
-                      className={ds.input.base}
                     />
                   </Field>
+                  <Field id="currency" label="Currency">
+                    <DashboardSelect
+                      id="currency"
+                      value={profileDraft.currency || "NGN"}
+                      onChange={(event) =>
+                        setProfileDraft((current) => ({
+                          ...current,
+                          currency: event.target.value,
+                        }))
+                      }
+                    >
+                      <option value="NGN">NGN (₦)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GHS">GHS (₵)</option>
+                      <option value="KES">KES (KSh)</option>
+                    </DashboardSelect>
+                  </Field>
                 </div>
-                <Field label="Description">
-                  <textarea
+                <Field id="street-address" label="Street Address">
+                  <DashboardInput
+                    id="street-address"
+                    type="text"
+                    value={profileDraft.address || ""}
+                    onChange={(event) =>
+                      setProfileDraft((current) => ({
+                        ...current,
+                        address: event.target.value,
+                      }))
+                    }
+                  />
+                </Field>
+                <Field id="description" label="Description">
+                  <DashboardTextarea
+                    id="description"
                     rows={3}
                     value={profileDraft.description}
                     onChange={(event) =>
@@ -365,35 +419,280 @@ export default function SettingsPage() {
                         description: event.target.value,
                       }))
                     }
-                    className={ds.input.textarea}
                   />
                 </Field>
               </SectionCard>
 
+              <SectionCard title="Brand assets">
+                <p className="text-sm text-gray-500 mb-2">
+                  Customize the visual identity of your restaurant diner menu.
+                  These assets are displayed directly on the mobile ordering
+                  page.
+                </p>
+
+                {/* Logo Section */}
+                <div className="flex items-center gap-5 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                  <div className="relative w-16 h-16 bg-white border border-gray-200 rounded-xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                    {profileDraft.logoUrl ? (
+                      <img
+                        src={profileDraft.logoUrl}
+                        alt="Logo Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-xs font-bold text-gray-400">
+                        No Logo
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-sm font-semibold text-gray-900">
+                      Restaurant Logo
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Square image, recommended 256x256px.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          document.getElementById("logo-upload-input")?.click()
+                        }
+                        className="text-xs font-semibold px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg text-gray-700 cursor-pointer transition-colors"
+                      >
+                        Upload Image
+                      </button>
+                      {profileDraft.logoUrl && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setProfileDraft((curr) => ({
+                              ...curr,
+                              logoUrl: "",
+                            }))
+                          }
+                          className="text-xs font-semibold px-3 py-1.5 bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 rounded-lg text-gray-700 cursor-pointer transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                      <input
+                        type="file"
+                        id="logo-upload-input"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setProfileDraft((curr) => ({
+                                ...curr,
+                                logoUrl: reader.result as string,
+                              }));
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cover Image Banner Section */}
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-gray-900">
+                    Menu Header Cover
+                  </p>
+
+                  {/* Visual Preview mirroring Diner experience */}
+                  <div className="relative h-36 w-full rounded-2xl overflow-hidden border border-gray-200 shadow-inner bg-gray-100 flex items-end">
+                    {profileDraft.coverImageUrl &&
+                    !profileDraft.coverImageUrl.startsWith("gradient:") ? (
+                      <img
+                        src={profileDraft.coverImageUrl}
+                        alt="Cover Preview"
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="absolute inset-0 w-full h-full"
+                        style={{
+                          background: profileDraft.coverImageUrl?.startsWith(
+                            "gradient:",
+                          )
+                            ? profileDraft.coverImageUrl.slice(9)
+                            : "linear-gradient(135deg,#fff7ed_0%,#fef3c7_45%,#f3f4f6_100%)",
+                        }}
+                      />
+                    )}
+
+                    {/* Simulated restaurant title and logo overlay inside preview to match exactly */}
+                    <div className="absolute left-4 bottom-4 z-10 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white border-2 border-white rounded-lg overflow-hidden shadow-sm flex items-center justify-center">
+                        {profileDraft.logoUrl ? (
+                          <img
+                            src={profileDraft.logoUrl}
+                            alt="Logo overlay"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-[10px] font-black text-gray-400">
+                            {profileDraft.name?.[0]}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-bold text-sm bg-black/35 px-2 py-0.5 rounded-md">
+                        {profileDraft.name}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-gray-400">
+                        Custom banner upload or choose gradient below.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            document
+                              .getElementById("cover-upload-input")
+                              ?.click()
+                          }
+                          className="text-xs font-semibold px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg text-gray-700 cursor-pointer transition-colors"
+                        >
+                          Upload Custom Cover
+                        </button>
+                        {profileDraft.coverImageUrl && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setProfileDraft((curr) => ({
+                                ...curr,
+                                coverImageUrl: "",
+                              }))
+                            }
+                            className="text-xs font-semibold px-3 py-1.5 bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 rounded-lg text-gray-700 cursor-pointer transition-colors"
+                          >
+                            Reset
+                          </button>
+                        )}
+                        <input
+                          type="file"
+                          id="cover-upload-input"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setProfileDraft((curr) => ({
+                                  ...curr,
+                                  coverImageUrl: reader.result as string,
+                                }));
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Gradient Swatches */}
+                  <div className="space-y-2 pt-2 border-t border-gray-100">
+                    <p className="text-xs font-semibold text-gray-700">
+                      Preset Pastel Gradient Backgrounds
+                    </p>
+                    <div className="flex flex-wrap gap-2.5">
+                      {[
+                        {
+                          name: "Sunset Peach",
+                          gradient:
+                            "gradient:linear-gradient(135deg, #ffedd5 0%, #fee2e2 50%, #fef3c7 100%)",
+                        },
+                        {
+                          name: "Ocean Breeze",
+                          gradient:
+                            "gradient:linear-gradient(135deg, #e0f2fe 0%, #e0e7ff 60%, #fae8ff 100%)",
+                        },
+                        {
+                          name: "Fresh Mint",
+                          gradient:
+                            "gradient:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #fef9c3 100%)",
+                        },
+                        {
+                          name: "Sweet Lavender",
+                          gradient:
+                            "gradient:linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e0f2fe 100%)",
+                        },
+                        {
+                          name: "Warm Sand",
+                          gradient:
+                            "gradient:linear-gradient(135deg, #fefaf0 0%, #f5ebe0 60%, #e3d5ca 100%)",
+                        },
+                      ].map((preset) => {
+                        const isSelected =
+                          profileDraft.coverImageUrl === preset.gradient;
+                        return (
+                          <button
+                            key={preset.name}
+                            type="button"
+                            title={preset.name}
+                            onClick={() =>
+                              setProfileDraft((curr) => ({
+                                ...curr,
+                                coverImageUrl: preset.gradient,
+                              }))
+                            }
+                            className={cn(
+                              "w-10 h-10 rounded-full border shadow-sm shrink-0 cursor-pointer hover:scale-105 active:scale-95 transition-all relative flex items-center justify-center",
+                              isSelected
+                                ? "border-gray-900 ring-2 ring-gray-900/10"
+                                : "border-gray-200",
+                            )}
+                            style={{ background: preset.gradient.slice(9) }}
+                          >
+                            {isSelected && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-gray-900" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </SectionCard>
+
               <SectionCard title="Social links">
-                <Field label="Instagram">
+                <Field id="social-instagram" label="Instagram">
                   <div className="relative">
                     <InstagramLogo
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                       size={15}
                     />
-                    <input
+                    <DashboardInput
+                      id="social-instagram"
                       type="text"
                       placeholder="@yourhandle"
-                      className={cn(ds.input.base, "pl-9")}
+                      className="pl-9"
                     />
                   </div>
                 </Field>
-                <Field label="Twitter / X">
+                <Field id="social-twitter" label="Twitter / X">
                   <div className="relative">
                     <TwitterLogo
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                       size={15}
                     />
-                    <input
+                    <DashboardInput
+                      id="social-twitter"
                       type="text"
                       placeholder="@yourhandle"
-                      className={cn(ds.input.base, "pl-9")}
+                      className="pl-9"
                     />
                   </div>
                 </Field>
@@ -464,7 +763,7 @@ export default function SettingsPage() {
                       />
                       {hours[day].open ? (
                         <div className="flex items-center gap-2 flex-1">
-                          <input
+                          <DashboardInput
                             type="time"
                             value={hours[day].from}
                             onChange={(e) =>
@@ -473,12 +772,12 @@ export default function SettingsPage() {
                                 [day]: { ...h[day], from: e.target.value },
                               }))
                             }
-                            className={cn(ds.input.base, "flex-1")}
+                            className="flex-1"
                           />
                           <span className="text-xs text-gray-400 shrink-0">
                             to
                           </span>
-                          <input
+                          <DashboardInput
                             type="time"
                             value={hours[day].to}
                             onChange={(e) =>
@@ -487,7 +786,7 @@ export default function SettingsPage() {
                                 [day]: { ...h[day], to: e.target.value },
                               }))
                             }
-                            className={cn(ds.input.base, "flex-1")}
+                            className="flex-1"
                           />
                         </div>
                       ) : (
@@ -504,81 +803,163 @@ export default function SettingsPage() {
               </div>
             </>
           )}
-
-          {/* ── PAYMENTS ── */}
-          {tab === "payments" && (
+          {/* ── MENU QR & PDF TEMPLATE ── */}
+          {tab === "qr" && (
             <>
-              <SectionCard title="Paystack integration">
+              <SectionCard title="Menu QR Code">
                 <p className="text-sm text-gray-500">
-                  Connect Paystack to accept card, bank transfer and USSD
-                  payments from diners.
+                  This is the single primary QR code for your restaurant menu.
+                  Diners scan this QR code to view your digital menu and place
+                  self-reported cash/transfer orders.
                 </p>
-                <Field label="Public key">
-                  <input
-                    type="text"
-                    placeholder="pk_live_••••••••••••••••"
-                    className={ds.input.base}
-                  />
-                </Field>
-                <Field label="Secret key">
-                  <div className="relative">
-                    <Key
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      size={15}
+                <div className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                  <div className="p-4 bg-white rounded-2xl border border-gray-200">
+                    <QRCode
+                      id="restaurant-qr-code-svg"
+                      value={`${origin}/${profileDraft.slug}`}
+                      size={160}
                     />
-                    <input
-                      type={secretVisible ? "text" : "password"}
-                      placeholder="sk_live_••••••••••••••••"
-                      className={cn(ds.input.base, "pl-9 pr-10 font-mono")}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setSecretVisible((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {secretVisible ? (
-                        <EyeSlash size={15} />
-                      ) : (
-                        <Eye size={15} />
-                      )}
-                    </button>
                   </div>
-                </Field>
-                <div className="flex items-start gap-2 p-3 bg-orange-50 rounded-xl border border-orange-100">
-                  <Info size={14} className="text-orange-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-orange-700">
-                    Your secret key is encrypted before storage and never
-                    exposed to the browser.
-                  </p>
+                  <div className="flex-1 space-y-3 w-full text-center sm:text-left">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        Primary QR Code Link
+                      </p>
+                      <p className="text-xs font-mono text-gray-500 mt-1 select-all break-all underline">
+                        {`${origin}/${profileDraft.slug}`}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const svg = document.getElementById(
+                            "restaurant-qr-code-svg",
+                          );
+                          if (!svg) return;
+                          const svgData = new XMLSerializer().serializeToString(
+                            svg,
+                          );
+                          const svgBlob = new Blob([svgData], {
+                            type: "image/svg+xml;charset=utf-8",
+                          });
+                          const svgUrl = URL.createObjectURL(svgBlob);
+                          const img = new Image();
+                          img.onload = () => {
+                            const canvas = document.createElement("canvas");
+                            canvas.width = 512;
+                            canvas.height = 512;
+                            const ctx = canvas.getContext("2d");
+                            if (ctx) {
+                              ctx.fillStyle = "#ffffff";
+                              ctx.fillRect(0, 0, canvas.width, canvas.height);
+                              ctx.drawImage(
+                                img,
+                                0,
+                                0,
+                                canvas.width,
+                                canvas.height,
+                              );
+                              const pngUrl = canvas.toDataURL("image/png");
+                              const downloadLink = document.createElement("a");
+                              downloadLink.href = pngUrl;
+                              downloadLink.download = `${profileDraft.slug}-menu-qr.png`;
+                              document.body.appendChild(downloadLink);
+                              downloadLink.click();
+                              document.body.removeChild(downloadLink);
+                              dashboardToast("QR code downloaded as PNG");
+                            }
+                            URL.revokeObjectURL(svgUrl);
+                          };
+                          img.src = svgUrl;
+                        }}
+                        className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl transition-colors"
+                      >
+                        Download PNG
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            `${origin}/${profileDraft.slug}`,
+                          );
+                          dashboardToast("Link copied to clipboard");
+                        }}
+                        className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl transition-colors"
+                      >
+                        Copy Link
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </SectionCard>
 
-              <SectionCard title="Webhook URL">
+              <SectionCard title="Menu PDF Style Template">
                 <p className="text-sm text-gray-500">
-                  Paste this URL into your Paystack dashboard under Webhooks.
+                  Select the template style used when you generate and export
+                  your menu PDF.
                 </p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 px-3 py-2.5 text-xs font-mono bg-gray-50 border border-gray-200 rounded-xl text-gray-700 truncate">
-                    https://moji.app/api/webhooks/paystack/rest-001
-                  </code>
-                  <button
-                    type="button"
-                    onClick={handleCopyWebhook}
-                    className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shrink-0"
-                  >
-                    {copied ? (
-                      <CheckCircle size={13} className="text-green-500" />
-                    ) : (
-                      <Copy size={13} />
-                    )}
-                    {copied ? "Copied" : "Copy"}
-                  </button>
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    {
+                      id: "classic",
+                      title: "Classic & Standard Layout",
+                      description:
+                        "Classical columns with clear typography. Best for traditional menus.",
+                    },
+                    {
+                      id: "modern",
+                      title: "Modern Minimalist",
+                      description:
+                        "Bold headers with spacious, clean layouts. Best for cafes and grills.",
+                    },
+                    {
+                      id: "elegant",
+                      title: "Elegant Lounge",
+                      description:
+                        "Premium centered text with decorative divider rules. Best for fine dining.",
+                    },
+                  ].map((tmpl) => {
+                    const isSelected = pdfTemplate === tmpl.id;
+                    return (
+                      <button
+                        key={tmpl.id}
+                        type="button"
+                        onClick={() => {
+                          setPdfTemplate(
+                            tmpl.id as "classic" | "modern" | "elegant",
+                          );
+                          dashboardToast(`PDF layout updated to ${tmpl.title}`);
+                        }}
+                        className={cn(
+                          "text-left flex items-start gap-4 p-4 rounded-xl border transition-all cursor-pointer",
+                          isSelected
+                            ? "border-gray-900 bg-gray-50 font-semibold text-gray-900"
+                            : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50/50 text-gray-500",
+                        )}
+                      >
+                        <div className="mt-0.5 flex-none">
+                          {isSelected ? (
+                            <div className="h-4 w-4 rounded-full bg-gray-900 flex items-center justify-center text-white">
+                              <CheckCircle size={12} weight="bold" />
+                            </div>
+                          ) : (
+                            <div className="h-4 w-4 rounded-full border border-gray-300 bg-white font-normal"></div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">
+                            {tmpl.title}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5 leading-relaxed font-normal">
+                            {tmpl.description}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </SectionCard>
-
-              <div className="flex justify-end">
-                <SaveButton label="Update API keys" />
-              </div>
             </>
           )}
 
@@ -602,18 +983,20 @@ export default function SettingsPage() {
                 </div>
                 {vatEnabled && (
                   <Field
+                    id="vat-rate"
                     label="VAT rate (%)"
                     hint="Standard Nigerian VAT is 7.5%"
                   >
                     <div className="relative max-w-[140px]">
-                      <input
+                      <DashboardInput
+                        id="vat-rate"
                         type="number"
                         min={0}
                         max={100}
                         step={0.5}
                         value={vatRate}
                         onChange={(e) => setVatRate(e.target.value)}
-                        className={cn(ds.input.base, "pr-8")}
+                        className="pr-8"
                       />
                       <Percent
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -640,16 +1023,20 @@ export default function SettingsPage() {
                   />
                 </div>
                 {serviceCharge && (
-                  <Field label="Service charge rate (%)">
+                  <Field
+                    id="service-charge-rate"
+                    label="Service charge rate (%)"
+                  >
                     <div className="relative max-w-[140px]">
-                      <input
+                      <DashboardInput
+                        id="service-charge-rate"
                         type="number"
                         min={0}
                         max={30}
                         step={0.5}
                         value={serviceRate}
                         onChange={(e) => setServiceRate(e.target.value)}
-                        className={cn(ds.input.base, "pr-8")}
+                        className="pr-8"
                       />
                       <Percent
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -733,88 +1120,6 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* ── INTEGRATIONS ── */}
-          {tab === "integrations" && (
-            <>
-              <SectionCard title="WhatsApp (Twilio)">
-                <p className="text-sm text-gray-500">
-                  Send order receipts and loyalty updates via WhatsApp Business.
-                </p>
-                <Field label="Account SID">
-                  <input
-                    type="text"
-                    placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    className={cn(ds.input.base, "font-mono")}
-                  />
-                </Field>
-                <Field label="Auth token">
-                  <div className="relative">
-                    <Key
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      size={15}
-                    />
-                    <input
-                      type="password"
-                      placeholder="••••••••••••••••••••••••••••••••"
-                      className={cn(ds.input.base, "pl-9 font-mono")}
-                    />
-                  </div>
-                </Field>
-                <Field
-                  label="WhatsApp sender number"
-                  hint="Must be a Twilio-registered WhatsApp number"
-                >
-                  <div className="relative">
-                    <WhatsappLogo
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      size={15}
-                    />
-                    <input
-                      type="text"
-                      placeholder="+14155238886"
-                      className={cn(ds.input.base, "pl-9 font-mono")}
-                    />
-                  </div>
-                </Field>
-                <div className="flex justify-end pt-1">
-                  <SaveButton label="Save Twilio config" />
-                </div>
-              </SectionCard>
-
-              <SectionCard title="Supabase">
-                <p className="text-sm text-gray-500">
-                  Database and real-time subscriptions. These values are managed
-                  via environment variables.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    "NEXT_PUBLIC_SUPABASE_URL",
-                    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-                  ].map((key) => (
-                    <div
-                      key={key}
-                      className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl"
-                    >
-                      <p className="text-[10px] font-mono text-gray-400 mb-0.5">
-                        {key}
-                      </p>
-                      <p className="text-xs font-semibold text-green-600">
-                        ✓ Configured
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                  <Info size={14} className="text-blue-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-700">
-                    To update, edit your{" "}
-                    <code className="font-mono">.env.local</code> file and
-                    redeploy.
-                  </p>
-                </div>
-              </SectionCard>
-            </>
-          )}
           {/* ── SECURITY ── */}
           {tab === "security" && (
             <SectionCard title="Change Password">
@@ -822,42 +1127,48 @@ export default function SettingsPage() {
                 Update your admin login password. You will be logged out of all
                 other active sessions.
               </p>
-              <Field label="Current Password">
+              <Field id="current-password" label="Current Password">
                 <div className="relative">
                   <Key
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                     size={15}
                   />
-                  <input
+                  <DashboardInput
+                    id="current-password"
                     type="password"
                     placeholder="••••••••"
-                    className={cn(ds.input.base, "pl-9")}
+                    className="pl-9"
+                    autoComplete="current-password"
                   />
                 </div>
               </Field>
-              <Field label="New Password">
+              <Field id="new-password" label="New Password">
                 <div className="relative">
                   <Key
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                     size={15}
                   />
-                  <input
+                  <DashboardInput
+                    id="new-password"
                     type="password"
                     placeholder="••••••••"
-                    className={cn(ds.input.base, "pl-9")}
+                    className="pl-9"
+                    autoComplete="new-password"
                   />
                 </div>
               </Field>
-              <Field label="Confirm New Password">
+              <Field id="confirm-password" label="Confirm New Password">
                 <div className="relative">
                   <Key
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                     size={15}
                   />
-                  <input
+                  <DashboardInput
+                    id="confirm-password"
                     type="password"
                     placeholder="••••••••"
-                    className={cn(ds.input.base, "pl-9")}
+                    className="pl-9"
+                    autoComplete="new-password"
                   />
                 </div>
               </Field>

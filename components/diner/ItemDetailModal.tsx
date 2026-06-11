@@ -99,7 +99,12 @@ export function ItemDetailModal({ item, open, onClose }: ItemDetailModalProps) {
             type="button"
             onClick={handleAddToCart}
             disabled={!allGroupsSatisfied}
-            className={cn("flex-1", DINER.primaryCta, DINER.ctaPress, "transition-colors duration-[150ms] ease-[var(--ease-in-out-strong)]")}
+            className={cn(
+              "flex-1",
+              DINER.primaryCta,
+              DINER.ctaPress,
+              "transition-colors duration-[150ms] ease-[var(--ease-in-out-strong)]",
+            )}
           >
             Add to order · ₦{total.toLocaleString()}
           </button>
@@ -181,7 +186,7 @@ export function ItemDetailModal({ item, open, onClose }: ItemDetailModalProps) {
                           ? DINER.selectionCardSelected
                           : "bg-gray-50 text-gray-700",
                         DINER.pressable,
-                        "transition-[transform,colors] duration-[150ms] ease-[var(--ease-in-out-strong)]"
+                        "transition-[transform,colors] duration-[150ms] ease-[var(--ease-in-out-strong)]",
                       )}
                     >
                       <span className="font-semibold">{option.name}</span>

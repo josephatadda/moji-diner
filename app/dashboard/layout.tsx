@@ -6,7 +6,6 @@ import {
   Check,
   ClipboardText,
   CurrencyDollar,
-  DeviceMobile,
   ForkKnife,
   Gear,
   List,
@@ -40,12 +39,6 @@ const NAV_MAIN: {
     feature: "orders",
   },
   { href: "/dashboard/menu", label: "Menu", Icon: ForkKnife, feature: "menu" },
-  {
-    href: "/dashboard/tables",
-    label: "Tables",
-    Icon: DeviceMobile,
-    feature: "tables",
-  },
   {
     href: "/dashboard/transactions",
     label: "Transactions",

@@ -4,7 +4,6 @@ import {
   ArrowRight,
   ClipboardText,
   CurrencyCircleDollar,
-  DeviceMobile,
   ForkKnife,
   HandWaving,
   PencilSimple,
@@ -80,7 +79,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <p className="mt-0.5 text-xs text-gray-500">
-              QR menu and table orders are available to guests.
+              QR menu and self-ordering are available to guests.
             </p>
           </div>
         </div>
@@ -93,7 +92,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 mb-6 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 mb-6 lg:grid-cols-3">
         <MetricCard
           label="Active orders"
           value={String(activeOrders)}
@@ -111,12 +110,6 @@ export default function DashboardPage() {
           value={String(totalItems)}
           sub={`${menuCategories.length} categories`}
           icon={<ForkKnife size={18} />}
-        />
-        <MetricCard
-          label="Tables"
-          value="6"
-          sub="2 occupied"
-          icon={<DeviceMobile size={18} />}
         />
       </div>
 
@@ -142,7 +135,9 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-semibold text-gray-900 text-sm">
-                      Table {order.tableNumber}
+                      {order.id.startsWith("ord-staff")
+                        ? "Staff Order"
+                        : "Diner Order"}
                     </p>
                     <span
                       className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_COLOR[order.status]}`}
@@ -198,7 +193,13 @@ export default function DashboardPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold text-gray-900">
-                        Table {txn.tableNumber}
+                        {txn.method === "card"
+                          ? "POS Card Pay"
+                          : txn.method === "bank_transfer"
+                            ? "Bank Transfer"
+                            : txn.method === "ussd"
+                              ? "USSD Pay"
+                              : "Cash Pay"}
                       </p>
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${METHOD_COLOR[txn.method]}`}
@@ -248,14 +249,14 @@ export default function DashboardPage() {
           <p className="text-xs text-gray-400 mt-0.5">Add or update items</p>
         </Link>
         <Link
-          href="/dashboard/tables"
+          href="/dashboard/settings?tab=qr"
           className="group bg-white border border-gray-100 rounded-2xl p-5 hover:border-blue-200 transition-all duration-200"
         >
           <span className="text-xl text-blue-500 mb-3 block">
             <QrCode weight="duotone" />
           </span>
-          <p className="font-semibold text-gray-900 text-sm">QR codes</p>
-          <p className="text-xs text-gray-400 mt-0.5">Download table codes</p>
+          <p className="font-semibold text-gray-900 text-sm">Menu QR Code</p>
+          <p className="text-xs text-gray-400 mt-0.5">Download menu QR code</p>
         </Link>
       </div>
     </div>

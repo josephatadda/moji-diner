@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getAuth } from "@/lib/auth";
+import { hasDatabase } from "@/lib/env";
 
 /**
  * Route protection middleware.
@@ -43,10 +44,13 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
       loginUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(loginUrl);
     }
-  } catch {
-    // Auth env not configured (BETTER_AUTH_SECRET missing) → allow through.
-    // The mock-fallback dashboard works without a real session.
-    // In production this branch will never be reached.
+  } catch (error) {
+    if (hasDatabase()) {
+      console.error("Auth middleware error, failing closed:", error);
+      const loginUrl = new URL("/login", req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+    // Auth env not configured (BETTER_AUTH_SECRET missing) in local mock mode → allow through.
     return NextResponse.next();
   }
 

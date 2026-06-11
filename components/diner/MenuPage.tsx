@@ -41,6 +41,14 @@ export function MenuPage({
   const displayRestaurantName = restaurantProfile.name || restaurantName;
   const displayRestaurantDescription =
     restaurantProfile.description || restaurantDescription;
+  const displayCoverImageUrl =
+    restaurantProfile.coverImageUrl !== undefined
+      ? restaurantProfile.coverImageUrl
+      : coverImageUrl;
+  const displayLogoUrl =
+    restaurantProfile.logoUrl !== undefined
+      ? restaurantProfile.logoUrl
+      : logoUrl;
   const [activeCategory, setActiveCategory] = useState(
     visibleCategories[0]?.id ?? "",
   );
@@ -97,9 +105,10 @@ export function MenuPage({
       {/* Cover Image & Restaurant Info */}
       <div className="bg-white pb-5 relative">
         <div className="relative h-36 w-full overflow-hidden bg-gray-200">
-          {coverImageUrl ? (
+          {displayCoverImageUrl &&
+          !displayCoverImageUrl.startsWith("gradient:") ? (
             <Image
-              src={coverImageUrl}
+              src={displayCoverImageUrl}
               alt={`${displayRestaurantName ?? "Restaurant"} cover`}
               fill
               unoptimized
@@ -107,15 +116,22 @@ export function MenuPage({
               className="object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-[linear-gradient(135deg,#fff7ed_0%,#fef3c7_45%,#f3f4f6_100%)]" />
+            <div
+              className="w-full h-full animate-pulse-slow"
+              style={{
+                background: displayCoverImageUrl?.startsWith("gradient:")
+                  ? displayCoverImageUrl.slice(9)
+                  : "linear-gradient(135deg,#fff7ed_0%,#fef3c7_45%,#f3f4f6_100%)",
+              }}
+            />
           )}
         </div>
 
         <div className="px-4 -mt-8 relative z-10">
           <div className="relative w-16 h-16 bg-white border-[3px] border-white rounded-xl flex items-center justify-center mb-3 overflow-hidden">
-            {logoUrl ? (
+            {displayLogoUrl ? (
               <Image
-                src={logoUrl}
+                src={displayLogoUrl}
                 alt={`${displayRestaurantName ?? "Restaurant"} logo`}
                 fill
                 unoptimized
@@ -140,10 +156,6 @@ export function MenuPage({
           )}
 
           <div className="flex items-center gap-2 flex-wrap">
-            <div className={DINER.metaChip}>
-              <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-              Table {tableNumber}
-            </div>
             {rating && (
               <div className={DINER.metaChip}>
                 <Star size={12} weight="fill" className="text-orange-400" />

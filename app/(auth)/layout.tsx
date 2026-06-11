@@ -1,7 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function AuthLayout({
   children,
@@ -28,7 +28,9 @@ export default function AuthLayout({
               <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
               <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
             </div>
-            <p className="text-sm font-black tracking-tight text-gray-900">moji</p>
+            <p className="text-sm font-black tracking-tight text-gray-900">
+              moji
+            </p>
           </div>
 
           {/* Verification Code Form */}
@@ -40,8 +42,12 @@ export default function AuthLayout({
         {/* Footer outside the card */}
         <footer className="text-center text-[11px] text-gray-400 flex justify-center gap-6 py-2 flex-none">
           <span>&copy; {new Date().getFullYear()} Moji Inc.</span>
-          <Link href="#" className="hover:text-gray-600 transition-colors">Terms of Use</Link>
-          <Link href="#" className="hover:text-gray-600 transition-colors">Privacy Policy</Link>
+          <Link href="#" className="hover:text-gray-600 transition-colors">
+            Terms of Use
+          </Link>
+          <Link href="#" className="hover:text-gray-600 transition-colors">
+            Privacy Policy
+          </Link>
         </footer>
       </div>
     );
@@ -64,19 +70,19 @@ export default function AuthLayout({
                 <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                 <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
               </div>
-              <p className="text-sm font-black tracking-tight text-gray-900">moji</p>
+              <p className="text-sm font-black tracking-tight text-gray-900">
+                moji
+              </p>
             </div>
 
             {/* Form */}
             <main className="my-auto py-8">
-              <div className="max-w-[380px] mx-auto w-full">
-                {children}
-              </div>
+              <div className="max-w-[380px] mx-auto w-full">{children}</div>
             </main>
           </aside>
 
           {/* Right Side: Image Showcase Panel */}
-          <section 
+          <section
             className="hidden lg:block relative bg-cover bg-center"
             style={{ backgroundImage: "url('/restaurant_art.png')" }}
           >
@@ -89,8 +95,12 @@ export default function AuthLayout({
       {/* Footer outside the card */}
       <footer className="text-center text-[11px] text-gray-400 flex justify-center gap-6 py-2 flex-none">
         <span>&copy; {new Date().getFullYear()} Moji Inc.</span>
-        <Link href="#" className="hover:text-gray-600 transition-colors">Terms of Use</Link>
-        <Link href="#" className="hover:text-gray-600 transition-colors">Privacy Policy</Link>
+        <Link href="#" className="hover:text-gray-600 transition-colors">
+          Terms of Use
+        </Link>
+        <Link href="#" className="hover:text-gray-600 transition-colors">
+          Privacy Policy
+        </Link>
       </footer>
     </div>
   );

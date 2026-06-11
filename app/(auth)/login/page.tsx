@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   AuthCard,
   AuthLink,
@@ -36,7 +36,8 @@ export default function LoginPage() {
     setLoading(false);
 
     // Route based on actual account state (stored in sessionStorage onboarding_complete)
-    const isCompleted = sessionStorage.getItem("onboarding_complete") === "true";
+    const isCompleted =
+      sessionStorage.getItem("onboarding_complete") === "true";
     if (isCompleted) {
       router.push("/dashboard");
     } else {
@@ -92,13 +93,20 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="relative flex py-2 items-center">
             <div className="flex-grow border-t border-gray-100"></div>
-            <span className="flex-shrink mx-4 text-[10px] uppercase font-bold tracking-wider text-gray-400">or</span>
+            <span className="flex-shrink mx-4 text-[10px] uppercase font-bold tracking-wider text-gray-400">
+              or
+            </span>
             <div className="flex-grow border-t border-gray-100"></div>
           </div>
 
           {/* Google Button - Using standard DashboardButton */}
           <DashboardButton variant="ghost" fullWidth>
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" role="img" aria-label="Google">
+            <svg
+              className="mr-2 h-4 w-4"
+              viewBox="0 0 24 24"
+              role="img"
+              aria-label="Google"
+            >
               <title>Google</title>
               <path
                 fill="#EA4335"
@@ -124,10 +132,19 @@ export default function LoginPage() {
 
       <div className="text-center space-y-2">
         <p className="text-xs text-gray-400">
-          New to Moji? <Link href="/signup" className="text-orange-500 font-semibold hover:text-orange-600 transition-colors">Create an account</Link>
+          New to Moji?{" "}
+          <Link
+            href="/signup"
+            className="text-orange-500 font-semibold hover:text-orange-600 transition-colors"
+          >
+            Create an account
+          </Link>
         </p>
         <div>
-          <Link href="/staff-login" className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2">
+          <Link
+            href="/staff-login"
+            className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2"
+          >
             Are you restaurant staff? Log in here
           </Link>
         </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
 import { Check, LogOut } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function OnboardingLayout({
   children,
@@ -45,7 +45,6 @@ export default function OnboardingLayout({
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 lg:p-8 gap-4">
       {/* Inner Container: Framed Card */}
       <div className="w-full max-w-[1200px] bg-white border border-gray-100 rounded-3xl overflow-hidden flex flex-col lg:flex-row min-h-[80vh] lg:min-h-[85vh] flex-none">
-        
         {/* Left Sidebar: Desktop Stepper */}
         <aside className="hidden lg:flex w-80 border-r border-gray-100 bg-gray-50/50 p-8 flex-col justify-between flex-none">
           <div className="space-y-12">
@@ -59,7 +58,9 @@ export default function OnboardingLayout({
                 <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                 <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
               </div>
-              <p className="text-sm font-black tracking-tight text-gray-900">moji</p>
+              <p className="text-sm font-black tracking-tight text-gray-900">
+                moji
+              </p>
             </div>
 
             {/* Stepper list */}
@@ -87,17 +88,23 @@ export default function OnboardingLayout({
                         </div>
                       ) : (
                         <div className="h-6 w-6 rounded-full bg-white flex items-center justify-center text-gray-300 border-2 border-gray-200">
-                          <span className="text-xs font-semibold">{step.id}</span>
+                          <span className="text-xs font-semibold">
+                            {step.id}
+                          </span>
                         </div>
                       )}
                     </div>
 
                     {/* Text */}
                     <div>
-                      <p className={`text-sm font-bold ${isActive ? "text-gray-900" : "text-gray-600"}`}>
+                      <p
+                        className={`text-sm font-bold ${isActive ? "text-gray-900" : "text-gray-600"}`}
+                      >
                         {step.name}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">{step.description}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {step.description}
+                      </p>
                     </div>
                   </div>
                 );
@@ -173,8 +180,12 @@ export default function OnboardingLayout({
       {/* Footer outside the card */}
       <footer className="text-center text-[11px] text-gray-400 flex justify-center gap-6 py-2 flex-none">
         <span>&copy; {new Date().getFullYear()} Moji Inc.</span>
-        <Link href="#" className="hover:text-gray-600 transition-colors">Terms of Use</Link>
-        <Link href="#" className="hover:text-gray-600 transition-colors">Privacy Policy</Link>
+        <Link href="#" className="hover:text-gray-600 transition-colors">
+          Terms of Use
+        </Link>
+        <Link href="#" className="hover:text-gray-600 transition-colors">
+          Privacy Policy
+        </Link>
       </footer>
     </div>
   );

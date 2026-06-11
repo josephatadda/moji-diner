@@ -37,16 +37,19 @@ export function calculateBill({
 }
 
 export function formatModifiers(
-  selectedModifiers: Record<string, ModifierOption[]>,
+  selectedModifiers: Record<string, ModifierOption[]> | undefined | null,
 ): string {
+  if (!selectedModifiers) return "";
   return Object.values(selectedModifiers)
     .flat()
+    .filter(Boolean)
     .map((o) => o.name)
     .join(", ");
 }
 
 export function hasModifiers(
-  selectedModifiers: Record<string, ModifierOption[]>,
+  selectedModifiers: Record<string, ModifierOption[]> | undefined | null,
 ): boolean {
-  return Object.values(selectedModifiers).flat().length > 0;
+  if (!selectedModifiers) return false;
+  return Object.values(selectedModifiers).flat().filter(Boolean).length > 0;
 }

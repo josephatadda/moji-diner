@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Suspense } from "react";
 import { PresetSidebar } from "@/components/preset-sidebar";
 import { RandomPresetButton } from "@/components/random-preset-button";

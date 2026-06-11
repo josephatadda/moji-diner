@@ -1,13 +1,14 @@
 "use client";
 
-import { ArrowLeft, Check, Minus, Plus, QrCode } from "lucide-react";
+import { ArrowLeft, Check, QrCode } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
+import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 
-type LayoutTemplate = {
-  id: string;
+type MenuPdfTemplate = {
+  id: "classic" | "modern" | "elegant";
   title: string;
   description: string;
   tags: string[];
@@ -15,31 +16,39 @@ type LayoutTemplate = {
 
 export default function Step2Page() {
   const router = useRouter();
-  const [tableCount, setTableCount] = useState<number>(8);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("standard");
+  const [selectedTemplate, setSelectedTemplate] = useState<
+    "classic" | "modern" | "elegant"
+  >("classic");
   const [restaurantSlug, setRestaurantSlug] = useState("mama-put-kitchen");
-  const [_restaurantName, setRestaurantName] = useState("Mama Put Kitchen");
+  const [restaurantName, setRestaurantName] = useState("Mama Put Kitchen");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  const templates: LayoutTemplate[] = [
+  const setPdfTemplate = useDashboardSettingsStore(
+    (state) => state.setPdfTemplate,
+  );
+
+  const templates: MenuPdfTemplate[] = [
     {
-      id: "standard",
-      title: "Standard Dining Tables",
+      id: "classic",
+      title: "Classic & Standard Layout",
       description:
-        "Classical tables seating 2 to 4 guests. Ideal for casual dining.",
-      tags: ["2-4 seats", "Casual layout", "Numbered 1..N"],
+        "Classical columns with clear typography. Best for traditional menus.",
+      tags: ["Compact fit", "Standard list", "Highly readable"],
     },
     {
-      id: "counter",
-      title: "Bar & Counter Seating",
+      id: "modern",
+      title: "Modern Minimalist",
       description:
-        "High stools arranged along counters. Great for quick service.",
-      tags: ["Stool seating", "Single diners", "Quick turns"],
+        "Bold headers with spacious, clean layouts. Best for cafes and grills.",
+      tags: ["Sleek fonts", "Generous spacing", "Contemporary feel"],
     },
     {
-      id: "mixed",
-      title: "Mixed / Lounge Seating",
-      description: "A combination of lounges, booths, and standard tables.",
-      tags: ["High capacity", "Group dining", "VIP booths"],
+      id: "elegant",
+      title: "Elegant Lounge",
+      description:
+        "Premium centered text with decorative divider rules. Best for fine dining.",
+      tags: ["Decorative lines", "Sophisticated style", "Centered layout"],
     },
   ];
 
@@ -50,27 +59,20 @@ export default function Step2Page() {
         sessionStorage.getItem("onboarding_slug") || "mama-put-kitchen";
       const savedName =
         sessionStorage.getItem("onboarding_name") || "Mama Put Kitchen";
-      const savedTableCount = sessionStorage.getItem("onboarding_tables");
-      const savedTemplate = sessionStorage.getItem("onboarding_template");
+      const savedTemplate = sessionStorage.getItem("onboarding_template") as
+        | "classic"
+        | "modern"
+        | "elegant"
+        | null;
 
       setRestaurantSlug(savedSlug);
       setRestaurantName(savedName);
-      if (savedTableCount) setTableCount(Number(savedTableCount));
       if (savedTemplate) setSelectedTemplate(savedTemplate);
     }
   }, []);
 
-  const handleMinus = () => {
-    setTableCount((prev) => Math.max(1, prev - 1));
-  };
-
-  const handlePlus = () => {
-    setTableCount((prev) => Math.min(50, prev + 1));
-  };
-
   const handleBack = () => {
     // Save current state first
-    sessionStorage.setItem("onboarding_tables", String(tableCount));
     sessionStorage.setItem("onboarding_template", selectedTemplate);
     router.push("/onboarding/step-1");
   };
@@ -87,12 +89,18 @@ export default function Step2Page() {
       const cuisine =
         sessionStorage.getItem("onboarding_cuisine") || "nigerian";
 
+      // Formulate phone to comply with strict "+234..." backend Zod validation if it starts with 0
+      let normalizedPhone = phone.replace(/\s+/g, "");
+      if (normalizedPhone.startsWith("0")) {
+        normalizedPhone = `+234${normalizedPhone.slice(1)}`;
+      }
+
       const res = await fetch("/api/onboarding/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          profile: { name, slug, phone, cuisines: [cuisine] },
-          tables: { tableCount },
+          profile: { name, slug, phone: normalizedPhone, cuisines: [cuisine] },
+          tables: { tableCount: 1, templates: ["standard"] }, // default counter tables setup internally
         }),
       });
 
@@ -102,6 +110,9 @@ export default function Step2Page() {
         setSubmitError(json?.error ?? "Setup failed. Please try again.");
         return;
       }
+
+      // Update Zustand local store for PDF preference
+      setPdfTemplate(selectedTemplate);
 
       // Clean up sessionStorage
       [
@@ -116,7 +127,9 @@ export default function Step2Page() {
         sessionStorage.removeItem(k);
       });
 
-      toast.success("You're live! Download your QR codes to get started.");
+      toast.success(
+        "Restaurant set up successfully! View your dashboard to begin.",
+      );
       router.push("/dashboard");
     } catch {
       setSubmitError(
@@ -127,7 +140,7 @@ export default function Step2Page() {
     }
   };
 
-  const previewUrl = `https://moji.diner/${restaurantSlug}/t/1`;
+  const previewUrl = `https://moji.diner/${restaurantSlug}`;
 
   return (
     <div className="space-y-8">
@@ -137,58 +150,49 @@ export default function Step2Page() {
           Step 2 of 2
         </p>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900">
-          Set Up Tables
+          QR Code & Menu PDF Template
         </h1>
         <p className="mt-2 text-sm text-gray-500">
-          Configure how many tables your restaurant has and select a layout
-          style.
+          Your main menu QR code is ready. Select a styling template to format
+          your menu PDF.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Table count stepper widget */}
-        <div className="p-5 rounded-2xl border border-gray-100 bg-gray-50/50 space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <span className="text-sm font-bold text-gray-900">
-                Number of tables
+        {/* Main QR Code Preview Card */}
+        <div className="p-5 rounded-2xl border border-gray-100 bg-white space-y-4 flex flex-col sm:flex-row items-center gap-6 shadow-sm">
+          <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100 flex-none">
+            <QRCode value={previewUrl} size={110} className="w-28 h-28" />
+          </div>
+          <div className="text-center sm:text-left space-y-2 flex-grow min-w-0">
+            <div className="flex justify-center sm:justify-start items-center gap-2">
+              <QrCode className="h-4 w-4 text-orange-500" />
+              <span className="text-xs font-bold uppercase tracking-wider text-orange-500">
+                Main Menu QR Code
               </span>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Specify active tables for diner QR ordering.
-              </p>
             </div>
-
-            {/* Stepper controls */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleMinus}
-                className="h-9 w-9 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-all flex items-center justify-center active:scale-90"
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <span className="w-8 text-center font-bold text-gray-900 text-base">
-                {tableCount}
-              </span>
-              <button
-                type="button"
-                onClick={handlePlus}
-                className="h-9 w-9 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-all flex items-center justify-center active:scale-90"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
+            <h4 className="text-sm font-extrabold text-gray-900">
+              {restaurantName} QR Code
+            </h4>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              This is the single primary QR code for your restaurant. Customers
+              scan it to browse your menu and order.
+            </p>
+            <p className="text-[11px] text-gray-400 truncate font-mono">
+              Link: <span className="underline">{previewUrl}</span>
+            </p>
           </div>
         </div>
 
-        {/* Stepper Template cards (Column style checkable card stack) */}
+        {/* Menu Templates selectors */}
         <div className="space-y-3">
           <div>
-            <span className="block text-xs font-medium text-gray-500">
-              Seating templates
+            <span className="block text-xs font-semibold text-gray-500">
+              Select Menu PDF Style Template
             </span>
             <p className="text-[11px] text-gray-400 mt-0.5">
-              Select a template to group and structure tables.
+              Choose the layout design style for menu PDF exports. This can be
+              changed later.
             </p>
           </div>
 
@@ -229,7 +233,7 @@ export default function Step2Page() {
                       </p>
                     </div>
 
-                    {/* Custom Tags */}
+                    {/* Tags */}
                     <div className="flex flex-wrap gap-1.5">
                       {tmpl.tags.map((tag) => (
                         <span
@@ -251,36 +255,6 @@ export default function Step2Page() {
           </div>
         </div>
 
-        {/* Live QR Code Card Preview */}
-        <div className="p-5 rounded-2xl border border-gray-100 bg-white space-y-4 flex flex-col sm:flex-row items-center gap-6">
-          <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100 flex-none">
-            <QRCode value={previewUrl} size={110} className="w-28 h-28" />
-          </div>
-          <div className="text-center sm:text-left space-y-2 flex-grow">
-            <div className="flex justify-center sm:justify-start items-center gap-2">
-              <QrCode className="h-4 w-4 text-orange-500" />
-              <span className="text-xs font-bold uppercase tracking-wider text-orange-500">
-                Live Preview
-              </span>
-            </div>
-            <h4 className="text-sm font-extrabold text-gray-900">
-              Table 1 QR Code
-            </h4>
-            <p className="text-xs text-gray-500 leading-relaxed max-w-sm">
-              Each of your{" "}
-              <span className="font-bold text-gray-900">
-                {tableCount} tables
-              </span>{" "}
-              will have a unique QR code. Diners scan it to order directly to
-              the kitchen.
-            </p>
-            <p className="text-[11px] text-gray-400 truncate max-w-[280px]">
-              Diner link:{" "}
-              <span className="underline font-mono">{previewUrl}</span>
-            </p>
-          </div>
-        </div>
-
         {/* Submit error */}
         {submitError && (
           <div className="p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-xs font-semibold">
@@ -288,7 +262,7 @@ export default function Step2Page() {
           </div>
         )}
 
-        {/* Column-style Footer */}
+        {/* Footer */}
         <div className="border-t border-gray-100 pt-6 mt-8 flex items-center justify-between">
           <button
             type="button"

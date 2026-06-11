@@ -70,8 +70,12 @@ export function OrderStatusTimeline({
 }: OrderStatusTimelineProps) {
   if (!batch) return null;
 
-  const itemCount = batch.items.reduce((sum, i) => sum + i.quantity, 0);
-  const batchTotal = batch.items.reduce((sum, i) => sum + i.lineTotal, 0);
+  const itemCount = batch.items.reduce((sum, i) => sum + (i.quantity ?? 0), 0);
+  const batchTotal = batch.items.reduce(
+    (sum, i) =>
+      sum + (i.lineTotal ?? (i.itemPrice ?? 0) * (i.quantity ?? 1) ?? 0),
+    0,
+  );
   const timeStr = new Date(batch.timestamp).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",

@@ -56,14 +56,17 @@ interface CartState {
 }
 
 function computeLineTotal(
-  price: number,
-  quantity: number,
-  selectedModifiers: Record<string, ModifierOption[]>,
+  price: number | undefined | null,
+  quantity: number | undefined | null,
+  selectedModifiers: Record<string, ModifierOption[]> | undefined | null,
 ): number {
-  const modifierTotal = Object.values(selectedModifiers)
+  const basePrice = price ?? 0;
+  const qty = quantity ?? 1;
+  const modifierTotal = Object.values(selectedModifiers ?? {})
     .flat()
-    .reduce((sum, opt) => sum + opt.priceDelta, 0);
-  return (price + modifierTotal) * quantity;
+    .filter(Boolean)
+    .reduce((sum, opt) => sum + (opt.priceDelta ?? 0), 0);
+  return (basePrice + modifierTotal) * qty;
 }
 
 export const useCartStore = create<CartState>()(
@@ -182,7 +185,12 @@ export const useCartStore = create<CartState>()(
 
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
 
-      subtotal: () => get().items.reduce((sum, i) => sum + i.lineTotal, 0),
+      subtotal: () =>
+        get().items.reduce(
+          (sum, i) =>
+            sum + (i.lineTotal ?? (i.itemPrice ?? 0) * (i.quantity ?? 1) ?? 0),
+          0,
+        ),
     }),
     {
       name: "moji-cart",

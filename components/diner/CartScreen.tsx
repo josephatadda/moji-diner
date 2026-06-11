@@ -72,7 +72,13 @@ export function CartScreen({
   // Session orders view
   if (showSessionOrders) {
     const sessionSub = sessionBatches.reduce(
-      (sum, b) => sum + b.items.reduce((s, i) => s + i.lineTotal, 0),
+      (sum, b) =>
+        sum +
+        b.items.reduce(
+          (s, i) =>
+            s + (i.lineTotal ?? (i.itemPrice ?? 0) * (i.quantity ?? 1) ?? 0),
+          0,
+        ),
       0,
     );
     const { vat: sessionVat, total: sessionTotal } = calculateBill({
@@ -88,7 +94,7 @@ export function CartScreen({
       <div>
         <PageHeader
           title="Your Orders"
-          subtitle={`Table ${tableNumber}`}
+          subtitle="Dine-in Menu"
           backHref={menuUrl}
         />
 
@@ -96,11 +102,13 @@ export function CartScreen({
           {sessionBatches.map((batch) => {
             const groupedItems = groupSessionItems([batch]);
             const batchTotal = batch.items.reduce(
-              (sum, i) => sum + i.lineTotal,
+              (sum, i) =>
+                sum +
+                (i.lineTotal ?? (i.itemPrice ?? 0) * (i.quantity ?? 1) ?? 0),
               0,
             );
             const batchItemCount = batch.items.reduce(
-              (sum, i) => sum + i.quantity,
+              (sum, i) => sum + (i.quantity ?? 0),
               0,
             );
 
@@ -137,8 +145,14 @@ export function CartScreen({
                 </button>
 
                 <div className="p-3 space-y-2">
-                  {groupedItems.map((item) => (
-                    <ItemCard key={item.cartId} variant="order" item={item} />
+                  {groupedItems.map((item, index) => (
+                    <ItemCard
+                      key={
+                        item.cartId || `${item.menuItemId || "item"}-${index}`
+                      }
+                      variant="order"
+                      item={item}
+                    />
                   ))}
                 </div>
               </div>
@@ -178,18 +192,19 @@ export function CartScreen({
             + Add more items
           </Link>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (allServed) {
-                window.location.href = `/${restaurantSlug}/t/${tableNumber}/bill`;
-              }
-            }}
-            disabled={!allServed}
-            className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
+          <Link
+            href={menuUrl}
+            className={cn(
+              "w-full flex items-center justify-center",
+              DINER.primaryCta,
+              DINER.ctaPress,
+            )}
           >
-            {allServed ? "Request bill" : "Food still being prepared"}
-          </button>
+            Back to Menu
+          </Link>
+          <p className="text-center text-xs text-gray-400 mt-1">
+            Please pay cash or card directly to restaurant staff
+          </p>
         </FixedActionBar>
 
         <OrderStatusTimeline
@@ -245,9 +260,9 @@ export function CartScreen({
 
       <div className="px-4 space-y-3 pb-44">
         <div className={DINER.listGap}>
-          {items.map((item) => (
+          {items.map((item, index) => (
             <ItemCard
-              key={item.cartId}
+              key={item.cartId || `${item.menuItemId || "item"}-${index}`}
               variant="cart"
               item={item}
               onIncrement={() => updateQuantity(item.cartId, item.quantity + 1)}
