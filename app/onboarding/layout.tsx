@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, LogOut } from "lucide-react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { MojiLogo } from "@/components/auth/AuthCard";
 
@@ -14,8 +13,8 @@ const steps = [
   },
   {
     id: 2,
-    name: "Menu QR & PDF",
-    description: "PDF template & menu QR",
+    name: "Menu QR",
+    description: "Public menu link",
     path: "/onboarding/step-2",
   },
 ];
@@ -151,18 +150,6 @@ export default function OnboardingLayout({
 
       <footer className="flex flex-none justify-center gap-6 py-2 text-center text-[11px] text-gray-400">
         <span>&copy; {new Date().getFullYear()} Moji Inc.</span>
-        <Link
-          href="#"
-          className="rounded-full font-medium transition-colors hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/15"
-        >
-          Terms of Use
-        </Link>
-        <Link
-          href="#"
-          className="rounded-full font-medium transition-colors hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/15"
-        >
-          Privacy Policy
-        </Link>
       </footer>
     </div>
   );

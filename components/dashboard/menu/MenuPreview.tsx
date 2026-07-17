@@ -86,6 +86,7 @@ export function MenuPreview({
       >
         <div>
           <p
+            data-testid="menu-preview-restaurant-name"
             className={cn(
               "truncate font-bold leading-tight text-gray-900",
               isFullscreen ? "max-w-[240px] text-lg" : "max-w-[140px] text-xs",

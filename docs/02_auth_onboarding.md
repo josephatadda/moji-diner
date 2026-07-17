@@ -75,20 +75,19 @@
 [/onboarding/step-2 — Menu Launch]
   Preview:
     - Shows public menu QR/link preview
-    - Lets owner choose a starting PDF menu template
-    - Payment integration and table setup are not required in this flow
+    - Lets owner download the public menu QR code
+    - Payment integration, table setup, and menu style selection are not required in this flow
   [Complete Setup →]
         │
         ▼
-[POST /api/onboarding/complete]
-  Creates:
-    - restaurants record
-    - restaurant_settings record
-    - default internal table payload required by current schema
+[Mocked local setup completion]
+  Saves:
+    - restaurant profile details into local dashboard settings state
+    - onboarding completion flag in session storage
         │
         ▼
 [Redirect to /dashboard]
-[Success toast: "Restaurant set up successfully. Welcome to Moji."]
+[Success toast: "Restaurant setup complete. Welcome to Moji."]
 ```
 
 ### 1.4 Staff PIN Login

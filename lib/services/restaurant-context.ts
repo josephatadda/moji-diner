@@ -32,17 +32,19 @@ export type RestaurantContext = {
 export async function requireRestaurantContext(
   restaurantId?: string,
 ): Promise<Result<RestaurantContext>> {
-  const user = await requireUser(); // throws "UNAUTHORIZED" -> mapped by fail()
-
   // Mock-fallback mode: no DB configured. The dashboard demo runs against the
-  // single seeded restaurant; treat the signed-in user as its owner.
+  // single seeded restaurant; treat a synthetic preview user as its owner. This
+  // must run before requireUser(), otherwise local preview server actions crash
+  // when auth env vars such as BETTER_AUTH_SECRET are intentionally absent.
   if (!hasDatabase()) {
     return ok({
-      userId: user.id,
+      userId: "mock-user",
       restaurantId: restaurantId ?? "mock-restaurant",
       role: "owner",
     });
   }
+
+  const user = await requireUser(); // throws "UNAUTHORIZED" -> mapped by fail()
 
   const rows = await db
     .select({

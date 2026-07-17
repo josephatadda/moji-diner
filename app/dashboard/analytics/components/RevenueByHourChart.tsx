@@ -4,12 +4,12 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import { formatPrice } from "@/lib/mockData";
+import { MeasuredChartFrame } from "./MeasuredChartFrame";
 
 export function RevenueByHourChart({
   data,
@@ -17,11 +17,13 @@ export function RevenueByHourChart({
   data: { date: string; revenue: number }[];
 }) {
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-5">
+    <div className="min-w-0 rounded-2xl border border-gray-100 bg-white p-5">
       <h2 className="text-base font-bold text-gray-900 mb-4">Revenue Trend</h2>
-      <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
+      <MeasuredChartFrame className="h-72 min-w-0 w-full">
+        {({ width, height }) => (
           <AreaChart
+            width={width}
+            height={height}
             data={data}
             margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
           >
@@ -66,8 +68,8 @@ export function RevenueByHourChart({
               fill="url(#revenueGrad)"
             />
           </AreaChart>
-        </ResponsiveContainer>
-      </div>
+        )}
+      </MeasuredChartFrame>
     </div>
   );
 }

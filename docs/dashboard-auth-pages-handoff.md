@@ -28,8 +28,8 @@ instead of one-off form styles.
 - `/onboarding/step-1`
   - Restaurant details, slug preview, city, phone, optional Instagram, logo placeholder, and cuisine selection.
 - `/onboarding/step-2`
-  - Menu launch review with public menu QR preview and PDF template selection.
-  - Completes the mocked setup and redirects to `/dashboard`.
+  - Menu launch review with public menu QR preview and QR download.
+  - Completes mocked local setup and redirects to `/dashboard`.
 
 ## Components Added
 
@@ -76,8 +76,9 @@ dashboard while avoiding duplicated button/input/modal styles.
 - Every mocked action gives inline feedback instead of `alert()`.
 - Password fields include visibility toggles.
 - Staff PIN uses numeric input mode and limits input to four digits.
-- Onboarding no longer asks for payment integration or table setup during this
-  flow. Those can live later in dashboard settings as optional modules.
+- Onboarding no longer asks for payment integration, table setup, or menu design
+  style selection during this flow. Those can live later in dashboard settings as
+  optional modules.
 
 ## Still Mocked / Future Backend Work
 
@@ -87,9 +88,10 @@ dashboard while avoiding duplicated button/input/modal styles.
   records and rate-limit failed attempts.
 - On successful owner signup, verified users continue into the simplified
   onboarding wizard from `docs/02_auth_onboarding.md`.
-- The onboarding completion route still receives a minimal default table payload
-  because the current backend schema requires it. The UI does not expose table
-  setup in this pass.
+- The onboarding completion action is currently local/mocked to avoid backend
+  auth/env blockers during setup. Real restaurant creation should later call the
+  backend completion endpoint once auth sessions and required environment
+  variables are available.
 - The current route protection/middleware behavior should be revisited once real
   sessions are in place.
 
@@ -99,6 +101,22 @@ Run before pushing future changes:
 
 - `npx tsc --noEmit`
 - `npx biome check app/'(auth)' app/onboarding components/auth components/dashboard/ui docs/dashboard-auth-pages-handoff.md`
+- `npm run test:e2e -- tests/e2e/auth-onboarding.spec.ts`
+
+## Production QA Update — Jun 11, 2026
+
+- Playwright E2E has been introduced as the browser QA gate.
+- The auth/onboarding suite now checks login, signup, verify-email,
+  reset-password, staff-login, onboarding step 1, and the simplified onboarding
+  step 2 QR flow.
+- Onboarding step 2 is intentionally local/mocked in this pass. It verifies that
+  the QR download action exists, payment/table/menu-style friction is removed,
+  setup completion redirects to dashboard, and no internal error overlay appears.
+- Full production validation still requires real auth sessions, required
+  environment variables, and backend restaurant creation through the onboarding
+  completion endpoint.
+- See `docs/production-readiness-qa.md` for the full production-readiness QA
+  matrix and known blockers.
 
 ## QA Stabilization Update — Jun 11, 2026
 

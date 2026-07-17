@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
+import { MeasuredChartFrame } from "./MeasuredChartFrame";
 
 const COLORS: Record<string, string> = {
   Card: "#111827",
@@ -22,13 +16,13 @@ export function PaymentMethodChart({
   data: { name: string; value: number }[];
 }) {
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-5 h-full">
+    <div className="h-full min-w-0 rounded-2xl border border-gray-100 bg-white p-5">
       <h2 className="text-base font-bold text-gray-900 mb-4">
         Payment Methods
       </h2>
-      <div className="h-60">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+      <MeasuredChartFrame className="h-60 min-w-0 w-full">
+        {({ width, height }) => (
+          <PieChart width={width} height={height}>
             <Pie
               data={data}
               cx="50%"
@@ -58,8 +52,8 @@ export function PaymentMethodChart({
               wrapperStyle={{ paddingTop: 16, fontSize: 13 }}
             />
           </PieChart>
-        </ResponsiveContainer>
-      </div>
+        )}
+      </MeasuredChartFrame>
     </div>
   );
 }

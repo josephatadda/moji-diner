@@ -134,6 +134,7 @@ export default function SettingsPage() {
   const [_secretVisible, _setSecretVisible] = useState(false);
   const [_copied, setCopied] = useState(false);
   const [profileDraft, setProfileDraft] = useState(profile);
+  const [profileDraftTouched, setProfileDraftTouched] = useState(false);
   const [vatEnabled, setVatEnabled] = useState(taxes.vatEnabled);
   const [vatRate, setVatRate] = useState(String(taxes.vatRate));
   const [serviceCharge, setServiceCharge] = useState(
@@ -143,12 +144,20 @@ export default function SettingsPage() {
     String(taxes.serviceChargeRate),
   );
   const [origin, setOrigin] = useState("http://localhost:3000");
+  const [isClientHydrated, setIsClientHydrated] = useState(false);
 
   useEffect(() => {
+    setIsClientHydrated(true);
     if (typeof window !== "undefined") {
       setOrigin(window.location.origin);
     }
   }, []);
+
+  useEffect(() => {
+    if (!profileDraftTouched) {
+      setProfileDraft(profile);
+    }
+  }, [profile, profileDraftTouched]);
 
   const [hours, setHours] = useState(
     DAYS.reduce(
@@ -167,6 +176,15 @@ export default function SettingsPage() {
     dailyReport: true,
   });
 
+  const updateProfileDraft = (patch: Partial<typeof profileDraft>) => {
+    setProfileDraftTouched(true);
+    setProfileDraft((current) => ({
+      ...current,
+      ...patch,
+    }));
+    updateProfile(patch);
+  };
+
   const _handleCopyWebhook = () => {
     navigator.clipboard.writeText(
       "https://moji.app/api/webhooks/paystack/rest-001",
@@ -177,7 +195,11 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="px-4 py-6 lg:px-8 lg:py-8 max-w-[1200px] mx-auto w-full">
+    <div
+      data-testid="dashboard-settings-page"
+      data-hydrated={isClientHydrated ? "true" : "false"}
+      className="px-4 py-6 lg:px-8 lg:py-8 max-w-[1200px] mx-auto w-full"
+    >
       <DashboardPageHeader
         title="Settings"
         description="Configure the restaurant, enabled modules, payments, and connected experiences."
@@ -302,10 +324,9 @@ export default function SettingsPage() {
                       type="text"
                       value={profileDraft.name}
                       onChange={(event) =>
-                        setProfileDraft((current) => ({
-                          ...current,
+                        updateProfileDraft({
                           name: event.target.value,
-                        }))
+                        })
                       }
                     />
                   </Field>
@@ -324,10 +345,9 @@ export default function SettingsPage() {
                         type="text"
                         value={profileDraft.slug}
                         onChange={(event) =>
-                          setProfileDraft((current) => ({
-                            ...current,
+                          updateProfileDraft({
                             slug: event.target.value,
-                          }))
+                          })
                         }
                         className="pl-9"
                       />
@@ -344,10 +364,9 @@ export default function SettingsPage() {
                         type="text"
                         value={profileDraft.phone}
                         onChange={(event) =>
-                          setProfileDraft((current) => ({
-                            ...current,
+                          updateProfileDraft({
                             phone: event.target.value,
-                          }))
+                          })
                         }
                         className="pl-9"
                       />
@@ -368,10 +387,9 @@ export default function SettingsPage() {
                       type="text"
                       value={profileDraft.city}
                       onChange={(event) =>
-                        setProfileDraft((current) => ({
-                          ...current,
+                        updateProfileDraft({
                           city: event.target.value,
-                        }))
+                        })
                       }
                     />
                   </Field>
@@ -380,10 +398,9 @@ export default function SettingsPage() {
                       id="currency"
                       value={profileDraft.currency || "NGN"}
                       onChange={(event) =>
-                        setProfileDraft((current) => ({
-                          ...current,
+                        updateProfileDraft({
                           currency: event.target.value,
-                        }))
+                        })
                       }
                     >
                       <option value="NGN">NGN (₦)</option>
@@ -401,10 +418,9 @@ export default function SettingsPage() {
                     type="text"
                     value={profileDraft.address || ""}
                     onChange={(event) =>
-                      setProfileDraft((current) => ({
-                        ...current,
+                      updateProfileDraft({
                         address: event.target.value,
-                      }))
+                      })
                     }
                   />
                 </Field>
@@ -414,10 +430,9 @@ export default function SettingsPage() {
                     rows={3}
                     value={profileDraft.description}
                     onChange={(event) =>
-                      setProfileDraft((current) => ({
-                        ...current,
+                      updateProfileDraft({
                         description: event.target.value,
-                      }))
+                      })
                     }
                   />
                 </Field>
@@ -466,10 +481,9 @@ export default function SettingsPage() {
                         <button
                           type="button"
                           onClick={() =>
-                            setProfileDraft((curr) => ({
-                              ...curr,
+                            updateProfileDraft({
                               logoUrl: "",
-                            }))
+                            })
                           }
                           className="text-xs font-semibold px-3 py-1.5 bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 rounded-lg text-gray-700 cursor-pointer transition-colors"
                         >
@@ -486,10 +500,9 @@ export default function SettingsPage() {
                           if (file) {
                             const reader = new FileReader();
                             reader.onloadend = () => {
-                              setProfileDraft((curr) => ({
-                                ...curr,
+                              updateProfileDraft({
                                 logoUrl: reader.result as string,
-                              }));
+                              });
                             };
                             reader.readAsDataURL(file);
                           }
@@ -569,10 +582,9 @@ export default function SettingsPage() {
                           <button
                             type="button"
                             onClick={() =>
-                              setProfileDraft((curr) => ({
-                                ...curr,
+                              updateProfileDraft({
                                 coverImageUrl: "",
-                              }))
+                              })
                             }
                             className="text-xs font-semibold px-3 py-1.5 bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 rounded-lg text-gray-700 cursor-pointer transition-colors"
                           >
@@ -589,10 +601,9 @@ export default function SettingsPage() {
                             if (file) {
                               const reader = new FileReader();
                               reader.onloadend = () => {
-                                setProfileDraft((curr) => ({
-                                  ...curr,
+                                updateProfileDraft({
                                   coverImageUrl: reader.result as string,
-                                }));
+                                });
                               };
                               reader.readAsDataURL(file);
                             }
@@ -643,10 +654,9 @@ export default function SettingsPage() {
                             type="button"
                             title={preset.name}
                             onClick={() =>
-                              setProfileDraft((curr) => ({
-                                ...curr,
+                              updateProfileDraft({
                                 coverImageUrl: preset.gradient,
-                              }))
+                              })
                             }
                             className={cn(
                               "w-10 h-10 rounded-full border shadow-sm shrink-0 cursor-pointer hover:scale-105 active:scale-95 transition-all relative flex items-center justify-center",
@@ -711,10 +721,9 @@ export default function SettingsPage() {
                   <ToggleSwitch
                     checked={profileDraft.acceptingOrders}
                     onChange={() =>
-                      setProfileDraft((current) => ({
-                        ...current,
-                        acceptingOrders: !current.acceptingOrders,
-                      }))
+                      updateProfileDraft({
+                        acceptingOrders: !profileDraft.acceptingOrders,
+                      })
                     }
                   />
                 </div>
@@ -737,7 +746,12 @@ export default function SettingsPage() {
               </SectionCard>
 
               <div className="flex justify-end">
-                <SaveButton onSave={() => updateProfile(profileDraft)} />
+                <SaveButton
+                  onSave={() => {
+                    updateProfile(profileDraft);
+                    setProfileDraftTouched(false);
+                  }}
+                />
               </div>
             </>
           )}

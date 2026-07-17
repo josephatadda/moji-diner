@@ -47,6 +47,7 @@ export function CartScreen({
   const [timelineBatchId, setTimelineBatchId] = useState<string | null>(null);
 
   const menuUrl = `/${restaurantSlug}/t/${tableNumber}`;
+  const billUrl = `/${restaurantSlug}/t/${tableNumber}/bill`;
   const requestedView = searchParams.get("view");
   const showSessionOrders =
     sessionBatches.length > 0 &&
@@ -179,30 +180,33 @@ export function CartScreen({
             </button>
           )}
 
+          {allServed ? (
+            <Link
+              href={billUrl}
+              className={cn(
+                "flex w-full items-center justify-center",
+                DINER.primaryCta,
+                DINER.ctaPress,
+              )}
+            >
+              Request Bill · ₦{Math.round(sessionTotal).toLocaleString()}
+            </Link>
+          ) : (
+            <p className="rounded-2xl bg-gray-50 px-3 py-2 text-center text-xs font-medium text-gray-500">
+              You can request the bill once your items are served.
+            </p>
+          )}
+
           <Link
             href={menuUrl}
             className={cn(
-              "flex items-center justify-center w-full",
-              DINER.secondaryCta,
+              "flex w-full items-center justify-center",
+              allServed ? DINER.secondaryCta : DINER.primaryCta,
               DINER.ctaPress,
             )}
           >
             + Add more items
           </Link>
-
-          <Link
-            href={menuUrl}
-            className={cn(
-              "w-full flex items-center justify-center",
-              DINER.primaryCta,
-              DINER.ctaPress,
-            )}
-          >
-            Back to Menu
-          </Link>
-          <p className="text-center text-xs text-gray-400 mt-1">
-            Please pay cash or card directly to restaurant staff
-          </p>
         </FixedActionBar>
 
         <OrderStatusTimeline

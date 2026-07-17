@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
+import { MeasuredChartFrame } from "./MeasuredChartFrame";
 
 export function TopDishesChart({
   data,
@@ -16,11 +9,13 @@ export function TopDishesChart({
   data: { name: string; sales: number }[];
 }) {
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-5 h-full">
+    <div className="h-full min-w-0 rounded-2xl border border-gray-100 bg-white p-5">
       <h2 className="text-base font-bold text-gray-900 mb-4">Top Dishes</h2>
-      <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
+      <MeasuredChartFrame className="h-72 min-w-0 w-full">
+        {({ width, height }) => (
           <BarChart
+            width={width}
+            height={height}
             data={data}
             layout="vertical"
             margin={{ left: -20, right: 20 }}
@@ -55,8 +50,8 @@ export function TopDishesChart({
               barSize={18}
             />
           </BarChart>
-        </ResponsiveContainer>
-      </div>
+        )}
+      </MeasuredChartFrame>
     </div>
   );
 }

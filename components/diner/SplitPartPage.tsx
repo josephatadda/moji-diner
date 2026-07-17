@@ -5,7 +5,9 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { DinerIconBadge } from "./ui/DinerIconBadge";
 import { DinerInfoRow } from "./ui/DinerInfoRow";
+import { DinerPaymentPanel } from "./ui/DinerPaymentPanel";
 import { DINER } from "./ui/diner-tokens";
+import { PageHeader } from "./ui/PageHeader";
 
 interface Props {
   token: string;
@@ -23,17 +25,42 @@ export default function SplitPartPage({
   restaurantName,
   tableNumber,
 }: Props) {
-  const [paid, setPaid] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [screen, setScreen] = useState<"review" | "payment" | "paid">("review");
+  const [completedMethod, setCompletedMethod] = useState<
+    "bank" | "card" | "cash"
+  >("bank");
 
-  const handlePay = async () => {
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setPaid(true);
-    setLoading(false);
-  };
+  const methodLabel =
+    completedMethod === "bank"
+      ? "Bank transfer"
+      : completedMethod === "card"
+        ? "Card"
+        : "Cash";
 
-  if (paid) {
+  if (screen === "payment") {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto min-h-screen max-w-[480px] bg-white">
+          <PageHeader
+            title="Pay your share"
+            subtitle={`Part ${part} of ${totalParts} · ₦${amount.toLocaleString()}`}
+            onBack={() => setScreen("review")}
+          />
+          <div className="px-4 pb-8">
+            <DinerPaymentPanel
+              amount={amount}
+              onComplete={(method) => {
+                setCompletedMethod(method);
+                setScreen("paid");
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === "paid") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className={cn(DINER.card, "p-8 max-w-sm w-full text-center")}>
@@ -55,6 +82,7 @@ export default function SplitPartPage({
               value={`₦${amount.toLocaleString()}`}
               emphasis
             />
+            <DinerInfoRow label="Payment" value={methodLabel} />
           </div>
           <p className={cn(DINER.caption, "mt-6")}>Powered by Moji</p>
         </div>
@@ -101,11 +129,10 @@ export default function SplitPartPage({
 
         <button
           type="button"
-          onClick={handlePay}
-          disabled={loading}
+          onClick={() => setScreen("payment")}
           className={cn("w-full", DINER.primaryCta, DINER.ctaPress)}
         >
-          {loading ? "Processing…" : `Pay ₦${amount.toLocaleString()}`}
+          Pay ₦{amount.toLocaleString()}
         </button>
         <p className={cn(DINER.caption, "text-center mt-3")}>Powered by Moji</p>
       </div>

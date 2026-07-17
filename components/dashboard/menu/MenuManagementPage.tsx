@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle, Circle, ForkKnife } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DashboardButton,
   DashboardConfirmDialog,
@@ -11,7 +11,7 @@ import {
   dashboardToast,
 } from "@/components/dashboard/ui";
 import { generateMenuPDF } from "@/lib/menu-pdf";
-import { MOCK_RESTAURANT } from "@/lib/mockData";
+import type { MenuCategory } from "@/lib/mockData";
 import { useDashboardSettingsStore } from "@/store/dashboard-settings";
 import { useMenuStore } from "@/store/menu";
 import { CategoryCard } from "./CategoryCard";
@@ -24,11 +24,20 @@ export function MenuManagementPage() {
   const [previewMode, setPreviewMode] = useState(false); // mobile only
   const [resetOpen, setResetOpen] = useState(false);
   const [downloadPdfOpen, setDownloadPdfOpen] = useState(false);
+  const [isClientHydrated, setIsClientHydrated] = useState(false);
 
   const { profile } = useDashboardSettingsStore();
 
+  useEffect(() => {
+    setIsClientHydrated(true);
+  }, []);
+
   return (
-    <div className="h-full">
+    <div
+      data-testid="dashboard-menu-page"
+      data-hydrated={isClientHydrated ? "true" : "false"}
+      className="h-full"
+    >
       {/* Mobile tab switcher */}
       <div className="lg:hidden flex border-b border-gray-100 bg-white sticky top-0 z-30">
         <button
@@ -120,7 +129,7 @@ export function MenuManagementPage() {
           <div className="flex-1 overflow-hidden lg:overflow-y-auto lg:p-4">
             <MenuPreview
               categories={categories}
-              restaurantName={MOCK_RESTAURANT.name}
+              restaurantName={profile.name}
               mode={previewMode ? "fullscreen" : "phone"}
             />
           </div>
@@ -172,7 +181,7 @@ interface DownloadPdfModalProps {
   restaurantEmail?: string;
   restaurantCurrency?: string;
   restaurantSlug: string;
-  categories: any[];
+  categories: MenuCategory[];
 }
 
 export function DownloadPdfModal({

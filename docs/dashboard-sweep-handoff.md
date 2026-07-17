@@ -182,9 +182,30 @@ The dashboard sweep is not finished. Continue from these items:
 
 - `npx tsc --noEmit` passed.
 - `npx biome check app/dashboard components/dashboard components/diner store lib/moji-design-system 'app/[restaurantSlug]/t'` passed.
+- Playwright production-readiness coverage now exists under `tests/e2e`.
+  It checks onboarding QR completion, settings persistence, logo/cover upload
+  selection, dashboard profile reflection, dashboard menu edits, diner menu sync,
+  and diner menu/cart/bill smoke rendering.
 - `npm run build` is not a reliable pass/fail gate unless `DATABASE_URL` is
   provided; previous builds reached page-data collection and then failed at
   `/sitemap.xml` because `DATABASE_URL` was missing.
+
+## Production QA Update — Jun 11, 2026
+
+- Dashboard settings now persist through the `moji-dashboard-settings`
+  local-storage store. This was required because profile/logo edits were not a
+  trustworthy QA target if they disappeared after reload.
+- Dashboard settings form drafts now rehydrate from persisted settings.
+- Dashboard menu preview now uses the settings profile instead of the static
+  mock restaurant name.
+- A full QA matrix lives in `docs/production-readiness-qa.md`.
+- Known production blockers remain:
+  - settings are still localStorage-backed in this pass, not backend-backed;
+  - diner cart and bill routes still receive some static `MOCK_RESTAURANT`
+    props, including tax/name-related values;
+  - dashboard menu item photo upload is still a visual placeholder;
+  - slug changes need server-side route/data validation before they can be
+    treated as production-ready.
 
 ## Suggested Next Step
 

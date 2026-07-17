@@ -49,6 +49,8 @@ export function DashboardMenuItemCard({
         {/* Info */}
         <button
           type="button"
+          data-testid={`menu-item-row-${item.id}`}
+          aria-label={`Edit ${item.name} details`}
           className="flex-1 min-w-0 cursor-pointer text-left"
           onClick={() => setEditOpen(true)}
         >
@@ -112,6 +114,7 @@ export function DashboardMenuItemCard({
           {/* Edit */}
           <button
             type="button"
+            aria-label={`Edit ${item.name}`}
             onClick={() => setEditOpen(true)}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-all text-sm opacity-0 group-hover:opacity-100"
           >
@@ -121,6 +124,7 @@ export function DashboardMenuItemCard({
           {/* Delete */}
           <button
             type="button"
+            aria-label={`Delete ${item.name}`}
             onClick={handleDelete}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all text-sm opacity-0 group-hover:opacity-100"
           >
